@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.taller.estudiantevistas.controlador.ControladorPerfil"
+            stylesheets="@../css/perfil.css" prefWidth="1000" prefHeight="600">
+
+    <left>
+        <VBox spacing="15" alignment="TOP_CENTER" styleClass="perfil-vbox">
+            <!-- Imagen de perfil -->
+            <StackPane alignment="TOP_CENTER">
+                <ImageView fx:id="imgPerfil" fitWidth="180" fitHeight="180"
+                           preserveRatio="true" styleClass="imagen-perfil">
+                    <image>
+                        <Image url="@../icons/imgPerfil.png" />
+                    </image>
+                </ImageView>
+            </StackPane>
+
+            <!-- Datos personales -->
+            <VBox alignment="CENTER_LEFT" spacing="5" styleClass="info-labels">
+                <Label text="Nombres:" styleClass="etiqueta-dato" />
+                <Label fx:id="lblNombres" styleClass="valor-dato" />
+
+                <Label text="Apellidos:" styleClass="etiqueta-dato" />
+                <Label fx:id="lblApellidos" styleClass="valor-dato" />
+
+                <Label text="Cédula:" styleClass="etiqueta-dato" />
+                <Label fx:id="lblCedula" styleClass="valor-dato" />
+
+                <Label text="Correo electrónico:" styleClass="etiqueta-dato" />
+                <Label fx:id="lblCorreo" styleClass="valor-dato" />
+
+                <Label text="Intereses académicos:" styleClass="etiqueta-dato" />
+                <Label fx:id="lblIntereses" styleClass="valor-dato" />
+            </VBox>
+
+            <Button fx:id="btnActualizarDatos" text="Actualizar datos" styleClass="boton-morado" />
+        </VBox>
+    </left>
+
+    <center>
+        <HBox spacing="20">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <VBox spacing="20" alignment="TOP_CENTER">
+                <Button fx:id="btnVerContenidos" text="Ver contenidos publicados" styleClass="boton-morado" />
+                <Pane prefHeight="150" prefWidth="300" styleClass="contenedor-negro" />
+                <Button fx:id="btnVerSugerencias" text="Ver sugerencias de compañeros" styleClass="boton-morado" />
+                <Pane prefHeight="150" prefWidth="300" styleClass="contenedor-negro" />
+            </VBox>
+
+            <VBox spacing="15" alignment="TOP_CENTER">
+                <Label text="Grupos de estudio" styleClass="titulo-pequeno" />
+                <ComboBox fx:id="comboGruposEstudio" prefWidth="260" />
+                <Pane prefHeight="120" prefWidth="260" styleClass="contenedor-negro" />
+                <Button fx:id="btnBuscarGrupos" text="Buscar grupos de estudio" styleClass="boton-morado" />
+                <Button fx:id="btnVerSolicitudes" text="Ver lista de solicitudes activas" styleClass="boton-morado" />
+                <Button fx:id="btnPublicarAyuda" text="Publicar solicitud de ayuda" styleClass="boton-morado" />
+                <Button fx:id="btnPublicarContenido" text="Publicar contenido" styleClass="boton-morado" />
+            </VBox>
+        </HBox>
+    </center>
+</BorderPane>

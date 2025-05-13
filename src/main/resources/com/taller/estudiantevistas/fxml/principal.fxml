@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.taller.estudiantevistas.controlador.ControladorPrincipal"
+            stylesheets="@../css/principal.css"
+            prefWidth="1200" prefHeight="700" styleClass="root">
+
+    <!-- BARRA SUPERIOR: Campo de búsqueda, botón buscar, combo tipo -->
+    <top>
+        <HBox spacing="20" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="20"/>
+            </padding>
+
+            <TextField fx:id="campoBusqueda" promptText="Buscar..." styleClass="search-field"/>
+
+            <Button fx:id="btnBuscar" graphicTextGap="0" styleClass="icon-button">
+                <graphic>
+                    <ImageView fx:id="imgLupa" fitWidth="30" fitHeight="30" preserveRatio="true"/>
+                </graphic>
+            </Button>
+
+            <ComboBox fx:id="comboTipo" promptText="Tipo" styleClass="combo-box"/>
+        </HBox>
+    </top>
+
+    <!-- CENTRO: Contenidos y solicitudes -->
+    <center>
+        <HBox spacing="50" alignment="CENTER">
+            <padding>
+                <Insets top="40" right="40" bottom="40" left="40"/>
+            </padding>
+
+            <VBox spacing="15" alignment="CENTER">
+                <Button fx:id="btnRecargarContenidos" text="Recargar contenidos educativos" styleClass="main-button"/>
+                <Pane fx:id="panelContenidos" prefWidth="300" prefHeight="300" styleClass="content-pane"/>
+            </VBox>
+
+            <VBox spacing="15" alignment="CENTER">
+                <Button fx:id="btnRecargarSolicitudes" text="Recargar solicitudes de ayuda" styleClass="main-button"/>
+                <Pane fx:id="panelSolicitudes" prefWidth="300" prefHeight="300" styleClass="content-pane"/>
+            </VBox>
+        </HBox>
+    </center>
+
+    <!-- LADO DERECHO: Botones de usuario -->
+    <right>
+        <VBox spacing="15" alignment="TOP_CENTER">
+            <padding>
+                <Insets top="20" right="20" bottom="20" left="10"/>
+            </padding>
+
+            <Button fx:id="btnAjustes" styleClass="icon-button">
+                <graphic>
+                    <ImageView fx:id="imgAjustes" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                </graphic>
+            </Button>
+
+            <Button fx:id="btnNotificaciones" styleClass="icon-button">
+                <graphic>
+                    <ImageView fx:id="imgCampana" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                </graphic>
+            </Button>
+
+            <Button fx:id="btnChat" styleClass="icon-button">
+                <graphic>
+                    <ImageView fx:id="imgChat" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                </graphic>
+            </Button>
+
+            <Button fx:id="btnPerfil" styleClass="icon-button">
+                <graphic>
+                    <ImageView fx:id="imgPerfil" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                </graphic>
+            </Button>
+
+            <Button fx:id="btnContacto" styleClass="icon-button">
+                <graphic>
+                    <ImageView fx:id="imgContacto" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                </graphic>
+            </Button>
+        </VBox>
+    </right>
+</BorderPane>

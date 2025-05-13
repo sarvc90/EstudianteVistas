@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorLogin"
+      alignment="CENTER"
+      spacing="20"
+      styleClass="login-container"
+      stylesheets="@../css/estilos.css"> <!-- Añade esta línea -->
+
+    <!-- El resto de tu contenido permanece igual -->
+    <Label text="Iniciar sesión en red de aprendizaje" styleClass="titulo" />
+    <TextField fx:id="nombreField" promptText="Nombre..." styleClass="text-field" />
+    <PasswordField fx:id="contrasenaField" promptText="Contraseña..." styleClass="password-field" />
+    <Button text="Iniciar sesión" onAction="#iniciarSesion" styleClass="button" />
+    <Label fx:id="registerLink" text="Registrarse" styleClass="register-link" onMouseClicked="#registrarse" />
+</VBox>

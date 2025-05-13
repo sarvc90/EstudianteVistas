@@ -1,0 +1,105 @@
+/* Estilo raíz */
+.root {
+    -fx-background-color: #18181f;
+    -fx-font-family: 'Roboto Mono', monospace;
+}
+
+/* Contenedor principal */
+.container {
+    -fx-background-color: #1c1c24;
+    -fx-background-radius: 20px;
+    -fx-padding: 30px 40px;
+    -fx-max-width: 900px;
+    -fx-spacing: 30px;
+}
+
+/* Sección izquierda */
+.left-section {
+    -fx-alignment: center;
+    -fx-spacing: 15px;
+    -fx-pref-width: 320px;
+}
+
+/* Sección derecha */
+.right-section {
+    -fx-pref-width: 380px;
+    -fx-alignment: center;
+}
+
+/* Panel del tema - Más alto y con contenido en la parte superior */
+.topic-panel {
+    -fx-background-color: #2a2a33;
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
+    -fx-border-color: #3a3a44;
+    -fx-border-width: 2px;
+    -fx-padding: 25px;
+    -fx-spacing: 15px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 10, 0.5, 0, 2);
+    -fx-pref-height: 300px; /* Altura aumentada */
+}
+
+/* Contenedor del contenido del tema */
+.topic-content {
+    -fx-alignment: top-left; /* Alineación superior */
+    -fx-spacing: 15px;
+}
+
+/* Título del grupo */
+.group-title {
+    -fx-fill: #8a5fff;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20px 0;
+}
+
+/* Botones oscuros */
+.dark-button {
+    -fx-background-color: #2a2a33;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25px;
+    -fx-padding: 12px 0;
+    -fx-pref-width: 300px;
+    -fx-cursor: hand;
+}
+
+.dark-button:hover {
+    -fx-background-color: #3a3a44;
+}
+
+/* Contador de miembros */
+.members-count {
+    -fx-font-size: 14px;
+    -fx-text-fill: #c1c7c6;
+    -fx-padding: 10px 0 20px 0;
+}
+
+/* Botones morados */
+.purple-button {
+    -fx-background-color: #8a5fff;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 25px;
+    -fx-padding: 10px 0;
+    -fx-pref-width: 180px;
+    -fx-cursor: hand;
+}
+
+.purple-button:hover {
+    -fx-background-color: #6f47d9;
+}
+
+/* Título del tema */
+.topic-title {
+    -fx-fill: #8a5fff;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+/* Descripción del tema */
+.topic-description {
+    -fx-fill: #e0e0e0;
+    -fx-font-size: 16px;
+    -fx-line-spacing: 1.4;
+}

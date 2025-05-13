@@ -1,0 +1,62 @@
+.root {
+    -fx-background-color: #1e1e2f;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.label {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+}
+
+.perfil-vbox {
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-alignment: top-center;
+    -fx-background-color: #2a2a40;
+    -fx-border-color: #3f3f5f;
+    -fx-border-width: 0 2 0 0;
+}
+
+.imagen-perfil {
+    -fx-effect: dropshadow(gaussian, #9b59b6, 10, 0.5, 0, 0);
+}
+
+.etiqueta-dato {
+    -fx-font-weight: bold;
+    -fx-text-fill: #9b59b6;
+    -fx-font-size: 13px;
+}
+
+.valor-dato {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 13px;
+    -fx-padding: 0 0 8 10;
+}
+
+.boton-morado {
+    -fx-background-color: linear-gradient(to bottom, #8e44ad, #732d91);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-padding: 10 20;
+}
+
+.boton-morado:hover {
+    -fx-background-color: linear-gradient(to bottom, #a569bd, #8e44ad);
+}
+
+.contenedor-negro {
+    -fx-background-color: #2f2f3f;
+    -fx-border-color: #444;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.titulo-pequeno {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 0 10 0;
+}

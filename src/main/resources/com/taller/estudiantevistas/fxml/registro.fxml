@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/fxml/1"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorRegistro"
+      styleClass="container"
+      spacing="18"
+      alignment="CENTER"
+      stylesheets="@../css/registro.css">
+
+    <Label styleClass="titulo" text="Registro" />
+
+    <VBox styleClass="form-container" spacing="15">
+        <!-- Campos con labels más grandes -->
+        <Label text="Nombres:" styleClass="field-label" />
+        <TextField styleClass="input-field" fx:id="nombresField" promptText="Ej: Juan Carlos" />
+
+        <Label text="Apellidos:" styleClass="field-label" />
+        <TextField styleClass="input-field" fx:id="apellidosField" promptText="Ej: Pérez Gómez" />
+
+        <Label text="Cédula:" styleClass="field-label" />
+        <TextField styleClass="input-field" fx:id="cedulaField" promptText="Ej: 1234567890" />
+
+        <Label text="Contraseña:" styleClass="field-label" />
+        <PasswordField styleClass="input-field" fx:id="contrasenaField" promptText="Mínimo 8 caracteres" />
+
+        <Label text="Correo electrónico:" styleClass="field-label" />
+        <TextField styleClass="input-field" fx:id="correoField" promptText="Ej: usuario@dominio.com" />
+
+        <Label text="Intereses académicos:" styleClass="field-label" />
+        <TextField styleClass="input-field" fx:id="interesesField" promptText="Ej: Matemáticas, Física" />
+
+        <!-- Botón con texto en negrita -->
+        <Button styleClass="submit-button" text="REGISTRARSE" onAction="#registrarUsuario" />
+
+        <!-- Botón volver con letra morada -->
+        <Button styleClass="back-button" text="Volver al Login" onAction="#volverALogin" />
+    </VBox>
+</VBox>

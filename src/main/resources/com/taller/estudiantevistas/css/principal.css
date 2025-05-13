@@ -1,0 +1,79 @@
+.content-pane {
+    -fx-background-color: #1a1a22;
+    -fx-background-radius: 20;
+    -fx-border-color: #2e2e38;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+}.root {
+     -fx-background-color: #121212;
+     -fx-font-family: "Segoe UI", sans-serif;
+     -fx-text-fill: white;
+ }
+
+.search-field {
+    -fx-background-color: #1e1e25;
+    -fx-background-radius: 25;
+    -fx-border-color: #2e2e38;
+    -fx-border-width: 1;
+    -fx-border-radius: 25;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #999999;
+    -fx-padding: 10 18;
+    -fx-font-size: 14px;
+    -fx-pref-width: 400px; /* Aumentado de tamaño para hacer el campo más largo */
+}
+
+.combo-box {
+    -fx-background-color: #8e44ff;
+    -fx-background-radius: 25;
+    -fx-border-radius: 25;
+    -fx-border-color: transparent;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+    -fx-text-fill: white;
+}
+
+.combo-box .list-cell {
+    -fx-text-fill: white;
+    -fx-background-color: #2c2c36;
+}
+
+.combo-box .list-view {
+    -fx-background-color: #1a1a22;
+}
+
+.main-button {
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
+    -fx-text-fill: white;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 12 24;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 3);
+    -fx-cursor: hand;
+}
+
+.main-button:hover {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 4);
+}
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-padding: 10; /* Aumentado de 5 a 10 para hacer los botones más grandes */
+    -fx-cursor: hand;
+    -fx-border-radius: 50%;
+    -fx-border-color: transparent;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 2, 0.3, 0, 1);
+    -fx-min-width: 48px; /* Ancho mínimo para los botones */
+    -fx-min-height: 48px; /* Alto mínimo para los botones */
+    -fx-max-width: 48px; /* Ancho máximo para los botones */
+    -fx-max-height: 48px; /* Alto máximo para los botones */
+}
+
+
+
+.icon-button:hover {
+    -fx-background-color: #2e2e38;
+    -fx-border-radius: 50%;
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<HBox xmlns="http://javafx.com/fxml/1" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorGrupoEstudio"
+      stylesheets="@../css/grupo-estudio.css"
+      styleClass="container" spacing="30">
+
+    <!-- Sección izquierda -->
+    <VBox styleClass="left-section" spacing="15" alignment="CENTER" prefWidth="320">
+        <Text styleClass="group-title" text="Nombre del grupo de estudio..." />
+
+        <Button styleClass="dark-button" text="Ir a chat grupal" onAction="#irAlChat"
+                prefWidth="300" />
+        <Button styleClass="dark-button" text="Unirse al grupo" onAction="#unirseAlGrupo"
+                prefWidth="300" />
+
+        <Label styleClass="members-count" text="# de miembros en el grupo de estudio" />
+
+        <Button styleClass="purple-button" text="Ver miembros" onAction="#verMiembros"
+                prefWidth="180" />
+        <Button styleClass="purple-button" text="Contenido" onAction="#verContenido"
+                prefWidth="180" />
+    </VBox>
+
+    <!-- Sección derecha con panel más alto y texto en la parte superior -->
+    <VBox styleClass="right-section" prefWidth="380">
+        <VBox styleClass="topic-panel" spacing="15" prefHeight="300">
+            <VBox styleClass="topic-content" spacing="15" alignment="TOP_LEFT">
+                <Text styleClass="topic-title" text="Tema" />
+                <Text styleClass="topic-description" text="Introducción corta del grupo..."
+                      wrappingWidth="340" />
+            </VBox>
+        </VBox>
+    </VBox>
+</HBox>

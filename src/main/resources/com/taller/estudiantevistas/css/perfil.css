@@ -1,0 +1,33 @@
+.root {
+    -fx-background-color: #1e1e1e;
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.perfil-vbox {
+    -fx-padding: 20;
+    -fx-background-color: #1e1e1e;
+}
+
+.info-labels Label {
+    -fx-text-fill: #a75aff;
+    -fx-font-size: 14px;
+}
+
+.boton-morado {
+    -fx-background-color: #a75aff;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20;
+    -fx-background-radius: 30;
+}
+
+.contenedor-negro {
+    -fx-background-color: #2a2a2a;
+    -fx-background-radius: 10;
+}
+
+.titulo-pequeno {
+    -fx-text-fill: #c3f7ec;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}

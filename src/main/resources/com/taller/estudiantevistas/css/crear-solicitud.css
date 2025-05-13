@@ -1,0 +1,74 @@
+/* Estilo raíz */
+.root {
+    -fx-background-color: #1e1f24;
+    -fx-font-family: 'Montserrat', sans-serif;
+}
+
+/* Contenedor principal */
+.container {
+    -fx-background-color: #16171a;
+    -fx-background-radius: 24px;
+    -fx-padding: 32px 40px 48px 40px;
+    -fx-spacing: 16px;
+    -fx-alignment: center;
+    -fx-pref-width: 320px;
+}
+
+/* Título */
+.titulo {
+    -fx-fill: #8a5fff;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 24px 0;
+}
+
+/* Campos de entrada */
+.input-field {
+    -fx-background-color: transparent;
+    -fx-border-color: #4a4a4a;
+    -fx-border-radius: 16px;
+    -fx-border-width: 2px;
+    -fx-padding: 8px 16px;
+    -fx-text-fill: #cfcfcf;
+    -fx-prompt-text-fill: #8a5fff;
+    -fx-font-size: 14px;
+}
+
+.input-field:focused {
+    -fx-border-color: #8a5fff;
+}
+
+/* Botón de urgencia */
+.urgency-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #8a5fff;
+    -fx-border-color: #8a5fff;
+    -fx-border-width: 2px;
+    -fx-border-radius: 24px;
+    -fx-background-radius: 24px;
+    -fx-padding: 12px 40px;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-margin-top: 32px;
+}
+
+.urgency-button:hover {
+    -fx-background-color: rgba(138, 95, 255, 0.1);
+}
+
+/* Botón de enviar */
+.submit-button {
+    -fx-background-color: #8a5fff;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-background-radius: 24px;
+    -fx-padding: 12px 40px;
+    -fx-cursor: hand;
+    -fx-margin-top: 16px;
+}
+
+.submit-button:hover {
+    -fx-background-color: #6f44e6;
+}

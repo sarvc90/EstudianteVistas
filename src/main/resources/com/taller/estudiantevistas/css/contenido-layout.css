@@ -1,0 +1,141 @@
+/* Estilo raíz */
+.root {
+    -fx-background-color: #1c1b22;
+    -fx-font-family: 'Roboto Mono', monospace;
+    -fx-text-fill: #7a4de8;
+}
+
+/* Contenedor principal */
+.container {
+    -fx-background-color: #16161b;
+    -fx-background-radius: 25px;
+    -fx-padding: 20px 30px 30px 30px;
+    -fx-max-width: 900px;
+    -fx-spacing: 30px;
+    -fx-alignment: center;
+}
+
+/* Caja izquierda */
+.left-box {
+    -fx-background-color: transparent;
+    -fx-border-color: #7a4de8;
+    -fx-border-radius: 15px;
+    -fx-border-width: 2px;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 300px;
+    -fx-min-width: 300px;
+    -fx-min-height: 300px;
+}
+
+/* Caja derecha */
+.right-box {
+    -fx-background-color: #1c1b22;
+    -fx-background-radius: 20px;
+    -fx-padding: 30px 35px;
+    -fx-spacing: 20px;
+    -fx-alignment: center;
+    -fx-min-height: 280px;
+    -fx-pref-width: 500px;
+}
+
+/* Contenedor de contenido */
+.content-wrapper {
+    -fx-spacing: 20px;
+    -fx-max-width: infinity;
+    -fx-alignment: center;
+}
+
+/* Contenedor del título */
+.title-container {
+    -fx-spacing: 5px;
+    -fx-alignment: center-left;
+}
+
+/* Título del contenido */
+.content-title {
+    -fx-font-size: 28px;
+    -fx-font-weight: normal;
+    -fx-line-spacing: 1.2;
+    -fx-fill: #7a4de8;
+}
+
+/* Contenedor de botones superiores */
+.buttons-container {
+    -fx-spacing: 15px;
+    -fx-alignment: center;
+    -fx-padding: 10px 0 0 0;
+}
+
+/* Botones de acción */
+.action-button {
+    -fx-background-color: #7a4de8;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-background-radius: 20px;
+    -fx-padding: 10px 30px;
+    -fx-cursor: hand;
+    -fx-font-family: 'Roboto Mono', monospace;
+    -fx-pref-width: 250px;
+    -fx-alignment: center;
+}
+
+.action-button:hover {
+    -fx-background-color: #6b43d0;
+}
+
+/* Contenedor de botones inferiores */
+.bottom-buttons {
+    -fx-spacing: 15px;
+    -fx-alignment: center;
+    -fx-padding: 30px 0 0 0;
+}
+
+/* Botones inferiores */
+.bottom-button {
+    -fx-background-color: #16161b;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 25px;
+    -fx-padding: 12px 0;
+    -fx-pref-width: 300px;
+    -fx-cursor: hand;
+    -fx-alignment: center;
+    -fx-font-family: 'Roboto Mono', monospace;
+}
+
+.bottom-button:hover {
+    -fx-background-color: #1e1d24;
+}
+
+/* Estilos responsivos */
+@media (max-width: 600px) {
+    .container {
+        -fx-padding: 15px;
+        -fx-spacing: 15px;
+        -fx-alignment: center;
+    }
+
+    .left-box {
+        -fx-pref-width: 250px;
+        -fx-pref-height: 250px;
+    }
+
+    .right-box {
+        -fx-padding: 20px;
+        -fx-min-height: USE_PREF_SIZE; /* Fixed! */
+    }
+
+    .buttons-container {
+        -fx-spacing: 15px;
+    }
+
+    .action-button {
+        -fx-pref-width: 200px;
+        -fx-font-size: 14px;
+    }
+
+    .bottom-button {
+        -fx-pref-width: 250px;
+    }
+}

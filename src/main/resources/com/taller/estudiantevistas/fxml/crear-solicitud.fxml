@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/fxml/1" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorSolicitudAyuda"
+      stylesheets="@../css/crear-solicitud.css"
+      styleClass="container" spacing="16" alignment="CENTER">
+
+    <Text styleClass="titulo" text="Crear solicitud de ayuda" />
+
+    <TextField fx:id="tituloField" styleClass="input-field" promptText="Título:" />
+    <TextField fx:id="temaField" styleClass="input-field" promptText="Tema:" />
+    <TextField fx:id="contenidoField" styleClass="input-field" promptText="Contenido:" />
+
+    <Button styleClass="urgency-button" text="Nivel de urgencia" onAction="#mostrarOpcionesUrgencia" />
+    <Button styleClass="submit-button" text="Publicar" onAction="#publicarSolicitud" />
+</VBox>

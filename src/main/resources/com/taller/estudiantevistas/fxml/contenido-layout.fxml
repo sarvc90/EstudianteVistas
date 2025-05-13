@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<HBox xmlns="http://javafx.com/fxml/1" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorContenido"
+      stylesheets="@../css/contenido-layout.css"
+      styleClass="container" spacing="30">
+
+    <!-- Caja izquierda (cuadro vacío) -->
+    <Pane styleClass="left-box" prefWidth="300" prefHeight="300" />
+
+    <!-- Caja derecha -->
+    <VBox styleClass="right-box" spacing="20">
+        <VBox styleClass="content-wrapper" spacing="20">
+            <VBox styleClass="title-container">
+                <Text styleClass="content-title" text="Titulo" />
+                <Text styleClass="content-title" text="autor" />
+                <Text styleClass="content-title" text="contenidos" />
+            </VBox>
+
+            <VBox styleClass="buttons-container" spacing="15">
+                <Button styleClass="action-button" text="agregar comentario" onAction="#agregarComentario" />
+                <Button styleClass="action-button" text="agregar valoración" onAction="#agregarValoracion" />
+            </VBox>
+        </VBox>
+
+        <VBox styleClass="bottom-buttons" spacing="15">
+            <Button styleClass="bottom-button" text="valoración promedio:" onAction="#verValoracionPromedio" />
+            <Button styleClass="bottom-button" text="ver comentarios..." onAction="#verComentarios" />
+        </VBox>
+    </VBox>
+</HBox>

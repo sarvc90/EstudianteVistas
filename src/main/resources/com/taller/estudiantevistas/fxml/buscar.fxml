@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorBuscar"
+      styleClass="root-container" spacing="30" alignment="TOP_CENTER"
+      stylesheets="@../css/buscar.css">
+
+    <!-- Barra de búsqueda con botón integrado -->
+    <HBox styleClass="search-bar-container" alignment="CENTER_LEFT" spacing="10">
+        <TextField fx:id="searchField" styleClass="search-input" promptText="Buscar autor.." HBox.hgrow="ALWAYS"/>
+        <Button fx:id="searchButton" styleClass="search-button" onAction="#handleSearch">
+            <graphic>
+                <ImageView fitWidth="18" fitHeight="18">
+                    <Image url="@../icons/lupa2.png"/>
+                </ImageView>
+            </graphic>
+        </Button>
+    </HBox>
+
+    <!-- Panel de resultados -->
+    <VBox fx:id="resultsContainer" styleClass="results-panel" alignment="TOP_CENTER" spacing="10">
+        <Label fx:id="titleLabel" text="Vendedores encontrados" styleClass="results-title"/>
+        <!-- Contenido dinámico se agrega aquí -->
+    </VBox>
+</VBox>

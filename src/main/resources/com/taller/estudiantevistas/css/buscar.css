@@ -1,0 +1,51 @@
+.root-container {
+    -fx-background-color: #1e1f23;
+    -fx-padding: 40px 20px;
+    -fx-font-family: 'Roboto Mono', monospace;
+}
+
+.search-bar-container {
+    -fx-background-color: #111;
+    -fx-background-radius: 30px;
+    -fx-padding: 5px 10px;
+    -fx-max-width: 500px;
+    -fx-pref-height: 45px;
+}
+
+.search-input {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #d1d1d1;
+    -fx-border-width: 0;
+    -fx-padding: 5px;
+}
+
+.search-button {
+    -fx-background-color: #8a4fff;
+    -fx-background-radius: 50%;
+    -fx-min-width: 35px;
+    -fx-min-height: 35px;
+    -fx-cursor: hand;
+}
+
+.search-button:hover {
+    -fx-background-color: #a874ff;
+}
+
+.results-panel {
+    -fx-background-color: #111;
+    -fx-background-radius: 20px;
+    -fx-padding: 20px;
+    -fx-min-height: 300px;
+    -fx-max-width: 700px;
+    -fx-spacing: 15px;
+}
+
+.results-title {
+    -fx-text-fill: #8a4fff;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 10px 0;
+    -fx-alignment: CENTER;
+}

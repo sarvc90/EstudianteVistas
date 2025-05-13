@@ -1,0 +1,78 @@
+/* Estilo raíz */
+.root {
+    -fx-background-color: #1d1d23;
+    -fx-font-family: 'Montserrat', sans-serif;
+}
+
+/* Contenedor principal */
+.container {
+    -fx-background-color: #121217;
+    -fx-background-radius: 24px;
+    -fx-padding: 32px 40px 40px 40px;
+    -fx-spacing: 24px;
+    -fx-alignment: center;
+    -fx-pref-width: 320px;
+}
+
+/* Título */
+.titulo {
+    -fx-fill: #8a5fff;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+/* Contenedor del formulario */
+.form-container {
+    -fx-alignment: center;
+    -fx-spacing: 16px;
+    -fx-pref-width: 100%;
+}
+
+/* Campos de entrada */
+.input-field {
+    -fx-background-color: transparent;
+    -fx-border-color: #3a3a3a;
+    -fx-border-radius: 16px;
+    -fx-border-width: 2px;
+    -fx-padding: 8px 16px;
+    -fx-text-fill: #8a5fff;
+    -fx-prompt-text-fill: #8a5fff;
+    -fx-font-size: 14px;
+}
+
+.input-field:focused {
+    -fx-border-color: #8a5fff;
+}
+
+/* Botón principal */
+.primary-button {
+    -fx-background-color: #8a5fff;
+    -fx-text-fill: white;
+    -fx-font-weight: 500;
+    -fx-font-size: 14px;
+    -fx-background-radius: 24px;
+    -fx-padding: 10px 0;
+    -fx-pref-width: 160px;
+    -fx-cursor: hand;
+}
+
+.primary-button:hover {
+    -fx-background-color: #6f44e6;
+}
+
+/* Botón secundario */
+.secondary-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #8a5fff;
+    -fx-border-color: #8a5fff;
+    -fx-border-width: 2px;
+    -fx-border-radius: 24px;
+    -fx-background-radius: 24px;
+    -fx-padding: 8px 0;
+    -fx-pref-width: 160px;
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: rgba(138, 95, 255, 0.1);
+}
