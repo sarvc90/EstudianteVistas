@@ -55,4 +55,16 @@ public class ClienteServicio {
             System.err.println("Error al cerrar conexión: " + e.getMessage());
         }
     }
+
+    public PrintWriter getSalida() {
+        return salida;
+    }
+
+    public BufferedReader getEntrada() {
+        return entrada;
+    }
+
+    public boolean estaConectado() {
+        return socket != null && socket.isConnected() && !socket.isClosed();
+    }
 }

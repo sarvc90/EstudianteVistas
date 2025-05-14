@@ -12,14 +12,14 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         // Cargar vista FXML usando getResource con ruta absoluta
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/com/taller/estudiantevistas/fxml/registro.fxml"));
+        loader.setLocation(getClass().getResource("/com/taller/estudiantevistas/fxml/login.fxml"));
         Parent root = loader.load();
 
         // Configurar escena
         Scene scene = new Scene(root);
 
         // Configurar ventana
-        primaryStage.setTitle("Búsqueda de Autores");
+        primaryStage.setTitle("Login - Red Social Educativa");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
