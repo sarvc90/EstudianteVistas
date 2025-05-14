@@ -12,7 +12,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         // Cargar vista FXML usando getResource con ruta absoluta
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/com/taller/estudiantevistas/fxml/principal.fxml"));
+        loader.setLocation(getClass().getResource("/com/taller/estudiantevistas/fxml/registro.fxml"));
         Parent root = loader.load();
 
         // Configurar escena

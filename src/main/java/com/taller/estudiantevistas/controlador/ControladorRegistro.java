@@ -1,5 +1,9 @@
 package com.taller.estudiantevistas.controlador;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.taller.estudiantevistas.dto.Estudiante;
+import com.taller.estudiantevistas.servicio.ClienteServicio;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -9,6 +13,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
 
+import java.io.IOException;
+
 public class ControladorRegistro {
 
     @FXML private TextField nombresField;
@@ -17,34 +23,76 @@ public class ControladorRegistro {
     @FXML private PasswordField contrasenaField;
     @FXML private TextField correoField;
     @FXML private TextField interesesField;
-    @FXML
-    private Button backButton;
+    @FXML private Button backButton;
+
+    private ClienteServicio clienteServicio;
+    private Gson gson;
+
+    public ControladorRegistro() {
+        try {
+            this.clienteServicio = new ClienteServicio("localhost", 12345);
+            this.gson = new Gson();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo conectar al servidor.");
+            e.printStackTrace();
+        }
+    }
 
     @FXML
     private void registrarUsuario() {
-        String nombres = nombresField.getText();
-        String apellidos = apellidosField.getText();
-        String cedula = cedulaField.getText();
-        String contrasena = contrasenaField.getText();
-        String correo = correoField.getText();
-        String intereses = interesesField.getText();
+        String nombres = nombresField.getText().trim();
+        String apellidos = apellidosField.getText().trim();
+        String cedula = cedulaField.getText().trim();
+        String contrasena = contrasenaField.getText().trim();
+        String correo = correoField.getText().trim();
+        String intereses = interesesField.getText().trim();
 
-        // Validación básica
+        // Validación de campos
         if (nombres.isEmpty() || apellidos.isEmpty() || cedula.isEmpty() ||
                 contrasena.isEmpty() || correo.isEmpty()) {
-            mostrarAlerta("Error", "Todos los campos son obligatorios excepto intereses");
+            mostrarAlerta("Error", "Todos los campos son obligatorios excepto intereses.");
             return;
         }
 
-        // Aquí iría la lógica para registrar al usuario
-        System.out.println("Registrando usuario:");
-        System.out.println("Nombres: " + nombres);
-        System.out.println("Apellidos: " + apellidos);
-        System.out.println("Cédula: " + cedula);
-        System.out.println("Correo: " + correo);
-        System.out.println("Intereses: " + intereses);
+        if (!correo.matches("^[\\w-.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+            mostrarAlerta("Error", "Por favor ingrese un correo electrónico válido.");
+            return;
+        }
 
-        mostrarAlerta("Éxito", "Usuario registrado correctamente");
+        try {
+            Estudiante nuevoEstudiante = new Estudiante(nombres, apellidos, cedula, correo, contrasena, intereses);
+
+            // 📌 Corrección: Enviar datos dentro del objeto "datos"
+            JsonObject mensaje = new JsonObject();
+            mensaje.addProperty("tipo", "REGISTRO");
+            JsonObject datos = gson.toJsonTree(nuevoEstudiante).getAsJsonObject();
+            mensaje.add("datos", datos);
+
+            // 📤 Verificación antes de enviar la solicitud
+            System.out.println("📤 Enviando solicitud de registro...");
+            System.out.println("JSON enviado al servidor: " + mensaje.toString());
+
+            boolean registroExitoso = clienteServicio.registrarEstudiante(nuevoEstudiante);
+
+            if (registroExitoso) {
+                mostrarAlerta("✅ Éxito", "Usuario registrado correctamente.");
+                limpiarCampos();
+            } else {
+                mostrarAlerta("❌ Error", "No se pudo registrar el usuario. Cédula o correo ya existen.");
+            }
+        } catch (Exception e) {
+            mostrarAlerta("❌ Error", "Ocurrió un problema al registrar el usuario.");
+            e.printStackTrace();
+        }
+    }
+
+    private void limpiarCampos() {
+        nombresField.clear();
+        apellidosField.clear();
+        cedulaField.clear();
+        contrasenaField.clear();
+        correoField.clear();
+        interesesField.clear();
     }
 
     private void mostrarAlerta(String titulo, String mensaje) {
@@ -56,21 +104,21 @@ public class ControladorRegistro {
     }
 
     @FXML
-    private void volverALogin(ActionEvent event) {  // Añade el parámetro ActionEvent
+    private void volverALogin(ActionEvent event) {
         try {
-            // Obtener la ventana actual desde el evento
+            if (clienteServicio != null) {
+                clienteServicio.cerrarConexion();
+            }
+
             Node source = (Node) event.getSource();
             Stage stage = (Stage) source.getScene().getWindow();
 
-            // Cargar la vista de login
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/login.fxml"));
             Parent root = loader.load();
 
-            // Aplicar estilos CSS
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/com/taller/estudiantevistas/css/estilos.css").toExternalForm());
 
-            // Configurar la nueva ventana
             Stage loginStage = new Stage();
             loginStage.setScene(scene);
             loginStage.setTitle("Login - Red Social Educativa");
@@ -78,7 +126,7 @@ public class ControladorRegistro {
 
             stage.close();
         } catch (Exception e) {
-            mostrarAlerta("Error", "No se pudo cargar la ventana de login");
+            mostrarAlerta("Error", "No se pudo cargar la ventana de login.");
             e.printStackTrace();
         }
     }
