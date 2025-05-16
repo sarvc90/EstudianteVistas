@@ -1,15 +1,28 @@
+.root {
+    -fx-background-color: #121212;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-text-fill: white;
+}
+
+/* Paneles de contenido */
 .content-pane {
     -fx-background-color: #1a1a22;
     -fx-background-radius: 20;
     -fx-border-color: #2e2e38;
     -fx-border-width: 1;
     -fx-padding: 15;
-}.root {
-     -fx-background-color: #121212;
-     -fx-font-family: "Segoe UI", sans-serif;
-     -fx-text-fill: white;
- }
+}
 
+/* Panel de solicitudes con estilo especial */
+.solicitud-pane {
+    -fx-background-color: #1a1a22;
+    -fx-background-radius: 20;
+    -fx-border-color: #2e2e38;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+}
+
+/* Barra de búsqueda */
 .search-field {
     -fx-background-color: #1e1e25;
     -fx-background-radius: 25;
@@ -20,9 +33,10 @@
     -fx-prompt-text-fill: #999999;
     -fx-padding: 10 18;
     -fx-font-size: 14px;
-    -fx-pref-width: 400px; /* Aumentado de tamaño para hacer el campo más largo */
+    -fx-pref-width: 400px;
 }
 
+/* Combo box */
 .combo-box {
     -fx-background-color: #8e44ff;
     -fx-background-radius: 25;
@@ -42,6 +56,7 @@
     -fx-background-color: #1a1a22;
 }
 
+/* Botones principales */
 .main-button {
     -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
     -fx-text-fill: white;
@@ -58,22 +73,166 @@
     -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 4);
 }
 
+/* Botón de nueva solicitud (variante más pequeña) */
+.nueva-solicitud-btn {
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 5, 0.5, 0, 2);
+}
+
+.nueva-solicitud-btn:hover {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+}
+
+/* Botones de icono */
 .icon-button {
     -fx-background-color: transparent;
-    -fx-padding: 10; /* Aumentado de 5 a 10 para hacer los botones más grandes */
+    -fx-padding: 10;
     -fx-cursor: hand;
     -fx-border-radius: 50%;
     -fx-border-color: transparent;
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 2, 0.3, 0, 1);
-    -fx-min-width: 48px; /* Ancho mínimo para los botones */
-    -fx-min-height: 48px; /* Alto mínimo para los botones */
-    -fx-max-width: 48px; /* Ancho máximo para los botones */
-    -fx-max-height: 48px; /* Alto máximo para los botones */
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-max-width: 48px;
+    -fx-max-height: 48px;
 }
-
-
 
 .icon-button:hover {
     -fx-background-color: #2e2e38;
     -fx-border-radius: 50%;
+}
+
+/* Estilos para solicitudes */
+.solicitud-item {
+    -fx-background-color: #2c2c36;
+    -fx-background-radius: 10;
+    -fx-padding: 10;
+    -fx-border-color: #3e3e4a;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-spacing: 5;
+}
+
+/* Estados de las solicitudes */
+.estado-pendiente { -fx-text-fill: #ffbb33; -fx-font-weight: bold; }
+.estado-enproceso { -fx-text-fill: #33b5e5; -fx-font-weight: bold; }
+.estado-resuelta { -fx-text-fill: #00C851; -fx-font-weight: bold; }
+.estado-cancelada { -fx-text-fill: #ff4444; -fx-font-weight: bold; }
+
+/* Niveles de urgencia */
+.urgencia-alta { -fx-text-fill: #ff4444; -fx-font-weight: bold; }
+.urgencia-media { -fx-text-fill: #ffbb33; -fx-font-weight: bold; }
+.urgencia-baja { -fx-text-fill: #00C851; -fx-font-weight: bold; }
+
+/* Texto de descripción */
+.descripcion-text {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+
+/* Texto de información secundaria */
+.info-text {
+    -fx-text-fill: #999999;
+    -fx-font-size: 11px;
+}
+/* Estilos para items de contenido */
+.contenido-item {
+    -fx-background-color: #2c2c36;
+    -fx-padding: 10;
+    -fx-background-radius: 5;
+    -fx-spacing: 5;
+}
+
+.contenido-titulo {
+    -fx-text-fill: #a569ff;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+.contenido-info {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 12px;
+}
+
+/* Estilos para items de solicitud */
+.solicitud-item {
+    -fx-background-color: #2c2c36;
+    -fx-padding: 15;
+    -fx-background-radius: 10;
+    -fx-border-color: #3e3e4a;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-spacing: 8;
+}
+
+.solicitud-titulo {
+    -fx-text-fill: #ff6b6b;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+}
+
+/* Estados de urgencia */
+.urgencia-alta {
+    -fx-text-fill: #ff4444;
+    -fx-font-weight: bold;
+}
+
+.urgencia-media {
+    -fx-text-fill: #ffbb33;
+    -fx-font-weight: bold;
+}
+
+.urgencia-baja {
+    -fx-text-fill: #00C851;
+    -fx-font-weight: bold;
+}
+
+/* Estados de solicitud */
+.estado-pendiente {
+    -fx-text-fill: #ffbb33;
+    -fx-font-weight: bold;
+}
+
+.estado-enproceso {
+    -fx-text-fill: #33b5e5;
+    -fx-font-weight: bold;
+}
+
+.estado-resuelta {
+    -fx-text-fill: #00C851;
+    -fx-font-weight: bold;
+}
+
+.estado-cancelada {
+    -fx-text-fill: #ff4444;
+    -fx-font-weight: bold;
+}
+
+/* Texto de descripción */
+.descripcion-text {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 5 0 0 0;
+}
+
+/* Texto informativo */
+.info-text {
+    -fx-text-fill: #999999;
+    -fx-font-size: 11px;
+}
+
+/* Mensaje cuando no hay datos */
+.mensaje-vacio {
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 20;
 }

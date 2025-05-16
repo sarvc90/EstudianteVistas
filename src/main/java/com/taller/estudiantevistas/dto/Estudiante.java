@@ -28,4 +28,11 @@ public class Estudiante {
     public String getCorreo() { return correo; }
     public String getContrasena() { return contrasena; }
     public List<String> getIntereses() { return intereses; }
+
+    public enum EstadoSolicitud {
+        PENDIENTE,
+        EN_PROCESO,
+        RESUELTA,
+        CANCELADA
+    }
 }

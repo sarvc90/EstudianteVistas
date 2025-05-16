@@ -36,14 +36,23 @@
                 <Insets top="40" right="40" bottom="40" left="40"/>
             </padding>
 
+            <!-- Panel de Contenidos Educativos -->
             <VBox spacing="15" alignment="CENTER">
-                <Button fx:id="btnRecargarContenidos" text="Recargar contenidos educativos" styleClass="main-button"/>
-                <Pane fx:id="panelContenidos" prefWidth="300" prefHeight="300" styleClass="content-pane"/>
+                <Button fx:id="btnRecargarContenidos" text="Recargar contenidos" styleClass="main-button"/>
+                <Pane fx:id="panelContenidos" prefWidth="350" prefHeight="400" styleClass="content-pane"/>
             </VBox>
 
+            <!-- Panel de Solicitudes de Ayuda -->
             <VBox spacing="15" alignment="CENTER">
-                <Button fx:id="btnRecargarSolicitudes" text="Recargar solicitudes de ayuda" styleClass="main-button"/>
-                <Pane fx:id="panelSolicitudes" prefWidth="300" prefHeight="300" styleClass="content-pane"/>
+                <HBox spacing="10" alignment="CENTER">
+                    <Button fx:id="btnRecargarSolicitudes" text="Recargar" styleClass="icon-button">
+                        <graphic>
+                            <ImageView fx:id="imgRecargar" fitWidth="20" fitHeight="20" preserveRatio="true"/>
+                        </graphic>
+                    </Button>
+                    <Button fx:id="btnNuevaSolicitud" text="Nueva Solicitud" styleClass="nueva-solicitud-btn"/>
+                </HBox>
+                <Pane fx:id="panelSolicitudes" prefWidth="350" prefHeight="400" styleClass="solicitud-pane"/>
             </VBox>
         </HBox>
     </center>

@@ -1,15 +1,40 @@
 package com.taller.estudiantevistas.controlador;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.taller.estudiantevistas.servicio.ClienteServicio;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
+import javafx.util.Pair;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ControladorPrincipal {
+    // Logger para manejo de errores
+    private static final Logger LOGGER = Logger.getLogger(ControladorPrincipal.class.getName());
+
+    // Executor para operaciones asíncronas
+    private final Executor executor = Executors.newCachedThreadPool(r -> {
+        Thread t = new Thread(r);
+        t.setDaemon(true);
+        return t;
+    });
+
     // Campos para datos del usuario
     private JsonObject usuarioData;
     private ClienteServicio cliente;
@@ -19,25 +44,29 @@ public class ControladorPrincipal {
     @FXML private ComboBox<String> comboTipo;
     @FXML private Button btnBuscar, btnAjustes, btnNotificaciones, btnChat, btnPerfil, btnContacto;
 
-
     // ImageViews
     @FXML private ImageView imgLupa, imgAjustes, imgCampana, imgChat, imgPerfil, imgContacto;
 
     // Componentes del área central
-    @FXML private Button btnRecargarContenidos, btnRecargarSolicitudes;
+    @FXML private Button btnRecargarContenidos, btnRecargarSolicitudes, btnNuevaSolicitud;
     @FXML private Pane panelContenidos, panelSolicitudes;
 
-    public void inicializarConUsuario(String datosUsuario, ClienteServicio cliente) {
-        try {
-            this.usuarioData = JsonParser.parseString(datosUsuario).getAsJsonObject();
-            this.cliente = cliente; // Guardar la conexión persistente
-            cargarContenidosIniciales();
-        } catch (Exception e) {
-            mostrarAlerta("Error", "No se pudieron cargar los datos del usuario", Alert.AlertType.ERROR);
-            e.printStackTrace();
-        }
+    // Interfaz para listeners de actualización
+    public interface ActualizacionListener {
+        void onContenidosActualizados(JsonArray contenidos);
+        void onSolicitudesActualizadas(JsonArray solicitudes);
     }
+    private final List<ActualizacionListener> listeners = new ArrayList<>();
 
+    public void inicializarConUsuario(JsonObject usuarioData, ClienteServicio cliente) {
+        Objects.requireNonNull(usuarioData, "Datos de usuario no pueden ser nulos");
+        Objects.requireNonNull(cliente, "ClienteServicio no puede ser nulo");
+
+        this.usuarioData = usuarioData;
+        this.cliente = cliente;
+
+        Platform.runLater(this::cargarContenidosIniciales);
+    }
 
     @FXML
     private void initialize() {
@@ -48,16 +77,22 @@ public class ControladorPrincipal {
 
     private void cargarImagenes() {
         try {
-            imgLupa.setImage(new Image(getClass().getResourceAsStream("/com/taller/estudiantevistas/icons/lupa.png")));
-            imgAjustes.setImage(new Image(getClass().getResourceAsStream("/com/taller/estudiantevistas/icons/ajustes.png")));
-            imgCampana.setImage(new Image(getClass().getResourceAsStream("/com/taller/estudiantevistas/icons/campana.png")));
-            imgChat.setImage(new Image(getClass().getResourceAsStream("/com/taller/estudiantevistas/icons/chat.png")));
-            imgPerfil.setImage(new Image(getClass().getResourceAsStream("/com/taller/estudiantevistas/icons/perfil.png")));
-            imgContacto.setImage(new Image(getClass().getResourceAsStream("/com/taller/estudiantevistas/icons/contacto.png")));
+            imgLupa.setImage(loadImage("/com/taller/estudiantevistas/icons/lupa.png"));
+            imgAjustes.setImage(loadImage("/com/taller/estudiantevistas/icons/ajustes.png"));
+            imgCampana.setImage(loadImage("/com/taller/estudiantevistas/icons/campana.png"));
+            imgChat.setImage(loadImage("/com/taller/estudiantevistas/icons/chat.png"));
+            imgPerfil.setImage(loadImage("/com/taller/estudiantevistas/icons/perfil.png"));
+            imgContacto.setImage(loadImage("/com/taller/estudiantevistas/icons/contacto.png"));
         } catch (Exception e) {
-            System.err.println("Error al cargar las imágenes: " + e.getMessage());
-            e.printStackTrace();
+            manejarError("cargar imágenes", e);
         }
+    }
+
+    private Image loadImage(String path) throws IOException {
+        return new Image(Objects.requireNonNull(
+                getClass().getResourceAsStream(path),
+                "No se pudo cargar imagen: " + path
+        ));
     }
 
     private void configurarComboBox() {
@@ -69,6 +104,7 @@ public class ControladorPrincipal {
         btnBuscar.setOnAction(event -> buscarContenido());
         btnRecargarContenidos.setOnAction(event -> recargarContenidos());
         btnRecargarSolicitudes.setOnAction(event -> recargarSolicitudes());
+        btnNuevaSolicitud.setOnAction(event -> mostrarDialogoNuevaSolicitud());
         btnAjustes.setOnAction(event -> abrirAjustes());
         btnNotificaciones.setOnAction(event -> mostrarNotificaciones());
         btnChat.setOnAction(event -> abrirChat());
@@ -76,67 +112,291 @@ public class ControladorPrincipal {
         btnContacto.setOnAction(event -> abrirContacto());
     }
 
-    // Métodos de acción mejorados con datos de usuario
+    // Métodos de acción principales
     private void buscarContenido() {
-        String busqueda = campoBusqueda.getText();
+        String busqueda = campoBusqueda.getText().trim();
         String tipo = comboTipo.getValue();
 
-        // Usar ID de usuario para búsquedas personalizadas
-        String userId = usuarioData != null ? usuarioData.get("id").getAsString() : "anonimo";
+        if (busqueda.isEmpty()) {
+            mostrarAlerta("Búsqueda vacía", "Por favor ingrese un término de búsqueda", Alert.AlertType.WARNING);
+            return;
+        }
 
-        System.out.println("Usuario " + userId + " buscando: " + busqueda + " - Tipo: " + tipo);
-        // Aquí implementarías la lógica real de búsqueda con el servidor
+        ejecutarTareaAsync(
+                () -> {
+                    JsonObject solicitud = new JsonObject();
+                    solicitud.addProperty("tipo", "BUSCAR");
+                    solicitud.addProperty("userId", usuarioData.get("id").getAsString());
+                    solicitud.addProperty("criterio", tipo);
+                    solicitud.addProperty("busqueda", busqueda);
+
+                    cliente.getSalida().println(solicitud.toString());
+                    String respuesta = cliente.getEntrada().readLine();
+                    return JsonParser.parseString(respuesta).getAsJsonObject().getAsJsonArray("resultados");
+                },
+                resultados -> {
+                    mostrarContenidosEnPanel(resultados, panelContenidos);
+                    notificarListeners("contenidos", resultados);
+                },
+                "búsqueda de contenidos"
+        );
     }
 
+    @FXML
     private void recargarContenidos() {
-        System.out.println("Recargando contenidos educativos para usuario: " +
-                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
-        // Implementar carga real desde servidor
+        if (usuarioData != null) {
+            ejecutarTareaAsync(
+                    () -> cliente.obtenerContenidosEducativos(usuarioData.get("id").getAsString()),
+                    contenidos -> {
+                        mostrarContenidosEnPanel(contenidos, panelContenidos);
+                        notificarListeners("contenidos", contenidos);
+                    },
+                    "carga de contenidos"
+            );
+        }
     }
 
+    @FXML
     private void recargarSolicitudes() {
-        System.out.println("Recargando solicitudes de ayuda para usuario: " +
-                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
-        // Implementar carga real desde servidor
-    }
-
-    private void abrirAjustes() {
-        System.out.println("Abriendo ajustes para: " +
-                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
-        // Implementar lógica para abrir ventana de ajustes
-    }
-
-    private void mostrarNotificaciones() {
-        System.out.println("Mostrando notificaciones para: " +
-                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
-        // Implementar lógica para mostrar notificaciones
-    }
-
-    private void abrirChat() {
-        System.out.println("Abriendo chat para: " +
-                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
-        // Implementar lógica para abrir chat
-    }
-
-    private void abrirPerfil() {
         if (usuarioData != null) {
-            System.out.println("Abriendo perfil de: " + usuarioData.get("nombre").getAsString());
-            // Aquí podrías abrir una ventana de perfil con los datos completos
+            ejecutarTareaAsync(
+                    () -> cliente.obtenerSolicitudesAyuda(usuarioData.get("id").getAsString()),
+                    solicitudes -> {
+                        mostrarSolicitudesEnPanel(solicitudes, panelSolicitudes);
+                        notificarListeners("solicitudes", solicitudes);
+                    },
+                    "carga de solicitudes"
+            );
         }
     }
 
-    private void abrirContacto() {
-        System.out.println("Abriendo contacto para: " +
-                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
-        // Implementar lógica para abrir contacto
+    private void mostrarDialogoNuevaSolicitud() {
+        Dialog<Pair<String, String>> dialog = new Dialog<>();
+        dialog.setTitle("Nueva Solicitud de Ayuda");
+        dialog.setHeaderText("Complete los detalles de su solicitud");
+
+        // Configurar botones
+        ButtonType crearButtonType = new ButtonType("Crear", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(crearButtonType, ButtonType.CANCEL);
+
+        // Crear campos del formulario
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField temaField = new TextField();
+        temaField.setPromptText("Tema de la solicitud");
+
+        TextArea descripcionArea = new TextArea();
+        descripcionArea.setPromptText("Descripción detallada");
+        descripcionArea.setPrefRowCount(3);
+
+        ComboBox<String> urgenciaCombo = new ComboBox<>();
+        urgenciaCombo.getItems().addAll("ALTA", "MEDIA", "BAJA");
+        urgenciaCombo.setValue("MEDIA");
+
+        grid.add(new Label("Tema:"), 0, 0);
+        grid.add(temaField, 1, 0);
+        grid.add(new Label("Descripción:"), 0, 1);
+        grid.add(descripcionArea, 1, 1);
+        grid.add(new Label("Urgencia:"), 0, 2);
+        grid.add(urgenciaCombo, 1, 2);
+
+        dialog.getDialogPane().setContent(grid);
+
+        // Convertir resultado
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == crearButtonType) {
+                return new Pair<>(temaField.getText(), descripcionArea.getText());
+            }
+            return null;
+        });
+
+        Optional<Pair<String, String>> result = dialog.showAndWait();
+
+        result.ifPresent(temaDescripcion -> {
+            JsonObject nuevaSolicitud = new JsonObject();
+            nuevaSolicitud.addProperty("tema", temaDescripcion.getKey());
+            nuevaSolicitud.addProperty("descripcion", temaDescripcion.getValue());
+            nuevaSolicitud.addProperty("urgencia", urgenciaCombo.getValue());
+            nuevaSolicitud.addProperty("solicitanteId", usuarioData.get("id").getAsString());
+
+            enviarNuevaSolicitud(nuevaSolicitud);
+        });
     }
 
-    private void cargarContenidosIniciales() {
-        // Método para cargar contenidos al iniciar la pantalla
-        if (usuarioData != null) {
-            System.out.println("Cargando contenidos iniciales para " + usuarioData.get("nombre").getAsString());
-            // Aquí implementarías la carga inicial desde el servidor
+    private void enviarNuevaSolicitud(JsonObject solicitud) {
+        ejecutarTareaAsync(
+                () -> {
+                    JsonObject solicitudCompleta = new JsonObject();
+                    solicitudCompleta.addProperty("tipo", "NUEVA_SOLICITUD");
+                    solicitudCompleta.add("datos", solicitud);
+
+                    cliente.getSalida().println(solicitudCompleta.toString());
+                    String respuesta = cliente.getEntrada().readLine();
+                    return JsonParser.parseString(respuesta).getAsJsonObject();
+                },
+                respuesta -> {
+                    if (respuesta.get("exito").getAsBoolean()) {
+                        recargarSolicitudes();
+                    } else {
+                        mostrarAlerta("Error", respuesta.get("mensaje").getAsString(), Alert.AlertType.ERROR);
+                    }
+                },
+                "envío de nueva solicitud"
+        );
+    }
+
+    // Métodos de visualización
+    private void mostrarContenidosEnPanel(JsonArray contenidos, Pane panel) {
+        mostrarContenidoGenerico(
+                contenidos,
+                panel,
+                contenido -> crearItemContenido(
+                        contenido.get("titulo").getAsString(),
+                        contenido.get("autor").getAsString(),
+                        contenido.get("tema").getAsString()
+                )
+        );
+    }
+
+    private void mostrarSolicitudesEnPanel(JsonArray solicitudes, Pane panel) {
+        mostrarContenidoGenerico(
+                solicitudes,
+                panel,
+                solicitud -> crearItemSolicitud(
+                        solicitud.get("tema").getAsString(),
+                        solicitud.get("descripcion").getAsString(),
+                        solicitud.get("urgencia").getAsString(),
+                        solicitud.get("estado").getAsString(),
+                        solicitud.get("fecha").getAsLong(),
+                        solicitud.has("solicitanteNombre") ?
+                                solicitud.get("solicitanteNombre").getAsString() :
+                                "ID: " + solicitud.get("solicitanteId").getAsString().substring(0, 6)
+                )
+        );
+    }
+
+    private void mostrarContenidoGenerico(JsonArray datos, Pane panel, Function<JsonObject, Node> factory) {
+        VBox contenedor = new VBox(10);
+        contenedor.setPadding(new Insets(10));
+
+        if (datos.size() == 0) {
+            contenedor.getChildren().add(crearMensajeVacio("No hay datos disponibles"));
+        } else {
+            datos.forEach(item ->
+                    contenedor.getChildren().add(factory.apply(item.getAsJsonObject()))
+            );
         }
+
+        panel.getChildren().clear();
+        panel.getChildren().add(crearPanelScrollable(contenedor));
+    }
+
+    private Node crearItemContenido(String titulo, String autor, String tema) {
+        VBox item = new VBox(5);
+        item.getStyleClass().add("contenido-item");
+
+        Label tituloLabel = new Label(titulo);
+        tituloLabel.getStyleClass().add("contenido-titulo");
+
+        Label autorLabel = new Label("Autor: " + autor);
+        autorLabel.getStyleClass().add("contenido-info");
+
+        Label temaLabel = new Label("Tema: " + tema);
+        temaLabel.getStyleClass().add("contenido-info");
+
+        item.getChildren().addAll(tituloLabel, autorLabel, temaLabel);
+        return item;
+    }
+
+    private Node crearItemSolicitud(String tema, String descripcion, String urgencia,
+                                    String estado, long fechaMillis, String solicitante) {
+        VBox item = new VBox(8);
+        item.getStyleClass().add("solicitud-item");
+
+        Label temaLabel = new Label(tema);
+        temaLabel.getStyleClass().add("solicitud-titulo");
+
+        HBox detalles = new HBox(10);
+        Label urgenciaLabel = new Label("Urgencia: " + urgencia);
+        urgenciaLabel.getStyleClass().add("urgencia-" + urgencia.toLowerCase());
+
+        Label estadoLabel = new Label("Estado: " + estado);
+        estadoLabel.getStyleClass().add("estado-" + estado.toLowerCase().replace("_", ""));
+
+        detalles.getChildren().addAll(urgenciaLabel, estadoLabel);
+
+        TextArea descripcionArea = new TextArea(descripcion);
+        descripcionArea.getStyleClass().add("descripcion-text");
+        descripcionArea.setEditable(false);
+
+        HBox footer = new HBox(10);
+        Label fechaLabel = new Label("Fecha: " + formatFecha(fechaMillis));
+        fechaLabel.getStyleClass().add("info-text");
+
+        Label solicitanteLabel = new Label("Por: " + solicitante);
+        solicitanteLabel.getStyleClass().add("info-text");
+
+        footer.getChildren().addAll(fechaLabel, solicitanteLabel);
+
+        item.getChildren().addAll(temaLabel, detalles, descripcionArea, footer);
+        return item;
+    }
+
+    private Node crearMensajeVacio(String mensaje) {
+        Label label = new Label(mensaje);
+        label.getStyleClass().add("mensaje-vacio");
+        label.setAlignment(Pos.CENTER);
+        return label;
+    }
+
+    private ScrollPane crearPanelScrollable(Node contenido) {
+        ScrollPane scrollPane = new ScrollPane(contenido);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        return scrollPane;
+    }
+
+    // Métodos utilitarios
+    private String formatFecha(long millis) {
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(millis));
+    }
+
+    private <T> void ejecutarTareaAsync(Supplier<T> tarea, Consumer<T> onSuccess, String contexto) {
+        Task<T> task = new Task<>() {
+            @Override
+            protected T call() throws Exception {
+                return tarea.get();
+            }
+        };
+
+        task.setOnSucceeded(e -> onSuccess.accept(task.getValue()));
+        task.setOnFailed(e -> manejarError(contexto, task.getException()));
+
+        executor.execute(task);
+    }
+
+    private void notificarListeners(String tipo, JsonArray datos) {
+        listeners.forEach(listener -> {
+            if ("contenidos".equals(tipo)) {
+                listener.onContenidosActualizados(datos);
+            } else if ("solicitudes".equals(tipo)) {
+                listener.onSolicitudesActualizadas(datos);
+            }
+        });
+    }
+
+    public void addActualizacionListener(ActualizacionListener listener) {
+        listeners.add(Objects.requireNonNull(listener));
+    }
+
+    private void manejarError(String contexto, Throwable e) {
+        Platform.runLater(() ->
+                mostrarAlerta("Error", "Error en " + contexto + ": " + e.getMessage(), Alert.AlertType.ERROR)
+        );
+        LOGGER.log(Level.SEVERE, "Error en " + contexto, e);
     }
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
@@ -145,5 +405,37 @@ public class ControladorPrincipal {
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.showAndWait();
+    }
+
+    // Métodos de navegación (sin cambios)
+    private void abrirAjustes() {
+        System.out.println("Abriendo ajustes para: " +
+                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
+    }
+
+    private void mostrarNotificaciones() {
+        System.out.println("Mostrando notificaciones para: " +
+                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
+    }
+
+    private void abrirChat() {
+        System.out.println("Abriendo chat para: " +
+                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
+    }
+
+    private void abrirPerfil() {
+        if (usuarioData != null) {
+            System.out.println("Abriendo perfil de: " + usuarioData.get("nombre").getAsString());
+        }
+    }
+
+    private void abrirContacto() {
+        System.out.println("Abriendo contacto para: " +
+                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
+    }
+
+    private void cargarContenidosIniciales() {
+        recargarContenidos();
+        recargarSolicitudes();
     }
 }
