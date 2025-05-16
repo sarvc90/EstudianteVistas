@@ -17,6 +17,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class ControladorLogin {
@@ -24,6 +26,9 @@ public class ControladorLogin {
     private static final int SERVER_PORT = 12345; // Asegúrate que coincide con el servidor
 
     private ClienteServicio cliente;
+
+    private static final Logger LOGGER = Logger.getLogger(ControladorLogin.class.getName());
+
 
     @FXML
     private TextField nombreField;
@@ -99,12 +104,21 @@ public class ControladorLogin {
 
     private void abrirPantallaPrincipal(String datosUsuario) {
         try {
+            // Parsear el JSON primero para validarlo
+            JsonObject usuarioJson;
+            try {
+                usuarioJson = JsonParser.parseString(datosUsuario).getAsJsonObject();
+            } catch (JsonSyntaxException e) {
+                mostrarAlerta("Error", "Datos de usuario inválidos", AlertType.ERROR);
+                return;
+            }
+
             Stage stage = (Stage) nombreField.getScene().getWindow();
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/principal.fxml"));
             Parent root = loader.load();
 
             ControladorPrincipal controlador = loader.getController();
-            controlador.inicializarConUsuario(datosUsuario, this.cliente); // Pasar ambos parámetros
+            controlador.inicializarConUsuario(usuarioJson, this.cliente);
 
             Stage principalStage = new Stage();
             principalStage.setScene(new Scene(root));
@@ -112,9 +126,12 @@ public class ControladorLogin {
             principalStage.show();
 
             stage.close();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo cargar la interfaz principal", AlertType.ERROR);
+            LOGGER.log(Level.SEVERE, "Error al cargar FXML", e);
         } catch (Exception e) {
-            mostrarAlerta("Error", "No se pudo cargar la pantalla principal", AlertType.ERROR);
-            e.printStackTrace();
+            mostrarAlerta("Error", "Error inesperado: " + e.getMessage(), AlertType.ERROR);
+            LOGGER.log(Level.SEVERE, "Error inesperado", e);
         }
     }
 

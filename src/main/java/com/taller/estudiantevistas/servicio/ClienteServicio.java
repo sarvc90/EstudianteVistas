@@ -127,4 +127,38 @@ public class ClienteServicio {
             return new JsonArray();
         }
     }
+
+    public JsonObject actualizarUsuario(JsonObject datosUsuario) {
+        try {
+            JsonObject solicitud = new JsonObject();
+            solicitud.addProperty("tipo", "ACTUALIZAR_USUARIO");
+            solicitud.add("datos", datosUsuario);
+
+            salida.println(solicitud.toString());
+            String respuesta = entrada.readLine();
+            return JsonParser.parseString(respuesta).getAsJsonObject();
+        } catch (IOException e) {
+            JsonObject error = new JsonObject();
+            error.addProperty("exito", false);
+            error.addProperty("mensaje", "Error de conexión: " + e.getMessage());
+            return error;
+        }
+    }
+
+    public JsonObject eliminarUsuario(String usuarioId) {
+        try {
+            JsonObject solicitud = new JsonObject();
+            solicitud.addProperty("tipo", "ELIMINAR_USUARIO");
+            solicitud.addProperty("usuarioId", usuarioId);
+
+            salida.println(solicitud.toString());
+            String respuesta = entrada.readLine();
+            return JsonParser.parseString(respuesta).getAsJsonObject();
+        } catch (IOException e) {
+            JsonObject error = new JsonObject();
+            error.addProperty("exito", false);
+            error.addProperty("mensaje", "Error de conexión: " + e.getMessage());
+            return error;
+        }
+    }
 }

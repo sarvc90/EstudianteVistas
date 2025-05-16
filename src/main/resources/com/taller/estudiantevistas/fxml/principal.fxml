@@ -42,15 +42,17 @@
                 <Pane fx:id="panelContenidos" prefWidth="350" prefHeight="400" styleClass="content-pane"/>
             </VBox>
 
-            <!-- Panel de Solicitudes de Ayuda -->
+            <!-- Dentro del VBox que contiene el panel de solicitudes -->
             <VBox spacing="15" alignment="CENTER">
-                <HBox spacing="10" alignment="CENTER">
-                    <Button fx:id="btnRecargarSolicitudes" text="Recargar" styleClass="icon-button">
+                <!-- Reemplaza el HBox que contiene los botones con este código mejorado -->
+                <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 0 0 10 0;">
+                    <Button fx:id="btnRecargarSolicitudes" styleClass="recargar-button">
                         <graphic>
-                            <ImageView fx:id="imgRecargar" fitWidth="20" fitHeight="20" preserveRatio="true"/>
+                            <ImageView fx:id="imgRecargar" fitWidth="20" fitHeight="20" preserveRatio="true" />
                         </graphic>
                     </Button>
-                    <Button fx:id="btnNuevaSolicitud" text="Nueva Solicitud" styleClass="nueva-solicitud-btn"/>
+                    <Button fx:id="btnNuevaSolicitud" text="Nueva Solicitud" styleClass="nueva-solicitud-btn"
+                            style="-fx-margin: 0 0 0 20;"/>
                 </HBox>
                 <Pane fx:id="panelSolicitudes" prefWidth="350" prefHeight="400" styleClass="solicitud-pane"/>
             </VBox>

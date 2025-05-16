@@ -5,14 +5,18 @@ import com.taller.estudiantevistas.servicio.ClienteServicio;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.util.Pair;
 
 import java.io.IOException;
@@ -20,7 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,7 +51,7 @@ public class ControladorPrincipal {
     @FXML private Button btnBuscar, btnAjustes, btnNotificaciones, btnChat, btnPerfil, btnContacto;
 
     // ImageViews
-    @FXML private ImageView imgLupa, imgAjustes, imgCampana, imgChat, imgPerfil, imgContacto;
+    @FXML private ImageView imgLupa, imgAjustes, imgCampana, imgChat, imgPerfil, imgContacto, imgRecargar;
 
     // Componentes del área central
     @FXML private Button btnRecargarContenidos, btnRecargarSolicitudes, btnNuevaSolicitud;
@@ -65,7 +71,12 @@ public class ControladorPrincipal {
         this.usuarioData = usuarioData;
         this.cliente = cliente;
 
-        Platform.runLater(this::cargarContenidosIniciales);
+        try {
+            Platform.runLater(this::cargarContenidosIniciales);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error al inicializar con usuario", e);
+            mostrarAlerta("Error", "No se pudieron cargar los datos del usuario", Alert.AlertType.ERROR);
+        }
     }
 
     @FXML
@@ -83,6 +94,7 @@ public class ControladorPrincipal {
             imgChat.setImage(loadImage("/com/taller/estudiantevistas/icons/chat.png"));
             imgPerfil.setImage(loadImage("/com/taller/estudiantevistas/icons/perfil.png"));
             imgContacto.setImage(loadImage("/com/taller/estudiantevistas/icons/contacto.png"));
+            imgRecargar.setImage(loadImage("/com/taller/estudiantevistas/icons/recargar.png")); // Nueva línea
         } catch (Exception e) {
             manejarError("cargar imágenes", e);
         }
@@ -98,18 +110,6 @@ public class ControladorPrincipal {
     private void configurarComboBox() {
         comboTipo.getItems().addAll("Tema", "Autor", "Tipo");
         comboTipo.getSelectionModel().selectFirst();
-    }
-
-    private void configurarEventos() {
-        btnBuscar.setOnAction(event -> buscarContenido());
-        btnRecargarContenidos.setOnAction(event -> recargarContenidos());
-        btnRecargarSolicitudes.setOnAction(event -> recargarSolicitudes());
-        btnNuevaSolicitud.setOnAction(event -> mostrarDialogoNuevaSolicitud());
-        btnAjustes.setOnAction(event -> abrirAjustes());
-        btnNotificaciones.setOnAction(event -> mostrarNotificaciones());
-        btnChat.setOnAction(event -> abrirChat());
-        btnPerfil.setOnAction(event -> abrirPerfil());
-        btnContacto.setOnAction(event -> abrirContacto());
     }
 
     // Métodos de acción principales
@@ -131,7 +131,12 @@ public class ControladorPrincipal {
                     solicitud.addProperty("busqueda", busqueda);
 
                     cliente.getSalida().println(solicitud.toString());
-                    String respuesta = cliente.getEntrada().readLine();
+                    String respuesta = null;
+                    try {
+                        respuesta = cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     return JsonParser.parseString(respuesta).getAsJsonObject().getAsJsonArray("resultados");
                 },
                 resultados -> {
@@ -226,6 +231,40 @@ public class ControladorPrincipal {
         });
     }
 
+    // Agrega este metodo al ControladorPrincipal
+    private void mostrarVistaSolicitudAyuda() {
+        try {
+            // Cargar la vista FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/crear-solicitud.fxml"));
+            Parent root = loader.load();
+
+            // Obtener el controlador y configurarlo
+            ControladorSolicitudAyuda controlador = loader.getController();
+            controlador.inicializar(usuarioData.get("id").getAsString(), cliente);
+
+            // Crear una nueva escena
+            Stage stage = new Stage();
+            stage.setTitle("Solicitud de Ayuda");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            manejarError("cargar vista de solicitud de ayuda", e);
+        }
+    }
+
+    // Modifica el método configurarEventos para usar la nueva vista
+    private void configurarEventos() {
+        btnBuscar.setOnAction(event -> buscarContenido());
+        btnRecargarContenidos.setOnAction(event -> recargarContenidos());
+        btnRecargarSolicitudes.setOnAction(event -> recargarSolicitudes());
+        btnNuevaSolicitud.setOnAction(event -> mostrarVistaSolicitudAyuda()); // Cambiado para usar la nueva vista
+        btnAjustes.setOnAction(event -> abrirAjustes());
+        btnNotificaciones.setOnAction(event -> mostrarNotificaciones());
+        btnChat.setOnAction(event -> abrirChat());
+        btnPerfil.setOnAction(event -> abrirPerfil());
+        btnContacto.setOnAction(event -> abrirContacto());
+    }
+
     private void enviarNuevaSolicitud(JsonObject solicitud) {
         ejecutarTareaAsync(
                 () -> {
@@ -234,7 +273,12 @@ public class ControladorPrincipal {
                     solicitudCompleta.add("datos", solicitud);
 
                     cliente.getSalida().println(solicitudCompleta.toString());
-                    String respuesta = cliente.getEntrada().readLine();
+                    String respuesta = null;
+                    try {
+                        respuesta = cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     return JsonParser.parseString(respuesta).getAsJsonObject();
                 },
                 respuesta -> {
@@ -409,8 +453,22 @@ public class ControladorPrincipal {
 
     // Métodos de navegación (sin cambios)
     private void abrirAjustes() {
-        System.out.println("Abriendo ajustes para: " +
-                (usuarioData != null ? usuarioData.get("nombre").getAsString() : "desconocido"));
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/vistas/ajustes-usuario.fxml"));
+            Parent root = loader.load();
+
+            ControladorAjustesUsuario controlador = loader.getController();
+
+            Stage stage = new Stage();
+            stage.setTitle("Ajustes de Usuario");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+
+            controlador.inicializar(usuarioData, cliente, stage);
+            stage.showAndWait(); // Bloquea la ventana principal hasta que se cierre
+        } catch (IOException e) {
+            manejarError("abrir ajustes", e);
+        }
     }
 
     private void mostrarNotificaciones() {

@@ -6,69 +6,98 @@
 
 /* Contenedor principal */
 .container {
-    -fx-background-color: #16171a;
-    -fx-background-radius: 24px;
-    -fx-padding: 32px 40px 48px 40px;
-    -fx-spacing: 16px;
-    -fx-alignment: center;
-    -fx-pref-width: 320px;
+    -fx-background-color: #1e1e25;
+    -fx-padding: 30;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: #2e2e38;
+    -fx-border-width: 1;
 }
 
-/* Título */
 .titulo {
-    -fx-fill: #8a5fff;
-    -fx-font-size: 20px;
+    -fx-font-size: 24px;
+    -fx-fill: #8e44ff;
     -fx-font-weight: bold;
-    -fx-padding: 0 0 24px 0;
 }
 
-/* Campos de entrada */
 .input-field {
-    -fx-background-color: transparent;
-    -fx-border-color: #4a4a4a;
-    -fx-border-radius: 16px;
-    -fx-border-width: 2px;
-    -fx-padding: 8px 16px;
-    -fx-text-fill: #cfcfcf;
-    -fx-prompt-text-fill: #8a5fff;
-    -fx-font-size: 14px;
+    -fx-background-color: #2c2c36;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #999999;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #3e3e4a;
+    -fx-border-width: 1;
+    -fx-padding: 10;
+    -fx-pref-width: 300px;
 }
 
-.input-field:focused {
-    -fx-border-color: #8a5fff;
-}
-
-/* Botón de urgencia */
 .urgency-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #8a5fff;
-    -fx-border-color: #8a5fff;
-    -fx-border-width: 2px;
-    -fx-border-radius: 24px;
-    -fx-background-radius: 24px;
-    -fx-padding: 12px 40px;
+    -fx-background-color: #8e44ff;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 10 20;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
     -fx-cursor: hand;
-    -fx-margin-top: 32px;
 }
 
 .urgency-button:hover {
-    -fx-background-color: rgba(138, 95, 255, 0.1);
+    -fx-background-color: #a569ff;
 }
 
-/* Botón de enviar */
 .submit-button {
-    -fx-background-color: #8a5fff;
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
     -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 12 30;
     -fx-font-weight: bold;
     -fx-font-size: 14px;
-    -fx-background-radius: 24px;
-    -fx-padding: 12px 40px;
     -fx-cursor: hand;
-    -fx-margin-top: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 3);
 }
 
 .submit-button:hover {
-    -fx-background-color: #6f44e6;
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 4);
+}
+
+/* Agrega estos estilos al final de tu archivo CSS */
+
+/* Estilo específico para el botón de recargar */
+.recargar-button {
+    -fx-background-color: #3e3e4a;
+    -fx-background-radius: 20;
+    -fx-padding: 8;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-cursor: hand;
+    -fx-border-color: #8e44ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 20;
+}
+
+.recargar-button:hover {
+    -fx-background-color: #8e44ff;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 8, 0.5, 0, 1);
+}
+
+/* Ajuste para el botón de nueva solicitud */
+.nueva-solicitud-btn {
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
+    -fx-text-fill: #9147ffff;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-padding: 8 16;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 5, 0.5, 0, 2);
+    -fx-margin-left: 20px; /* Espacio adicional a la izquierda */
+}
+
+.nueva-solicitud-btn:hover {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+}
+
+/* Asegurar que la imagen de recargar sea visible */
+#imgRecargar {
+    -fx-opacity: 1;
 }

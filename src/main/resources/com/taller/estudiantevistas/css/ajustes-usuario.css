@@ -1,0 +1,70 @@
+.container {
+    -fx-background-color: #1e1e25;
+    -fx-padding: 30;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: #2e2e38;
+    -fx-border-width: 1;
+    -fx-min-width: 400px;
+    -fx-min-height: 400px;
+}
+
+.titulo {
+    -fx-font-size: 24px;
+    -fx-fill: #8e44ff;
+    -fx-font-weight: bold;
+}
+
+.form-grid {
+    -fx-background-color: #2c2c36;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #3e3e4a;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+}
+
+.form-grid .label {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.form-grid .text-field, .form-grid .password-field {
+    -fx-background-color: #3e3e4a;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: #999999;
+    -fx-background-radius: 5;
+    -fx-border-radius: 5;
+    -fx-border-color: #8e44ff;
+    -fx-border-width: 1;
+    -fx-padding: 8;
+}
+
+.update-button {
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 10 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.update-button:hover {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 10, 0.5, 0, 2);
+}
+
+.delete-button {
+    -fx-background-color: linear-gradient(to right, #ff4444, #ff6b6b);
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 10 25;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.delete-button:hover {
+    -fx-background-color: linear-gradient(to right, #ff6b6b, #ff4444);
+    -fx-effect: dropshadow(gaussian, rgba(255, 107, 107, 0.5), 10, 0.5, 0, 2);
+}
