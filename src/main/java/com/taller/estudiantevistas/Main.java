@@ -10,10 +10,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        // Cargar vista FXML usando getResource con ruta absoluta
-        FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(getClass().getResource("/com/taller/estudiantevistas/fxml/login.fxml"));
-        Parent root = loader.load();
+        // Cargar la vista FXML directamente
+        Parent root = FXMLLoader.load(getClass().getResource("/com/taller/estudiantevistas/fxml/login.fxml"));
 
         // Configurar escena
         Scene scene = new Scene(root);
@@ -23,6 +21,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
+
 
     public static void main(String[] args) {
         launch(args);

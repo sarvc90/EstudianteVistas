@@ -16,10 +16,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -149,7 +152,7 @@ public class ControladorPrincipal {
 
     @FXML
     private void recargarContenidos() {
-        if (usuarioData != null) {
+        if (usuarioData != null && usuarioData.has("id") && !usuarioData.get("id").isJsonNull()) {
             ejecutarTareaAsync(
                     () -> cliente.obtenerContenidosEducativos(usuarioData.get("id").getAsString()),
                     contenidos -> {
@@ -158,12 +161,15 @@ public class ControladorPrincipal {
                     },
                     "carga de contenidos"
             );
+        } else {
+            LOGGER.warning("No se puede recargar contenidos: ID de usuario ausente o nulo.");
+            mostrarAlerta("Advertencia", "No se pudo obtener el ID del usuario para cargar contenidos.", Alert.AlertType.WARNING);
         }
     }
 
     @FXML
     private void recargarSolicitudes() {
-        if (usuarioData != null) {
+        if (usuarioData != null && usuarioData.has("id") && !usuarioData.get("id").isJsonNull()) {
             ejecutarTareaAsync(
                     () -> cliente.obtenerSolicitudesAyuda(usuarioData.get("id").getAsString()),
                     solicitudes -> {
@@ -172,8 +178,12 @@ public class ControladorPrincipal {
                     },
                     "carga de solicitudes"
             );
+        } else {
+            LOGGER.warning("No se puede recargar solicitudes: ID de usuario ausente o nulo.");
+            mostrarAlerta("Advertencia", "No se pudo obtener el ID del usuario para cargar solicitudes.", Alert.AlertType.WARNING);
         }
     }
+
 
     private void mostrarDialogoNuevaSolicitud() {
         Dialog<Pair<String, String>> dialog = new Dialog<>();
@@ -454,22 +464,34 @@ public class ControladorPrincipal {
     // Métodos de navegación (sin cambios)
     private void abrirAjustes() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/vistas/ajustes-usuario.fxml"));
+            // Ruta correcta del FXML
+            URL fxmlLocation = getClass().getResource("/com/taller/estudiantevistas/fxml/ajustes-usuario.fxml");
+            if (fxmlLocation == null) {
+                throw new FileNotFoundException("No se encontró el archivo FXML en la ruta: /com/taller/estudiantevistas/fxml/ajustes-usuario.fxml");
+            }
+
+            FXMLLoader loader = new FXMLLoader(fxmlLocation);
             Parent root = loader.load();
 
+            // Obtener el controlador y pasarle los datos necesarios
             ControladorAjustesUsuario controlador = loader.getController();
-
             Stage stage = new Stage();
             stage.setTitle("Ajustes de Usuario");
             stage.setScene(new Scene(root));
-            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.initModality(Modality.APPLICATION_MODAL); // Ventana bloqueante
 
-            controlador.inicializar(usuarioData, cliente, stage);
-            stage.showAndWait(); // Bloquea la ventana principal hasta que se cierre
+            controlador.inicializar(String.valueOf(usuarioData), cliente, stage);
+            stage.showAndWait();
+
         } catch (IOException e) {
-            manejarError("abrir ajustes", e);
+            manejarError("Error de entrada/salida al abrir ajustes de usuario", e);
+        } catch (Exception e) {
+            manejarError("Error inesperado al abrir ajustes de usuario", e);
         }
     }
+
+
+
 
     private void mostrarNotificaciones() {
         System.out.println("Mostrando notificaciones para: " +
