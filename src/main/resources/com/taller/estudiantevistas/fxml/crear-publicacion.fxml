@@ -4,25 +4,18 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox xmlns="http://javafx.com/fxml/1" xmlns:fx="http://javafx.com/fxml"
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.taller.estudiantevistas.controlador.ControladorCrearPublicacion"
       stylesheets="@../css/crear-publicacion.css"
-      styleClass="container" spacing="16" alignment="CENTER">
+      styleClass="container" spacing="16" alignment="CENTER" prefWidth="400" prefHeight="500">
 
-    <Text styleClass="titulo" text="Crear publicación" />
+    <Text styleClass="titulo" text="Crear Publicación" />
 
     <VBox styleClass="form-container" spacing="16">
-        <!-- Campo Título -->
         <TextField fx:id="tituloField" styleClass="input-field" promptText="Título:" />
-
-        <!-- Campo Descripción -->
         <TextField fx:id="descripcionField" styleClass="input-field" promptText="Descripción:" />
-
-        <!-- Campo Etiquetas -->
-        <TextField fx:id="etiquetasField" styleClass="input-field" promptText="Etiquetas:" />
-
-        <!-- Campo Enlace -->
-        <TextField fx:id="enlaceField" styleClass="input-field" promptText="Enlace:" />
+        <TextField fx:id="etiquetasField" styleClass="input-field" promptText="Etiquetas (separadas por comas):" />
+        <TextField fx:id="enlaceField" styleClass="input-field" promptText="Enlace (opcional):" />
 
         <Button fx:id="agregarArchivoBtn" styleClass="secondary-button" text="Agregar archivo" />
         <Button styleClass="primary-button" text="Publicar" onAction="#publicar" />

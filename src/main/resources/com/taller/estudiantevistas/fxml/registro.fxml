@@ -16,14 +16,8 @@
 
     <VBox styleClass="form-container" spacing="15">
         <!-- Campos con labels más grandes -->
-        <Label text="Nombres:" styleClass="field-label" />
+        <Label text="Nombre:" styleClass="field-label" />
         <TextField styleClass="input-field" fx:id="nombresField" promptText="Ej: Juan Carlos" />
-
-        <Label text="Apellidos:" styleClass="field-label" />
-        <TextField styleClass="input-field" fx:id="apellidosField" promptText="Ej: Pérez Gómez" />
-
-        <Label text="Cédula:" styleClass="field-label" />
-        <TextField styleClass="input-field" fx:id="cedulaField" promptText="Ej: 1234567890" />
 
         <Label text="Contraseña:" styleClass="field-label" />
         <PasswordField styleClass="input-field" fx:id="contrasenaField" promptText="Mínimo 8 caracteres" />

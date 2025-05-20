@@ -18,9 +18,7 @@ import java.io.IOException;
 public class ControladorRegistro {
 
     @FXML private TextField nombresField;
-    @FXML private TextField apellidosField;
-    @FXML private TextField cedulaField;
-    @FXML private PasswordField contrasenaField;
+    @FXML private TextField contrasenaField;
     @FXML private TextField correoField;
     @FXML private TextField interesesField;
     @FXML private Button backButton;
@@ -41,14 +39,12 @@ public class ControladorRegistro {
     @FXML
     private void registrarUsuario() {
         String nombres = nombresField.getText().trim();
-        String apellidos = apellidosField.getText().trim();
-        String cedula = cedulaField.getText().trim();
         String contrasena = contrasenaField.getText().trim();
         String correo = correoField.getText().trim();
         String intereses = interesesField.getText().trim();
 
         // Validación de campos
-        if (nombres.isEmpty() || apellidos.isEmpty() || cedula.isEmpty() ||
+        if (nombres.isEmpty() ||
                 contrasena.isEmpty() || correo.isEmpty()) {
             mostrarAlerta("Error", "Todos los campos son obligatorios excepto intereses.");
             return;
@@ -60,7 +56,7 @@ public class ControladorRegistro {
         }
 
         try {
-            Estudiante nuevoEstudiante = new Estudiante(nombres, apellidos, cedula, correo, contrasena, intereses);
+            Estudiante nuevoEstudiante = new Estudiante(nombres, correo, contrasena, intereses);
 
             // 📌 Corrección: Enviar datos dentro del objeto "datos"
             JsonObject mensaje = new JsonObject();
@@ -88,8 +84,6 @@ public class ControladorRegistro {
 
     private void limpiarCampos() {
         nombresField.clear();
-        apellidosField.clear();
-        cedulaField.clear();
         contrasenaField.clear();
         correoField.clear();
         interesesField.clear();

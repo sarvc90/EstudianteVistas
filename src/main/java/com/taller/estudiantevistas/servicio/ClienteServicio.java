@@ -72,30 +72,127 @@ public class ClienteServicio {
      * Solicita los contenidos educativos del servidor
      * @param userId ID del usuario para personalizar los contenidos
      * @return Lista de contenidos en formato JSON
+     * @throws IOException Si hay problemas de comunicación con el servidor
+     * @throws RuntimeException Si la respuesta del servidor es inválida
      */
-    public JsonArray obtenerContenidosEducativos(String userId) {
+    public JsonArray obtenerContenidosEducativos(String userId) throws IOException {
         try {
+            // 1. Preparar solicitud
             JsonObject solicitud = new JsonObject();
             solicitud.addProperty("tipo", "OBTENER_CONTENIDOS");
-            solicitud.addProperty("userId", userId);
 
+            JsonObject datos = new JsonObject();
+            datos.addProperty("userId", userId);
+            solicitud.add("datos", datos);
+
+            // 2. Enviar solicitud
             salida.println(solicitud.toString());
             salida.flush();
 
+            // 3. Recibir respuesta
             String respuesta = entrada.readLine();
-            JsonObject jsonRespuesta = gson.fromJson(respuesta, JsonObject.class);
-
-            if (jsonRespuesta.get("exito").getAsBoolean()) {
-                return jsonRespuesta.getAsJsonArray("contenidos");
-            } else {
-                System.err.println("Error al obtener contenidos: " +
-                        jsonRespuesta.get("mensaje").getAsString());
-                return new JsonArray(); // Retorna array vacío en caso de error
+            if (respuesta == null) {
+                throw new IOException("El servidor no respondió (respuesta nula)");
             }
+
+            // 4. Parsear respuesta
+            JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+
+            // 5. Validar estructura básica
+            if (!jsonRespuesta.has("exito")) {
+                throw new RuntimeException("Respuesta mal formada: falta campo 'exito'");
+            }
+
+            // 6. Manejar respuesta fallida
+            if (!jsonRespuesta.get("exito").getAsBoolean()) {
+                String mensajeError = jsonRespuesta.has("mensaje")
+                        ? jsonRespuesta.get("mensaje").getAsString()
+                        : "Error desconocido del servidor";
+                throw new RuntimeException(mensajeError);
+            }
+
+            // 7. Validar y retornar contenidos
+            if (!jsonRespuesta.has("contenidos")) {
+                throw new RuntimeException("Respuesta mal formada: falta campo 'contenidos'");
+            }
+
+            return jsonRespuesta.getAsJsonArray("contenidos");
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException("Respuesta del servidor no es un JSON válido", e);
         } catch (IOException e) {
-            System.err.println("Error al obtener contenidos: " + e.getMessage());
-            return new JsonArray();
+            System.err.println("[ERROR] Error de comunicación al obtener contenidos: " + e.getMessage());
+            throw e;
+        } catch (RuntimeException e) {
+            System.err.println("[ERROR] Error al procesar respuesta de contenidos: " + e.getMessage());
+            throw e;
         }
+    }
+
+    /**
+     * Obtiene todos los contenidos educativos de la red social
+     * @return Lista de todos los contenidos en formato JSON
+     * @throws IOException Si hay problemas de comunicación con el servidor
+     */
+    public JsonArray obtenerTodosContenidos() throws IOException {
+        try {
+            JsonObject solicitud = new JsonObject();
+            solicitud.addProperty("tipo", "OBTENER_CONTENIDOS");
+            // No necesitamos userId para obtener todos los contenidos
+            solicitud.add("datos", new JsonObject());
+
+            enviarSolicitud(solicitud);
+            JsonObject respuesta = recibirRespuesta();
+
+            if (!respuesta.get("exito").getAsBoolean()) {
+                throw new IOException(respuesta.has("mensaje") ?
+                        respuesta.get("mensaje").getAsString() : "Error al obtener contenidos");
+            }
+
+            return respuesta.getAsJsonArray("contenidos");
+        } catch (JsonSyntaxException e) {
+            throw new IOException("Respuesta del servidor no es un JSON válido", e);
+        }
+    }
+
+    /**
+     * Obtiene todas las solicitudes de ayuda de la red social
+     * @return Lista de todas las solicitudes en formato JSON
+     * @throws IOException Si hay problemas de comunicación con el servidor
+     */
+    public JsonArray obtenerTodasSolicitudes() throws IOException {
+        try {
+            JsonObject solicitud = new JsonObject();
+            solicitud.addProperty("tipo", "OBTENER_SOLICITUDES");
+            solicitud.add("datos", new JsonObject()); // Datos vacíos
+
+            enviarSolicitud(solicitud);
+            JsonObject respuesta = recibirRespuesta();
+
+            if (!respuesta.get("exito").getAsBoolean()) {
+                throw new IOException(respuesta.has("mensaje") ?
+                        respuesta.get("mensaje").getAsString() : "Error al obtener solicitudes");
+            }
+
+            return respuesta.getAsJsonArray("solicitudes");
+        } catch (JsonSyntaxException e) {
+            throw new IOException("Respuesta del servidor no es un JSON válido", e);
+        }
+    }
+
+    // Métodos auxiliares reutilizables
+    private void enviarSolicitud(JsonObject solicitud) throws IOException {
+        salida.println(solicitud.toString());
+        salida.flush();
+        System.out.println("📤 Solicitud enviada: " + solicitud);
+    }
+
+    private JsonObject recibirRespuesta() throws IOException {
+        String respuestaStr = entrada.readLine();
+        if (respuestaStr == null) {
+            throw new IOException("El servidor no respondió");
+        }
+        System.out.println("📥 Respuesta recibida: " + respuestaStr);
+        return JsonParser.parseString(respuestaStr).getAsJsonObject();
     }
 
     /**
@@ -103,29 +200,29 @@ public class ClienteServicio {
      * @param userId ID del usuario para personalizar las solicitudes
      * @return Lista de solicitudes en formato JSON
      */
-    public JsonArray obtenerSolicitudesAyuda(String userId) {
-        try {
-            JsonObject solicitud = new JsonObject();
-            solicitud.addProperty("tipo", "OBTENER_SOLICITUDES");
-            solicitud.addProperty("userId", userId);
+    public JsonArray obtenerSolicitudesAyuda(String userId) throws IOException {
+        JsonObject solicitud = new JsonObject();
+        solicitud.addProperty("tipo", "OBTENER_SOLICITUDES");
 
-            salida.println(solicitud.toString());
-            salida.flush();
+        JsonObject datos = new JsonObject();
+        datos.addProperty("userId", userId);
+        solicitud.add("datos", datos);
 
-            String respuesta = entrada.readLine();
-            JsonObject jsonRespuesta = gson.fromJson(respuesta, JsonObject.class);
+        salida.println(solicitud.toString());
+        String respuesta = entrada.readLine();
 
-            if (jsonRespuesta.get("exito").getAsBoolean()) {
-                return jsonRespuesta.getAsJsonArray("solicitudes");
-            } else {
-                System.err.println("Error al obtener solicitudes: " +
-                        jsonRespuesta.get("mensaje").getAsString());
-                return new JsonArray();
-            }
-        } catch (IOException e) {
-            System.err.println("Error al obtener solicitudes: " + e.getMessage());
-            return new JsonArray();
+        if (respuesta == null) {
+            throw new IOException("El servidor no respondió");
         }
+
+        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+
+        if (!jsonRespuesta.get("exito").getAsBoolean()) {
+            throw new IOException(jsonRespuesta.has("mensaje") ?
+                    jsonRespuesta.get("mensaje").getAsString() : "Error desconocido al obtener solicitudes");
+        }
+
+        return jsonRespuesta.getAsJsonArray("solicitudes");
     }
 
     public JsonObject actualizarUsuario(JsonObject datosUsuario) {

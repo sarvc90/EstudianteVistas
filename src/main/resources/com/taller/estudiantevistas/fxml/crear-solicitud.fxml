@@ -15,6 +15,6 @@
     <TextField fx:id="temaField" styleClass="input-field" promptText="Tema:" />
     <TextField fx:id="contenidoField" styleClass="input-field" promptText="Contenido:" />
 
-    <Button styleClass="urgency-button" text="Nivel de urgencia" onAction="#mostrarOpcionesUrgencia" />
+    <Button fx:id="urgenciaButton" styleClass="urgency-button" text="Nivel de urgencia" onAction="#mostrarOpcionesUrgencia" />
     <Button styleClass="submit-button" text="Publicar" onAction="#publicarSolicitud" />
 </VBox>

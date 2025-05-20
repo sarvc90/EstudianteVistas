@@ -26,12 +26,6 @@
                 <Label text="Nombres:" styleClass="etiqueta-dato" />
                 <Label fx:id="lblNombres" styleClass="valor-dato" />
 
-                <Label text="Apellidos:" styleClass="etiqueta-dato" />
-                <Label fx:id="lblApellidos" styleClass="valor-dato" />
-
-                <Label text="Cédula:" styleClass="etiqueta-dato" />
-                <Label fx:id="lblCedula" styleClass="valor-dato" />
-
                 <Label text="Correo electrónico:" styleClass="etiqueta-dato" />
                 <Label fx:id="lblCorreo" styleClass="valor-dato" />
 
@@ -39,7 +33,6 @@
                 <Label fx:id="lblIntereses" styleClass="valor-dato" />
             </VBox>
 
-            <Button fx:id="btnActualizarDatos" text="Actualizar datos" styleClass="boton-morado" />
         </VBox>
     </left>
 
