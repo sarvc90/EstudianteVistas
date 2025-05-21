@@ -236,3 +236,73 @@
     -fx-font-size: 14px;
     -fx-padding: 20;
 }
+
+/* Versión compacta de las tarjetas de solicitud */
+.solicitud-item {
+    -fx-background-color: #2c2c36;
+    -fx-padding: 10;
+    -fx-background-radius: 10;
+    -fx-border-color: #3e3e4a;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-spacing: 6;
+    -fx-max-width: 350px; /* Asegura que no se salga del panel */
+}
+
+.solicitud-titulo {
+    -fx-text-fill: #ff6b6b;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* Descripción más compacta */
+.descripcion-text {
+    -fx-text-fill: #999999; /* Texto más oscuro */
+    -fx-font-size: 11px;
+    -fx-wrap-text: true;
+    -fx-background-color: transparent;
+    -fx-pref-height: 60px; /* Altura fija con scroll */
+    -fx-max-height: 60px;
+}
+
+/* Pie de tarjeta más compacto */
+.solicitud-footer {
+    -fx-text-fill: #777777;
+    -fx-font-size: 10px;
+    -fx-spacing: 8;
+}
+
+/* Estados y urgencias más compactos */
+.solicitud-estados {
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Efecto hover para interactividad */
+.solicitud-item:hover {
+    -fx-background-color: #343441;
+    -fx-border-color: #8e44ff;
+    -fx-cursor: hand;
+}
+
+.contenido-item {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+.contenido-titulo {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333;
+}
+
+.contenido-metadatos {
+    -fx-font-size: 12px;
+    -fx-text-fill: #666;
+}
+
+.descripcion-text {
+    -fx-font-size: 13px;
+    -fx-text-fill: #555;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}

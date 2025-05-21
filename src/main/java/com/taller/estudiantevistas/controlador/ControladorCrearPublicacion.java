@@ -32,7 +32,6 @@ public class ControladorCrearPublicacion {
     private File archivoSeleccionado;
 
     // Extensiones para cada tipo de contenido
-// Extensiones actualizadas para coincidir con los tipos del servidor
     private static final List<String> EXTENSIONES_DOCUMENTO = Arrays.asList(
             ".pdf", ".doc", ".docx", ".txt", ".odt", ".rtf"
     );
@@ -48,7 +47,7 @@ public class ControladorCrearPublicacion {
     @FXML
     public void initialize() {
         agregarArchivoBtn.setOnAction(event -> agregarArchivo());
-        enlaceField.setEditable(false); // El enlace se llenará automáticamente
+        enlaceField.setEditable(false);
     }
 
     public void inicializar(JsonObject usuarioData, ClienteServicio cliente) {
@@ -61,39 +60,37 @@ public class ControladorCrearPublicacion {
         if (!validarCampos()) return;
 
         try {
+            // 1. Determinar tipo de contenido
             TipoContenido tipo = determinarTipoContenido();
 
-            JsonObject publicacion = new JsonObject();
-            publicacion.addProperty("tipo", "CREAR_PUBLICACION");
+            // 2. Obtener la ruta del contenido (archivo o enlace)
+            String contenidoRuta = archivoSeleccionado != null ?
+                    archivoSeleccionado.getAbsolutePath() :
+                    enlaceField.getText();
+
+            // 3. Construir el JSON de solicitud
+            JsonObject solicitud = new JsonObject();
+            solicitud.addProperty("tipo", "CREAR_PUBLICACION");
 
             JsonObject datos = new JsonObject();
             datos.addProperty("usuarioId", usuarioData.get("id").getAsString());
-            datos.addProperty("titulo", tituloField.getText());
-            datos.addProperty("descripcion", descripcionField.getText());
-            datos.addProperty("tema", etiquetasField.getText());
+            datos.addProperty("titulo", tituloField.getText().trim());
+            datos.addProperty("descripcion", descripcionField.getText().trim());
+            datos.addProperty("tema", etiquetasField.getText().trim());
             datos.addProperty("tipoContenido", tipo.name());
-            datos.addProperty("contenido",
-                    archivoSeleccionado != null ?
-                            archivoSeleccionado.getAbsolutePath() :
-                            enlaceField.getText()
-            );
+            datos.addProperty("contenido", contenidoRuta);
 
-            publicacion.add("datos", datos);
+            solicitud.add("datos", datos);
 
-            // Enviar y esperar respuesta
-            cliente.getSalida().println(publicacion.toString());
+            // 4. Enviar solicitud usando los métodos públicos existentes
+            cliente.getSalida().println(solicitud.toString());
             String respuesta = cliente.getEntrada().readLine();
             JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
 
+            // 5. Procesar respuesta
             if (jsonRespuesta.get("exito").getAsBoolean()) {
-                mostrarAlerta("Éxito", "Publicación creada", Alert.AlertType.INFORMATION);
-                limpiarCampos();
-
-                // Cerrar la ventana actual
-                Stage stageActual = (Stage) tituloField.getScene().getWindow();
-                stageActual.close();
-
-                // Abrir la ventana de perfil
+                mostrarAlerta("Éxito", "Publicación creada exitosamente", Alert.AlertType.INFORMATION);
+                cerrarVentana();
                 abrirVentanaPerfil();
             } else {
                 mostrarAlerta("Error", jsonRespuesta.get("mensaje").getAsString(), Alert.AlertType.ERROR);
@@ -110,20 +107,18 @@ public class ControladorCrearPublicacion {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/perfil.fxml"));
             Parent root = loader.load();
 
-            // Obtener el controlador del perfil y pasarle los datos necesarios
-            ControladorPerfil controladorPerfil = loader.getController();
-            controladorPerfil.inicializar(usuarioData, cliente);
+            ControladorPerfil controlador = loader.getController();
+            controlador.inicializar(usuarioData, cliente);
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Perfil de Usuario");
             stage.show();
-
         } catch (IOException e) {
-            mostrarAlerta("Error", "No se pudo cargar la ventana de perfil", Alert.AlertType.ERROR);
-            e.printStackTrace();
+            mostrarAlerta("Error", "No se pudo abrir el perfil", Alert.AlertType.ERROR);
         }
     }
+
     @FXML
     private void agregarArchivo() {
         FileChooser fileChooser = new FileChooser();
@@ -140,9 +135,7 @@ public class ControladorCrearPublicacion {
         archivoSeleccionado = fileChooser.showOpenDialog(tituloField.getScene().getWindow());
 
         if (archivoSeleccionado != null) {
-            // Mostrar la ruta del archivo en el campo de enlace
             enlaceField.setText(archivoSeleccionado.getAbsolutePath());
-            mostrarAlerta("Archivo", "Archivo seleccionado: " + archivoSeleccionado.getName(), Alert.AlertType.INFORMATION);
         }
     }
 
@@ -153,35 +146,28 @@ public class ControladorCrearPublicacion {
 
         String nombreArchivo = archivoSeleccionado.getName().toLowerCase();
 
-        // Verificar extensiones para DOCUMENTO (PDF, Word, TXT)
         if (EXTENSIONES_DOCUMENTO.stream().anyMatch(nombreArchivo::endsWith)) {
             return TipoContenido.DOCUMENTO;
         }
-
-        // Verificar extensiones para VIDEO
         if (EXTENSIONES_VIDEO.stream().anyMatch(nombreArchivo::endsWith)) {
             return TipoContenido.VIDEO;
         }
-
-        // Verificar extensiones para PRESENTACION
         if (EXTENSIONES_PRESENTACION.stream().anyMatch(nombreArchivo::endsWith)) {
             return TipoContenido.PRESENTACION;
         }
 
-        return TipoContenido.OTRO; // Para cualquier otra extensión no reconocida
+        return TipoContenido.OTRO;
     }
 
     private boolean validarCampos() {
-        if (tituloField.getText().isEmpty()) {
+        if (tituloField.getText().trim().isEmpty()) {
             mostrarAlerta("Error", "El título es obligatorio", Alert.AlertType.ERROR);
             return false;
         }
-
-        if (archivoSeleccionado == null && enlaceField.getText().isEmpty()) {
+        if (archivoSeleccionado == null && enlaceField.getText().trim().isEmpty()) {
             mostrarAlerta("Error", "Debe agregar un archivo o un enlace", Alert.AlertType.ERROR);
             return false;
         }
-
         return true;
     }
 
@@ -205,6 +191,4 @@ public class ControladorCrearPublicacion {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
-
-
 }

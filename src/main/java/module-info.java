@@ -3,7 +3,8 @@ module com.taller.estudiantevistas {
     requires javafx.fxml;
     requires com.google.gson; // Para serialización JSON
     requires java.sql; // Si usarás base de datos
-    requires org.slf4j; // Para logging (opcional pero recomendado)
+    requires org.slf4j;
+    requires java.desktop; // Para logging (opcional pero recomendado)
 
     opens com.taller.estudiantevistas to javafx.fxml;
     opens com.taller.estudiantevistas.controlador to javafx.fxml;

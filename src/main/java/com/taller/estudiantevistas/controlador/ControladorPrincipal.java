@@ -18,11 +18,8 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -36,15 +33,18 @@ import java.util.logging.Logger;
 public class ControladorPrincipal {
     private static final Logger LOGGER = Logger.getLogger(ControladorPrincipal.class.getName());
 
+    // Configuración de ejecución asíncrona
     private final Executor executor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
         return t;
     });
 
+    // Datos del usuario y cliente de servicio
     private JsonObject usuarioData;
     private ClienteServicio cliente;
 
+    // Componentes de la UI
     @FXML private TextField campoBusqueda;
     @FXML private ComboBox<String> comboTipo;
     @FXML private Button btnBuscar, btnAjustes, btnNotificaciones, btnChat, btnPerfil, btnContacto;
@@ -52,43 +52,51 @@ public class ControladorPrincipal {
     @FXML private Button btnRecargarContenidos, btnRecargarSolicitudes, btnNuevaSolicitud;
     @FXML private Pane panelContenidos, panelSolicitudes;
 
+    // Listeners para actualizaciones
+    private final List<ActualizacionListener> listeners = new ArrayList<>();
+
+    // Interfaz para notificaciones de actualización
     public interface ActualizacionListener {
         void onContenidosActualizados(JsonArray contenidos);
         void onSolicitudesActualizadas(JsonArray solicitudes);
     }
-    private final List<ActualizacionListener> listeners = new ArrayList<>();
 
+    /**
+     * Inicializa el controlador con los datos del usuario y el cliente de servicio
+     */
     public void inicializarConUsuario(JsonObject usuarioData, ClienteServicio cliente) {
         Objects.requireNonNull(usuarioData, "Datos de usuario no pueden ser nulos");
         Objects.requireNonNull(cliente, "ClienteServicio no puede ser nulo");
 
         this.usuarioData = usuarioData;
         this.cliente = cliente;
-        Platform.runLater(this::cargarContenidosIniciales);
+
+        // Cargar datos iniciales en el hilo de la UI
+        Platform.runLater(() -> {
+            cargarContenidosIniciales();
+            configurarEventos();
+            cargarImagenes();
+            configurarComboBox();
+        });
     }
 
-    @FXML
-    private void initialize() {
-        configurarComboBox();
-        configurarEventos();
-        cargarImagenes();
-    }
+    // ==================== CONFIGURACIÓN INICIAL ====================
 
     private void cargarImagenes() {
         try {
-            imgLupa.setImage(loadImage("/com/taller/estudiantevistas/icons/lupa.png"));
-            imgAjustes.setImage(loadImage("/com/taller/estudiantevistas/icons/ajustes.png"));
-            imgCampana.setImage(loadImage("/com/taller/estudiantevistas/icons/campana.png"));
-            imgChat.setImage(loadImage("/com/taller/estudiantevistas/icons/chat.png"));
-            imgPerfil.setImage(loadImage("/com/taller/estudiantevistas/icons/perfil.png"));
-            imgContacto.setImage(loadImage("/com/taller/estudiantevistas/icons/contacto.png"));
-            imgRecargar.setImage(loadImage("/com/taller/estudiantevistas/icons/recargar.png"));
+            imgLupa.setImage(cargarImagen("/com/taller/estudiantevistas/icons/lupa.png"));
+            imgAjustes.setImage(cargarImagen("/com/taller/estudiantevistas/icons/ajustes.png"));
+            imgCampana.setImage(cargarImagen("/com/taller/estudiantevistas/icons/campana.png"));
+            imgChat.setImage(cargarImagen("/com/taller/estudiantevistas/icons/chat.png"));
+            imgPerfil.setImage(cargarImagen("/com/taller/estudiantevistas/icons/perfil.png"));
+            imgContacto.setImage(cargarImagen("/com/taller/estudiantevistas/icons/contacto.png"));
+            imgRecargar.setImage(cargarImagen("/com/taller/estudiantevistas/icons/recargar.png"));
         } catch (Exception e) {
             manejarError("cargar imágenes", e);
         }
     }
 
-    private Image loadImage(String path) throws IOException {
+    private Image cargarImagen(String path) throws IOException {
         return new Image(Objects.requireNonNull(
                 getClass().getResourceAsStream(path),
                 "No se pudo cargar imagen: " + path
@@ -101,6 +109,18 @@ public class ControladorPrincipal {
     }
 
     private void configurarEventos() {
+        // Limpiar eventos primero para evitar duplicados
+        btnBuscar.setOnAction(null);
+        btnRecargarContenidos.setOnAction(null);
+        btnRecargarSolicitudes.setOnAction(null);
+        btnNuevaSolicitud.setOnAction(null);
+        btnAjustes.setOnAction(null);
+        btnNotificaciones.setOnAction(null);
+        btnChat.setOnAction(null);
+        btnPerfil.setOnAction(null);
+        btnContacto.setOnAction(null);
+
+        // Ahora asignar los eventos
         btnBuscar.setOnAction(event -> buscarContenido());
         btnRecargarContenidos.setOnAction(event -> recargarContenidos());
         btnRecargarSolicitudes.setOnAction(event -> recargarSolicitudes());
@@ -112,6 +132,232 @@ public class ControladorPrincipal {
         btnContacto.setOnAction(event -> abrirContacto());
     }
 
+    // ==================== MÉTODOS DE CARGA DE DATOS ====================
+
+    /**
+     * Carga los contenidos iniciales al iniciar la vista
+     */
+    private void cargarContenidosIniciales() {
+        recargarContenidos();
+        recargarSolicitudes();
+    }
+
+    // ==================== MÉTODOS DE CARGA IDÉNTICOS A SOLICITUDES ====================
+
+    /**
+     * Recarga los contenidos educativos - Mismo enfoque que recargarSolicitudes()
+     */
+    @FXML
+    private void recargarContenidos() {
+        if (usuarioData != null && usuarioData.has("id")) {
+            // Limpiar panel antes de cargar
+            panelContenidos.getChildren().clear();
+
+            ejecutarTareaAsync(
+                    () -> {
+                        try {
+                            JsonArray contenidos = cliente.obtenerTodosContenidos();
+                            if (contenidos == null || contenidos.size() == 0) {
+                                return crearMensajeInformacion(
+                                        "No hay contenidos",
+                                        "No se encontraron contenidos educativos disponibles");
+                            }
+                            // Verificar duplicados en el servidor
+                            return filtrarDuplicados(contenidos);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error al obtener contenidos: " + e.getMessage(), e);
+                        }
+                    },
+                    contenidos -> Platform.runLater(() -> {
+                        mostrarContenidosEnPanel(contenidos, panelContenidos);
+                        notificarListeners("contenidos", contenidos);
+                    }),
+                    error -> Platform.runLater(() -> {
+                        mostrarContenidosEnPanel(crearMensajeError(error), panelContenidos);
+                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR);
+                    }),
+                    "recarga de contenidos"
+            );
+        }
+    }
+
+    // Método para filtrar duplicados
+    private JsonArray filtrarDuplicados(JsonArray array) {
+        Set<String> idsVistos = new HashSet<>();
+        JsonArray resultado = new JsonArray();
+
+        for (JsonElement elemento : array) {
+            JsonObject obj = elemento.getAsJsonObject();
+            String id = obj.has("id") ? obj.get("id").getAsString() : null;
+
+            if (id == null || !idsVistos.contains(id)) {
+                resultado.add(obj);
+                if (id != null) {
+                    idsVistos.add(id);
+                }
+            }
+        }
+
+        return resultado;
+    }
+
+    /**
+     * Muestra contenidos en el panel - IDÉNTICO a mostrarSolicitudesEnPanel()
+     */
+    private void mostrarContenidosEnPanel(JsonArray contenidos, Pane panel) {
+        VBox contenedor = new VBox(5);
+        contenedor.setPadding(new Insets(10));
+        contenedor.setStyle("-fx-background-color: #f5f5f5;");
+
+        // Limpiar el contenedor primero
+        contenedor.getChildren().clear();
+
+        if (esMensajeEspecial(contenidos)) {
+            JsonObject mensaje = contenidos.get(0).getAsJsonObject();
+            contenedor.getChildren().add(crearMensajeUI(
+                    mensaje.get("titulo").getAsString(),
+                    mensaje.get("detalle").getAsString(),
+                    this::recargarContenidos
+            ));
+        } else {
+            Set<String> idsMostrados = new HashSet<>(); // Para evitar duplicados en la UI
+            for (JsonElement elemento : contenidos) {
+                JsonObject contenido = elemento.getAsJsonObject();
+                String id = contenido.has("id") ? contenido.get("id").getAsString() : null;
+
+                if (id == null || !idsMostrados.contains(id)) {
+                    contenedor.getChildren().add(crearItemContenidoEstiloSolicitud(contenido));
+                    if (id != null) {
+                        idsMostrados.add(id);
+                    }
+                }
+            }
+        }
+
+        panel.getChildren().clear();
+        panel.getChildren().add(crearScrollPane(contenedor));
+    }
+
+    /**
+     * Crea items de contenido con el MISMO ESTILO que las solicitudes
+     */
+    private Node crearItemContenidoEstiloSolicitud(JsonObject contenido) {
+        VBox item = new VBox(5);
+        item.getStyleClass().add("contenido-item");
+        item.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-padding: 10;");
+
+        // Título (igual que en solicitudes)
+        Label titulo = new Label(contenido.get("titulo").getAsString());
+        titulo.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        titulo.setMaxWidth(Double.MAX_VALUE);
+        titulo.setWrapText(true);
+
+        // Metadatos en línea (como en solicitudes)
+        HBox metadatos = new HBox(8);
+        metadatos.setAlignment(Pos.CENTER_LEFT);
+
+        Label autor = new Label("👤 " + contenido.get("autor").getAsString());
+        Label tipo = new Label("📋 " + contenido.get("tipo").getAsString());
+
+        metadatos.getChildren().addAll(autor, tipo);
+
+        // Descripción (idéntico a solicitudes)
+        TextArea descripcion = new TextArea(contenido.get("descripcion").getAsString());
+        descripcion.setEditable(false);
+        descripcion.setWrapText(true);
+        descripcion.setPrefRowCount(3);
+        descripcion.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
+
+        // Contenido (adaptación mínima)
+        String contenidoStr = contenido.get("contenido").getAsString();
+        TextArea areaContenido = new TextArea(contenidoStr.length() > 100 ? contenidoStr.substring(0, 100) + "..." : contenidoStr);
+        areaContenido.setEditable(false);
+        areaContenido.setWrapText(true);
+        areaContenido.setPrefRowCount(2);
+        areaContenido.setStyle("-fx-background-color: #f9f9f9;");
+
+        item.getChildren().addAll(titulo, metadatos, descripcion, areaContenido);
+        return item;
+    }
+
+    private JsonArray obtenerContenidosDelServidor() throws IOException {
+        JsonArray contenidos = cliente.obtenerTodosContenidos();
+
+        if (contenidos == null || contenidos.size() == 0) {
+            return crearMensajeInformacion("Sin contenidos", "No se encontraron contenidos educativos");
+        }
+        return contenidos;
+    }
+
+    /**
+     * Recarga las solicitudes de ayuda desde el servidor
+     */
+    @FXML
+    private void recargarSolicitudes() {
+        if (usuarioData != null && usuarioData.has("id")) {
+            // Limpiar panel antes de cargar
+            panelSolicitudes.getChildren().clear();
+
+            ejecutarTareaAsync(
+                    () -> {
+                        try {
+                            JsonArray solicitudes = cliente.obtenerTodasSolicitudes();
+                            if (solicitudes == null || solicitudes.size() == 0) {
+                                return crearMensajeInformacion(
+                                        "No hay solicitudes",
+                                        "No se encontraron solicitudes pendientes");
+                            }
+                            // Filtrar posibles duplicados
+                            return filtrarDuplicadosSolicitudes(solicitudes);
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error al obtener solicitudes: " + e.getMessage(), e);
+                        }
+                    },
+                    solicitudes -> Platform.runLater(() -> {
+                        mostrarSolicitudesEnPanel(solicitudes, panelSolicitudes);
+                        notificarListeners("solicitudes", solicitudes);
+                    }),
+                    error -> Platform.runLater(() -> {
+                        mostrarSolicitudesEnPanel(crearMensajeError(error), panelSolicitudes);
+                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR);
+                    }),
+                    "recarga de solicitudes"
+            );
+        }
+    }
+
+    private JsonArray filtrarDuplicadosSolicitudes(JsonArray solicitudes) {
+        Set<String> idsUnicos = new HashSet<>();
+        JsonArray resultado = new JsonArray();
+
+        for (JsonElement elemento : solicitudes) {
+            JsonObject solicitud = elemento.getAsJsonObject();
+            String id = solicitud.has("id") ? solicitud.get("id").getAsString() :
+                    (solicitud.has("fecha") ? solicitud.get("fecha").getAsString() : null);
+
+            if (id == null || !idsUnicos.contains(id)) {
+                resultado.add(solicitud);
+                if (id != null) {
+                    idsUnicos.add(id);
+                }
+            }
+        }
+
+        return resultado;
+    }
+
+    private JsonArray obtenerSolicitudesDelServidor() throws IOException {
+        JsonArray solicitudes = cliente.obtenerTodasSolicitudes();
+
+        if (solicitudes == null || solicitudes.size() == 0) {
+            return crearMensajeInformacion("No hay solicitudes", "No se encontraron solicitudes pendientes");
+        }
+        return solicitudes;
+    }
+
+    /**
+     * Busca contenidos según los criterios especificados
+     */
     private void buscarContenido() {
         String busqueda = campoBusqueda.getText().trim();
         String tipoBusqueda = comboTipo.getValue();
@@ -122,34 +368,15 @@ public class ControladorPrincipal {
         }
 
         ejecutarTareaAsync(
-                () -> {
-                    try {
-                        JsonObject solicitud = new JsonObject();
-                        solicitud.addProperty("tipo", "BUSCAR_CONTENIDO");
+                        () -> {
+                            try {
+                                return buscarContenidoEnServidor(tipoBusqueda, busqueda);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
 
-                        JsonObject datos = new JsonObject();
-                        datos.addProperty("criterio", tipoBusqueda);
-                        datos.addProperty("busqueda", busqueda);
-                        datos.addProperty("userId", usuarioData.get("id").getAsString());
-
-                        solicitud.add("datos", datos);
-
-                        cliente.getSalida().println(solicitud.toString());
-                        String respuesta = cliente.getEntrada().readLine();
-                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
-
-                        if (!jsonRespuesta.get("exito").getAsBoolean()) {
-                            throw new RuntimeException(jsonRespuesta.get("mensaje").getAsString());
-                        }
-
-                        return jsonRespuesta.getAsJsonArray("resultados");
-                    } catch (IOException e) {
-                        throw new RuntimeException("Error de comunicación: " + e.getMessage());
-                    } catch (JsonParseException e) {
-                        throw new RuntimeException("Respuesta del servidor no válida");
-                    }
-                },
-                resultados -> Platform.runLater(() -> {
+                        resultados -> Platform.runLater(() -> {
                     mostrarContenidosEnPanel(resultados, panelContenidos);
                     notificarListeners("contenidos", resultados);
                 }),
@@ -160,31 +387,15 @@ public class ControladorPrincipal {
         );
     }
 
-    // ==================== MÉTODOS DE CARGA DE CONTENIDOS ====================
-
-    public void cargarContenidosParaPerfil(Consumer<JsonArray> callback) {
-        if (usuarioData != null && usuarioData.has("id")) {
-            ejecutarTareaAsync(
-                    () -> {
-                        try {
-                            return obtenerContenidosCompletos(usuarioData.get("id").getAsString());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
-                    callback::accept,
-                    error -> mostrarAlerta("Error", "No se pudieron cargar los contenidos", Alert.AlertType.ERROR),
-                    "carga de contenidos para perfil"
-            );
-        }
-    }
-
-    private JsonArray obtenerContenidosCompletos(String userId) throws IOException {
+    private JsonArray buscarContenidoEnServidor(String tipoBusqueda, String busqueda) throws IOException {
         JsonObject solicitud = new JsonObject();
-        solicitud.addProperty("tipo", "OBTENER_CONTENIDOS_COMPLETOS");
+        solicitud.addProperty("tipo", "BUSCAR_CONTENIDO");
 
         JsonObject datos = new JsonObject();
-        datos.addProperty("userId", userId);
+        datos.addProperty("criterio", tipoBusqueda);
+        datos.addProperty("busqueda", busqueda);
+        datos.addProperty("userId", usuarioData.get("id").getAsString());
+
         solicitud.add("datos", datos);
 
         cliente.getSalida().println(solicitud.toString());
@@ -192,314 +403,268 @@ public class ControladorPrincipal {
         JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
 
         if (!jsonRespuesta.get("exito").getAsBoolean()) {
-            throw new IOException(jsonRespuesta.get("mensaje").getAsString());
+            throw new RuntimeException(jsonRespuesta.get("mensaje").getAsString());
         }
 
-        return jsonRespuesta.getAsJsonArray("contenidos");
-    }
-
-    @FXML
-    private void recargarContenidos() {
-        if (usuarioData != null && usuarioData.has("id")) {
-            ejecutarTareaAsync(
-                    () -> {
-                        try {
-                            JsonArray contenidos = cliente.obtenerContenidosEducativos(usuarioData.get("id").getAsString());
-
-                            if (contenidos == null || contenidos.size() == 0) {
-                                // Crear respuesta con mensaje amigable
-                                JsonObject mensaje = new JsonObject();
-                                mensaje.addProperty("esMensaje", true);
-                                mensaje.addProperty("titulo", "Sin contenidos");
-                                mensaje.addProperty("detalle", "No se encontraron contenidos para tu usuario");
-
-                                JsonArray respuesta = new JsonArray();
-                                respuesta.add(mensaje);
-                                return respuesta;
-                            }
-                            return contenidos;
-                        } catch (IOException e) {
-                            throw new RuntimeException("Error de conexión: " + e.getMessage());
-                        }
-                    },
-                    respuesta -> Platform.runLater(() -> {
-                        mostrarContenidosEnPanel(respuesta, panelContenidos);
-                        notificarListeners("contenidos", respuesta);
-                    }),
-                    error -> Platform.runLater(() -> {
-                        // Crear mensaje de error para mostrar
-                        JsonObject mensajeError = new JsonObject();
-                        mensajeError.addProperty("esMensaje", true);
-                        mensajeError.addProperty("titulo", "Error");
-                        mensajeError.addProperty("detalle", error.getMessage());
-
-                        JsonArray arrayError = new JsonArray();
-                        arrayError.add(mensajeError);
-
-                        mostrarContenidosEnPanel(arrayError, panelContenidos);
-                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR);
-                    }),
-                    "recarga de contenidos"
-            );
-        }
-    }
-
-    @FXML
-    private void recargarSolicitudes() {
-        if (usuarioData != null && usuarioData.has("id")) {
-            ejecutarTareaAsync(
-                    () -> {
-                        try {
-                            JsonArray solicitudes = cliente.obtenerSolicitudesAyuda(usuarioData.get("id").getAsString());
-
-                            if (solicitudes.size() == 0) {
-                                // Crear respuesta con mensaje amigable
-                                JsonObject mensaje = new JsonObject();
-                                mensaje.addProperty("esMensaje", true);
-                                mensaje.addProperty("titulo", "No hay solicitudes");
-                                mensaje.addProperty("detalle", "No se encontraron solicitudes pendientes");
-
-                                JsonArray respuesta = new JsonArray();
-                                respuesta.add(mensaje);
-                                return respuesta;
-                            }
-                            return solicitudes;
-                        } catch (RuntimeException e) {
-                            throw new RuntimeException("Error al obtener solicitudes: " + e.getMessage());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    },
-                    respuesta -> Platform.runLater(() -> {
-                        mostrarSolicitudesEnPanel(respuesta, panelSolicitudes);
-                        notificarListeners("solicitudes", respuesta);
-                    }),
-                    error -> Platform.runLater(() -> {
-                        // Crear mensaje de error para mostrar
-                        JsonObject mensajeError = new JsonObject();
-                        mensajeError.addProperty("esMensaje", true);
-                        mensajeError.addProperty("titulo", "Error");
-                        mensajeError.addProperty("detalle", error.getMessage());
-
-                        JsonArray arrayError = new JsonArray();
-                        arrayError.add(mensajeError);
-
-                        mostrarSolicitudesEnPanel(arrayError, panelSolicitudes);
-                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR);
-                    }),
-                    "recarga de solicitudes"
-            );
-        }
+        return jsonRespuesta.getAsJsonArray("resultados");
     }
 
     // ==================== MÉTODOS DE VISUALIZACIÓN ====================
 
-    private void mostrarContenidosEnPanel(JsonArray contenidos, Pane panel) {
+    /**
+     * Muestra las solicitudes de ayuda en el panel especificado
+     */
+    private void mostrarSolicitudesEnPanel(JsonArray solicitudes, Pane panel) {
         VBox contenedor = new VBox(10);
         contenedor.setPadding(new Insets(10));
         contenedor.setStyle("-fx-background-color: #f5f5f5;");
 
-        if (contenidos.size() == 0 ||
-                (contenidos.size() == 1 && contenidos.get(0).getAsJsonObject().has("esMensaje"))) {
+        // Limpiar contenedor primero
+        contenedor.getChildren().clear();
 
-            // Mostrar mensaje especial
-            JsonObject mensajeObj = contenidos.size() > 0 ?
-                    contenidos.get(0).getAsJsonObject() : null;
-
-            String titulo = mensajeObj != null ?
-                    mensajeObj.get("titulo").getAsString() : "Sin contenidos";
-            String detalle = mensajeObj != null ?
-                    mensajeObj.get("detalle").getAsString() : "No hay contenidos disponibles";
-
-            VBox cajaMensaje = new VBox(5);
-            cajaMensaje.setAlignment(Pos.CENTER);
-
-            Label lblTitulo = new Label(titulo);
-            lblTitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
-
-            Label lblDetalle = new Label(detalle);
-            lblDetalle.setStyle("-fx-text-fill: #666;");
-
-            Button btnRecargar = new Button("Intentar nuevamente");
-            btnRecargar.setOnAction(e -> recargarContenidos());
-
-            cajaMensaje.getChildren().addAll(lblTitulo, lblDetalle, btnRecargar);
-            contenedor.getChildren().add(cajaMensaje);
-            contenedor.setAlignment(Pos.CENTER);
+        if (esMensajeEspecial(solicitudes)) {
+            JsonObject mensaje = solicitudes.get(0).getAsJsonObject();
+            contenedor.getChildren().add(crearMensajeUI(
+                    mensaje.get("titulo").getAsString(),
+                    mensaje.get("detalle").getAsString(),
+                    this::recargarSolicitudes
+            ));
         } else {
-            // Mostrar contenidos normales
-            for (JsonElement elemento : contenidos) {
+            Set<String> idsMostrados = new HashSet<>();
+            for (JsonElement elemento : solicitudes) {
                 try {
-                    JsonObject contenido = elemento.getAsJsonObject();
-                    if (!contenido.has("esMensaje")) {
-                        Node item = crearItemContenido(contenido);
-                        contenedor.getChildren().add(item);
+                    JsonObject solicitud = elemento.getAsJsonObject();
+                    String id = solicitud.has("id") ? solicitud.get("id").getAsString() :
+                            solicitud.has("fecha") ? solicitud.get("fecha").getAsString() : null;
+
+                    if (id == null || !idsMostrados.contains(id)) {
+                        contenedor.getChildren().add(crearItemSolicitud(solicitud));
+                        if (id != null) {
+                            idsMostrados.add(id);
+                        }
                     }
                 } catch (Exception e) {
-                    System.err.println("[ERROR] Error al procesar contenido: " + e.getMessage());
+                    LOGGER.log(Level.WARNING, "Error al procesar solicitud", e);
                 }
             }
         }
 
-        ScrollPane scrollPane = new ScrollPane(contenedor);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
-
         panel.getChildren().clear();
-        panel.getChildren().add(scrollPane);
+        panel.getChildren().add(crearScrollPane(contenedor));
     }
 
+    // ==================== COMPONENTES UI ====================
+
+    /**
+     * Crea un ítem de contenido educativo para mostrar en la UI (versión mejorada)
+     */
     private Node crearItemContenido(JsonObject contenido) {
-        VBox item = new VBox(10);
+        VBox item = new VBox(5); // Espaciado reducido para mejor compactación
         item.getStyleClass().add("contenido-item");
-        item.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 1; -fx-padding: 10;");
+        item.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-padding: 10;");
 
-        // Título
+        // Título (1 línea)
         Label titulo = new Label(contenido.get("titulo").getAsString());
-        titulo.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        titulo.getStyleClass().add("contenido-titulo");
+        titulo.setMaxWidth(Double.MAX_VALUE);
+        titulo.setWrapText(true);
+        titulo.setMaxHeight(20);
 
-        // Detalles (autor y tema)
-        HBox detalles = new HBox(10);
-        detalles.getChildren().addAll(
-                new Label("Autor: " + contenido.get("autor").getAsString()),
-                new Label("Tema: " + contenido.get("tema").getAsString())
-        );
-        detalles.setStyle("-fx-text-fill: #555; -fx-font-size: 12px;");
+        // Metadatos en una línea compacta
+        HBox metadatos = new HBox(8);
+        metadatos.getStyleClass().add("contenido-metadatos");
+        metadatos.setAlignment(Pos.CENTER_LEFT);
 
-        item.getChildren().addAll(titulo, detalles);
+        Label autor = new Label("👤 " + contenido.get("autor").getAsString());
+        Label fecha = new Label("📅 " + formatFechaContenido(contenido.get("fechaCreacion").getAsString()));
+        Label tema = new Label("🏷 " + contenido.get("tema").getAsString());
+        Label tipo = new Label("📋 " + contenido.get("tipo").getAsString());
 
-        // Descripción (si existe)
-        if (contenido.has("descripcion") && !contenido.get("descripcion").getAsString().isEmpty()) {
-            Text descripcion = new Text(contenido.get("descripcion").getAsString());
-            descripcion.setWrappingWidth(panelContenidos.getWidth() - 30);
-            descripcion.setStyle("-fx-font-size: 12px;");
-            item.getChildren().add(descripcion);
-        }
+        metadatos.getChildren().addAll(autor, fecha, tema, tipo);
 
-        return item;
-    }
-
-    private Node crearItemContenidoCompleto(JsonObject contenido) {
-        VBox item = new VBox(10);
-        item.getStyleClass().add("contenido-detallado");
-
-        Label titulo = new Label(contenido.get("titulo").getAsString());
-        titulo.getStyleClass().add("titulo-contenido");
-
-        HBox metaInfo = new HBox(15);
-        metaInfo.getChildren().addAll(
-                new Label("Autor: " + contenido.get("autor").getAsString()),
-                new Label("Tema: " + contenido.get("tema").getAsString()),
-                new Label("Tipo: " + contenido.get("tipo").getAsString())
-        );
-
+        // Descripción compacta (3-4 líneas máximo)
         TextArea descripcion = new TextArea(contenido.get("descripcion").getAsString());
+        descripcion.getStyleClass().add("descripcion-text");
         descripcion.setEditable(false);
         descripcion.setWrapText(true);
+        descripcion.setPrefRowCount(3);
+        descripcion.setFocusTraversable(false);
 
-        // Sección de valoraciones
-        if (contenido.has("valoraciones")) {
-            VBox valoracionesBox = new VBox(5);
-            Label valoracionesLabel = new Label("Valoraciones:");
-            valoracionesBox.getChildren().add(valoracionesLabel);
+        // Contenido principal (dependiendo del tipo)
+        Node contenidoVisual = crearVisualizacionContenido(contenido);
+        contenidoVisual.getStyleClass().add("contenido-visual");
 
-            JsonArray valoraciones = contenido.getAsJsonArray("valoraciones");
-            valoraciones.forEach(v -> {
-                JsonObject valoracion = v.getAsJsonObject();
-                HBox valoracionItem = new HBox(10);
-                valoracionItem.getChildren().addAll(
-                        new Label("★".repeat(valoracion.get("valor").getAsInt())),
-                        new Label(valoracion.get("comentario").getAsString())
-                );
-                valoracionesBox.getChildren().add(valoracionItem);
-            });
-            item.getChildren().add(valoracionesBox);
-        }
-
-        item.getChildren().addAll(titulo, metaInfo, descripcion);
+        item.getChildren().addAll(titulo, metadatos, descripcion, contenidoVisual);
         return item;
     }
 
-    private void mostrarSolicitudesEnPanel(JsonArray solicitudes, Pane panel) {
-        mostrarContenidoGenerico(
-                solicitudes,
-                panel,
-                solicitud -> {
-                    // Asegurarse de que los campos existan antes de acceder a ellos
-                    String tema = solicitud.has("tema") ? solicitud.get("tema").getAsString() : "Sin tema";
-                    String descripcion = solicitud.has("descripcion") ? solicitud.get("descripcion").getAsString() : "";
-                    String urgencia = solicitud.has("urgencia") ? solicitud.get("urgencia").getAsString() : "MEDIA";
-                    String estado = solicitud.has("estado") ? solicitud.get("estado").getAsString() : "PENDIENTE";
-                    long fecha = solicitud.has("fecha") ? solicitud.get("fecha").getAsLong() : System.currentTimeMillis();
+    /**
+     * Mejora el formato de visualización del contenido según su tipo
+     */
+    private Node crearVisualizacionContenido(JsonObject contenido) {
+        String tipo = contenido.get("tipo").getAsString();
+        String contenidoStr = contenido.get("contenido").getAsString();
 
-                    String solicitante = "Anónimo";
-                    if (solicitud.has("solicitanteNombre")) {
-                        solicitante = solicitud.get("solicitanteNombre").getAsString();
-                    } else if (solicitud.has("solicitanteId")) {
-                        solicitante = "ID: " + solicitud.get("solicitanteId").getAsString().substring(0, 6);
-                    }
+        if (tipo.equals("ENLACE")) {
+            HBox linkContainer = new HBox();
+            linkContainer.setAlignment(Pos.CENTER_LEFT);
 
-                    return crearItemSolicitud(tema, descripcion, urgencia, estado, fecha, solicitante);
+            Hyperlink link = new Hyperlink(contenidoStr);
+            link.setStyle("-fx-text-fill: #0066cc; -fx-underline: true;");
+            link.setOnAction(e -> {
+                try {
+                    java.awt.Desktop.getDesktop().browse(new java.net.URI(contenidoStr));
+                } catch (Exception ex) {
+                    mostrarAlerta("Error", "No se pudo abrir el enlace: " + ex.getMessage(), Alert.AlertType.ERROR);
                 }
-        );
+            });
+
+            Label icono = new Label("🌐");
+            linkContainer.getChildren().addAll(icono, link);
+            return linkContainer;
+        } else {
+            TextArea areaTexto = new TextArea(contenidoStr);
+            areaTexto.setEditable(false);
+            areaTexto.setWrapText(true);
+            areaTexto.setPrefRowCount(4); // Limitar altura
+            areaTexto.setFocusTraversable(false);
+            areaTexto.setStyle("-fx-background-color: #f9f9f9;");
+            return areaTexto;
+        }
     }
 
-    private Node crearItemSolicitud(String tema, String descripcion, String urgencia,
-                                    String estado, long fechaMillis, String solicitante) {
-        VBox item = new VBox(8);
+    private String formatFechaContenido(String fechaStr) {
+        try {
+            SimpleDateFormat formatoOriginal = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date fecha = formatoOriginal.parse(fechaStr);
+            return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(fecha);
+        } catch (Exception e) {
+            return fechaStr; // Si falla el parseo, devolver el original
+        }
+    }
+
+    /**
+     * Crea un ítem de solicitud de ayuda para mostrar en la UI
+     */
+    private Node crearItemSolicitud(JsonObject solicitud) {
+        VBox item = new VBox();
         item.getStyleClass().add("solicitud-item");
 
+        // Extraer datos
+        String tema = solicitud.has("tema") ? solicitud.get("tema").getAsString() : "Sin tema";
+        String descripcion = solicitud.has("descripcion") ? solicitud.get("descripcion").getAsString() : "";
+        String urgencia = solicitud.has("urgencia") ? solicitud.get("urgencia").getAsString() : "MEDIA";
+        String estado = solicitud.has("estado") ? solicitud.get("estado").getAsString() : "PENDIENTE";
+
+        // Manejo de fecha
+        String fechaStr = solicitud.has("fecha") ?
+                (solicitud.get("fecha").isJsonPrimitive() && solicitud.get("fecha").getAsJsonPrimitive().isNumber() ?
+                        formatFecha(solicitud.get("fecha").getAsLong()) :
+                        solicitud.get("fecha").getAsString()) :
+                "Fecha no disponible";
+
+        String solicitante = obtenerNombreSolicitante(solicitud);
+
+        // Título (1 línea)
         Label temaLabel = new Label(tema);
         temaLabel.getStyleClass().add("solicitud-titulo");
+        temaLabel.setMaxWidth(Double.MAX_VALUE);
+        temaLabel.setWrapText(true);
+        temaLabel.setMaxHeight(20);
 
-        HBox detalles = new HBox(10);
-        Label urgenciaLabel = new Label("Urgencia: " + urgencia);
+        // Estados y urgencia en una línea
+        HBox estadosBox = new HBox(8);
+        estadosBox.getStyleClass().add("solicitud-estados");
+
+        Label urgenciaLabel = new Label("🔺 " + urgencia);
         urgenciaLabel.getStyleClass().add("urgencia-" + urgencia.toLowerCase());
 
-        Label estadoLabel = new Label("Estado: " + estado);
-        estadoLabel.getStyleClass().add("estado-" + estado.toLowerCase().replace("_", ""));
+        Label estadoLabel = new Label("◉ " + estado);
+        estadoLabel.getStyleClass().add("estado-" + estado.toLowerCase());
 
-        detalles.getChildren().addAll(urgenciaLabel, estadoLabel);
+        estadosBox.getChildren().addAll(urgenciaLabel, estadoLabel);
 
+        // Descripción compacta (3-4 líneas máximo)
         TextArea descripcionArea = new TextArea(descripcion);
         descripcionArea.getStyleClass().add("descripcion-text");
         descripcionArea.setEditable(false);
+        descripcionArea.setWrapText(true);
+        descripcionArea.setPrefRowCount(3);
+        descripcionArea.setFocusTraversable(false);
 
-        HBox footer = new HBox(10);
-        Label fechaLabel = new Label("Fecha: " + formatFecha(fechaMillis));
-        fechaLabel.getStyleClass().add("info-text");
+        // Footer compacto
+        HBox footer = new HBox(8);
+        footer.getStyleClass().add("solicitud-footer");
+        footer.setAlignment(Pos.CENTER_LEFT);
 
-        Label solicitanteLabel = new Label("Por: " + solicitante);
-        solicitanteLabel.getStyleClass().add("info-text");
-
+        Label fechaLabel = new Label("📅 " + fechaStr);
+        Label solicitanteLabel = new Label("👤 " + solicitante);
         footer.getChildren().addAll(fechaLabel, solicitanteLabel);
 
-        item.getChildren().addAll(temaLabel, detalles, descripcionArea, footer);
+        item.getChildren().addAll(temaLabel, estadosBox, descripcionArea, footer);
         return item;
     }
 
-    private void mostrarContenidoGenerico(JsonArray datos, Pane panel, Function<JsonObject, Node> factory) {
-        VBox contenedor = new VBox(10);
-        contenedor.setPadding(new Insets(10));
-        contenedor.setStyle("-fx-background-color: #f5f5f5;");
+    /**
+     * Crea un mensaje UI para mostrar cuando no hay datos o hay errores
+     */
+    private Node crearMensajeUI(String titulo, String detalle, Runnable accionRecargar) {
+        VBox cajaMensaje = new VBox(5);
+        cajaMensaje.setAlignment(Pos.CENTER);
 
-        if (datos.size() == 0) {
-            contenedor.getChildren().add(crearMensajeVacio("No hay datos disponibles"));
-        } else {
-            datos.forEach(item ->
-                    contenedor.getChildren().add(factory.apply(item.getAsJsonObject()))
-            );
-        }
+        Label lblTitulo = new Label(titulo);
+        lblTitulo.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
 
-        ScrollPane scrollPane = new ScrollPane(contenedor);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        Label lblDetalle = new Label(detalle);
+        lblDetalle.setStyle("-fx-text-fill: #666;");
 
-        panel.getChildren().clear();
-        panel.getChildren().add(scrollPane);
+        Button btnRecargar = new Button("Intentar nuevamente");
+        btnRecargar.setOnAction(e -> accionRecargar.run());
+
+        cajaMensaje.getChildren().addAll(lblTitulo, lblDetalle, btnRecargar);
+        return cajaMensaje;
     }
 
-    // ==================== MÉTODOS UTILITARIOS ====================
+    private ScrollPane crearScrollPane(Node contenido) {
+        ScrollPane scrollPane = new ScrollPane(contenido);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+        return scrollPane;
+    }
+
+    // ==================== UTILIDADES ====================
+
+    private String obtenerNombreSolicitante(JsonObject solicitud) {
+        if (solicitud.has("solicitanteNombre")) {
+            return solicitud.get("solicitanteNombre").getAsString();
+        } else if (solicitud.has("solicitanteId")) {
+            return "ID: " + solicitud.get("solicitanteId").getAsString().substring(0, 6);
+        }
+        return "Anónimo";
+    }
+
+    private String formatFecha(long millis) {
+        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(millis));
+    }
+
+    private boolean esMensajeEspecial(JsonArray datos) {
+        return datos.size() == 1 && datos.get(0).getAsJsonObject().has("esMensaje");
+    }
+
+    private JsonArray crearMensajeInformacion(String titulo, String detalle) {
+        JsonObject mensaje = new JsonObject();
+        mensaje.addProperty("esMensaje", true);
+        mensaje.addProperty("titulo", titulo);
+        mensaje.addProperty("detalle", detalle);
+
+        JsonArray respuesta = new JsonArray();
+        respuesta.add(mensaje);
+        return respuesta;
+    }
+
+    private JsonArray crearMensajeError(Throwable error) {
+        return crearMensajeInformacion("Error", error.getMessage());
+    }
 
     private <T> void ejecutarTareaAsync(Supplier<T> tarea, Consumer<T> onSuccess, Consumer<Throwable> onError, String contexto) {
         Task<T> task = new Task<>() {
@@ -526,17 +691,6 @@ public class ControladorPrincipal {
                 listener.onSolicitudesActualizadas(datos);
             }
         });
-    }
-
-    private Node crearMensajeVacio(String mensaje) {
-        Label label = new Label(mensaje);
-        label.getStyleClass().add("mensaje-vacio");
-        label.setAlignment(Pos.CENTER);
-        return label;
-    }
-
-    private String formatFecha(long millis) {
-        return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(millis));
     }
 
     private void manejarError(String contexto, Throwable e) {
@@ -567,7 +721,7 @@ public class ControladorPrincipal {
             stage.setScene(new Scene(root));
             stage.initModality(Modality.APPLICATION_MODAL);
 
-            controlador.inicializar(String.valueOf(usuarioData), cliente, stage);
+            controlador.inicializar(usuarioData.toString(), cliente, stage);
             stage.showAndWait();
         } catch (IOException e) {
             manejarError("abrir ajustes de usuario", e);
@@ -583,87 +737,65 @@ public class ControladorPrincipal {
         ejecutarTareaAsync(
                 () -> {
                     try {
-                        // 1. Preparar solicitud
-                        JsonObject solicitud = new JsonObject();
                         String tipoSolicitud = usuarioData.has("esModerador") && usuarioData.get("esModerador").getAsBoolean()
                                 ? "OBTENER_DATOS_MODERADOR"
                                 : "OBTENER_DATOS_PERFIL";
+
+                        JsonObject solicitud = new JsonObject();
                         solicitud.addProperty("tipo", tipoSolicitud);
 
                         JsonObject datos = new JsonObject();
                         datos.addProperty("userId", usuarioData.get("id").getAsString());
                         solicitud.add("datos", datos);
 
-                        // 2. Enviar solicitud
                         cliente.getSalida().println(solicitud.toString());
-                        cliente.getSalida().flush();
-
-                        // 3. Recibir respuesta
                         String respuesta = cliente.getEntrada().readLine();
-
-                        if (respuesta == null || respuesta.isEmpty()) {
-                            throw new IOException("El servidor no respondió");
-                        }
-
                         JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
 
-                        // 4. Validar respuesta
-                        if (!jsonRespuesta.has("exito") || !jsonRespuesta.get("exito").getAsBoolean()) {
-                            String mensajeError = jsonRespuesta.has("mensaje")
-                                    ? jsonRespuesta.get("mensaje").getAsString()
-                                    : "Error desconocido";
-                            throw new RuntimeException(mensajeError);
+                        if (!jsonRespuesta.get("exito").getAsBoolean()) {
+                            throw new RuntimeException(jsonRespuesta.get("mensaje").getAsString());
                         }
 
-                        // 5. Preparar datos para retorno
                         JsonObject datosRetorno = new JsonObject();
                         datosRetorno.add("datosUsuario", jsonRespuesta.get("datosUsuario"));
                         datosRetorno.addProperty("esModerador", tipoSolicitud.equals("OBTENER_DATOS_MODERADOR"));
-
                         return datosRetorno;
                     } catch (Exception e) {
                         throw new RuntimeException("Error al obtener datos del perfil: " + e.getMessage(), e);
                     }
                 },
-                datosRetorno -> {
-                    Platform.runLater(() -> {
-                        try {
-                            JsonObject datosUsuario = datosRetorno.getAsJsonObject("datosUsuario");
-                            boolean esModerador = datosRetorno.get("esModerador").getAsBoolean();
+                datosRetorno -> Platform.runLater(() -> {
+                    try {
+                        JsonObject datosUsuario = datosRetorno.getAsJsonObject("datosUsuario");
+                        boolean esModerador = datosRetorno.get("esModerador").getAsBoolean();
 
-                            String fxmlPath = esModerador
-                                    ? "/com/taller/estudiantevistas/fxml/moderador.fxml"
-                                    : "/com/taller/estudiantevistas/fxml/perfil.fxml";
+                        String fxmlPath = esModerador
+                                ? "/com/taller/estudiantevistas/fxml/moderador.fxml"
+                                : "/com/taller/estudiantevistas/fxml/perfil.fxml";
 
-                            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-                            Parent root = loader.load();
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+                        Parent root = loader.load();
 
-                            // Usamos una interfaz común o hacemos casting según el tipo
-                            if (esModerador) {
-                                ControladorModerador controlador = loader.getController();
-                                controlador.inicializar(datosUsuario, cliente);
-                            } else {
-                                ControladorPerfil controlador = loader.getController();
-                                controlador.inicializar(datosUsuario, cliente);
-                            }
-
-                            Stage stage = new Stage();
-                            stage.setTitle(esModerador ? "Panel de Moderador" : "Perfil de Usuario");
-                            stage.setScene(new Scene(root));
-                            stage.initModality(Modality.APPLICATION_MODAL);
-                            stage.show();
-                        } catch (IOException e) {
-                            manejarError("cargar vista de perfil/moderador", e);
+                        if (esModerador) {
+                            ControladorModerador controlador = loader.getController();
+                            controlador.inicializar(datosUsuario, cliente);
+                        } else {
+                            ControladorPerfil controlador = loader.getController();
+                            controlador.inicializar(datosUsuario, cliente);
                         }
-                    });
-                },
-                error -> {
-                    Platform.runLater(() -> {
-                        mostrarAlerta("Error", "No se pudo cargar el perfil: " + error.getMessage(),
-                                Alert.AlertType.ERROR);
-                    });
-                    LOGGER.log(Level.SEVERE, "Error al cargar perfil", error);
-                },
+
+                        Stage stage = new Stage();
+                        stage.setTitle(esModerador ? "Panel de Moderador" : "Perfil de Usuario");
+                        stage.setScene(new Scene(root));
+                        stage.initModality(Modality.APPLICATION_MODAL);
+                        stage.show();
+                    } catch (IOException e) {
+                        manejarError("cargar vista de perfil/moderador", e);
+                    }
+                }),
+                error -> Platform.runLater(() ->
+                        mostrarAlerta("Error", "No se pudo cargar el perfil: " + error.getMessage(), Alert.AlertType.ERROR)
+                ),
                 "carga de perfil"
         );
     }
@@ -687,27 +819,22 @@ public class ControladorPrincipal {
     }
 
     private void mostrarNotificaciones() {
-        // Implementación futura
+        mostrarAlerta("En desarrollo", "Funcionalidad de notificaciones en desarrollo", Alert.AlertType.INFORMATION);
     }
 
     private void abrirChat() {
-        // Implementación futura
+        mostrarAlerta("En desarrollo", "Funcionalidad de chat en desarrollo", Alert.AlertType.INFORMATION);
     }
 
     private void abrirContacto() {
-        // Implementación futura
+        mostrarAlerta("En desarrollo", "Funcionalidad de contacto en desarrollo", Alert.AlertType.INFORMATION);
     }
 
-    private void cargarContenidosIniciales() {
-        recargarContenidos();
-        recargarSolicitudes();
-    }
+    // ==================== MÉTODOS PÚBLICOS ====================
 
     public void addActualizacionListener(ActualizacionListener listener) {
         listeners.add(Objects.requireNonNull(listener));
     }
-
-
 
 
 }
