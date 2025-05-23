@@ -1,59 +1,88 @@
+/* Tema principal - Oscuro moderno con toques morados */
 .root {
-    -fx-background-color: #121212;
+    -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
     -fx-font-family: "Segoe UI", sans-serif;
-    -fx-text-fill: white;
+    -fx-text-fill: #e0e0e0;
 }
 
-/* Paneles de contenido */
-.content-pane {
-    -fx-background-color: #1a1a22;
-    -fx-background-radius: 20;
-    -fx-border-color: #2e2e38;
-    -fx-border-width: 1;
-    -fx-padding: 15;
+/* Barra superior */
+.top {
+    -fx-background-color: rgba(30, 30, 40, 0.8);
+    -fx-background-radius: 0 0 15 15;
+    -fx-padding: 12 25;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 3);
 }
 
-/* Panel de solicitudes con estilo especial */
-.solicitud-pane {
-    -fx-background-color: #1a1a22;
-    -fx-background-radius: 20;
-    -fx-border-color: #2e2e38;
-    -fx-border-width: 1;
-    -fx-padding: 15;
+/* Barra lateral derecha */
+.right {
+    -fx-background-color: rgba(30, 30, 40, 0.8);
+    -fx-background-radius: 15 0 0 15;
+    -fx-padding: 20 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
 }
 
-/* Barra de búsqueda */
+/* Campo de búsqueda */
 .search-field {
-    -fx-background-color: #1e1e25;
-    -fx-background-radius: 25;
-    -fx-border-color: #2e2e38;
+    -fx-background-color: #252535;
+    -fx-background-radius: 20;
+    -fx-border-color: #3a3a4a;
     -fx-border-width: 1;
-    -fx-border-radius: 25;
+    -fx-border-radius: 20;
     -fx-text-fill: white;
     -fx-prompt-text-fill: #999999;
-    -fx-padding: 10 18;
+    -fx-padding: 10 20;
     -fx-font-size: 14px;
     -fx-pref-width: 400px;
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+.search-field:focused {
+    -fx-border-color: #8e44ff;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 2);
 }
 
 /* Combo box */
 .combo-box {
-    -fx-background-color: #8e44ff;
-    -fx-background-radius: 25;
-    -fx-border-radius: 25;
-    -fx-border-color: transparent;
-    -fx-font-weight: bold;
+    -fx-background-color: #252535;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: #3a3a4a;
+    -fx-font-weight: 500;
     -fx-padding: 8 16;
     -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #8e44ff;
 }
 
 .combo-box .list-cell {
     -fx-text-fill: white;
-    -fx-background-color: #2c2c36;
+    -fx-background-color: #252535;
+    -fx-padding: 8 16;
 }
 
 .combo-box .list-view {
-    -fx-background-color: #1a1a22;
+    -fx-background-color: #252535;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 3);
+}
+
+.combo-box .list-cell:filled:hover {
+    -fx-background-color: #3a3a4a;
+}
+
+/* Paneles principales */
+.content-pane, .solicitud-pane, .panel-contenedor {
+    -fx-background-color: #252535;
+    -fx-background-radius: 15;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 3);
 }
 
 /* Botones principales */
@@ -64,8 +93,8 @@
     -fx-font-weight: bold;
     -fx-font-size: 14px;
     -fx-padding: 12 24;
-    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 3);
     -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 3);
 }
 
 .main-button:hover {
@@ -73,7 +102,11 @@
     -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 4);
 }
 
-/* Botón de nueva solicitud (variante más pequeña) */
+.main-button:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.2), 5, 0.3, 0, 2);
+}
+
+/* Botón de nueva solicitud */
 .nueva-solicitud-btn {
     -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
     -fx-text-fill: white;
@@ -81,6 +114,7 @@
     -fx-font-weight: bold;
     -fx-font-size: 12px;
     -fx-padding: 8 16;
+    -fx-cursor: hand;
     -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 5, 0.5, 0, 2);
 }
 
@@ -94,215 +128,181 @@
     -fx-padding: 10;
     -fx-cursor: hand;
     -fx-border-radius: 50%;
-    -fx-border-color: transparent;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 2, 0.3, 0, 1);
-    -fx-min-width: 48px;
-    -fx-min-height: 48px;
-    -fx-max-width: 48px;
-    -fx-max-height: 48px;
+    -fx-effect: none;
 }
 
 .icon-button:hover {
-    -fx-background-color: #2e2e38;
-    -fx-border-radius: 50%;
+    -fx-background-color: rgba(142, 68, 255, 0.1);
 }
 
-/* Estilos para solicitudes */
-.solicitud-item {
-    -fx-background-color: #2c2c36;
-    -fx-background-radius: 10;
-    -fx-padding: 10;
-    -fx-border-color: #3e3e4a;
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-spacing: 5;
+.icon-button:pressed {
+    -fx-background-color: rgba(142, 68, 255, 0.2);
 }
 
-/* Estados de las solicitudes */
-.estado-pendiente { -fx-text-fill: #ffbb33; -fx-font-weight: bold; }
-.estado-enproceso { -fx-text-fill: #33b5e5; -fx-font-weight: bold; }
-.estado-resuelta { -fx-text-fill: #00C851; -fx-font-weight: bold; }
-.estado-cancelada { -fx-text-fill: #ff4444; -fx-font-weight: bold; }
-
-/* Niveles de urgencia */
-.urgencia-alta { -fx-text-fill: #ff4444; -fx-font-weight: bold; }
-.urgencia-media { -fx-text-fill: #ffbb33; -fx-font-weight: bold; }
-.urgencia-baja { -fx-text-fill: #00C851; -fx-font-weight: bold; }
-
-/* Texto de descripción */
-.descripcion-text {
-    -fx-text-fill: #cccccc;
-    -fx-font-size: 12px;
-    -fx-wrap-text: true;
-}
-
-/* Texto de información secundaria */
-.info-text {
-    -fx-text-fill: #999999;
-    -fx-font-size: 11px;
-}
-/* Estilos para items de contenido */
+/* Items de contenido */
 .contenido-item {
-    -fx-background-color: #2c2c36;
-    -fx-padding: 10;
-    -fx-background-radius: 5;
-    -fx-spacing: 5;
+    -fx-background-color: #2c2c3c;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-padding: 6;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+.contenido-item:hover {
+    -fx-background-color: #343446;
+    -fx-border-color: #8e44ff;
 }
 
 .contenido-titulo {
     -fx-text-fill: #a569ff;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
-}
-
-.contenido-info {
-    -fx-text-fill: #cccccc;
-    -fx-font-size: 12px;
-}
-
-/* Estilos para items de solicitud */
-.solicitud-item {
-    -fx-background-color: #2c2c36;
-    -fx-padding: 15;
-    -fx-background-radius: 10;
-    -fx-border-color: #3e3e4a;
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-spacing: 8;
-}
-
-.solicitud-titulo {
-    -fx-text-fill: #ff6b6b;
-    -fx-font-weight: bold;
-    -fx-font-size: 14px;
-}
-
-/* Estados de urgencia */
-.urgencia-alta {
-    -fx-text-fill: #ff4444;
-    -fx-font-weight: bold;
-}
-
-.urgencia-media {
-    -fx-text-fill: #ffbb33;
-    -fx-font-weight: bold;
-}
-
-.urgencia-baja {
-    -fx-text-fill: #00C851;
-    -fx-font-weight: bold;
-}
-
-/* Estados de solicitud */
-.estado-pendiente {
-    -fx-text-fill: #ffbb33;
-    -fx-font-weight: bold;
-}
-
-.estado-enproceso {
-    -fx-text-fill: #33b5e5;
-    -fx-font-weight: bold;
-}
-
-.estado-resuelta {
-    -fx-text-fill: #00C851;
-    -fx-font-weight: bold;
-}
-
-.estado-cancelada {
-    -fx-text-fill: #ff4444;
-    -fx-font-weight: bold;
-}
-
-/* Texto de descripción */
-.descripcion-text {
-    -fx-text-fill: #cccccc;
-    -fx-font-size: 12px;
+    -fx-font-size: 15px;
     -fx-wrap-text: true;
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-    -fx-padding: 5 0 0 0;
 }
 
-/* Texto informativo */
-.info-text {
-    -fx-text-fill: #999999;
-    -fx-font-size: 11px;
-}
-
-/* Mensaje cuando no hay datos */
-.mensaje-vacio {
-    -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-padding: 20;
-}
-
-/* Versión compacta de las tarjetas de solicitud */
-.solicitud-item {
-    -fx-background-color: #2c2c36;
-    -fx-padding: 10;
-    -fx-background-radius: 10;
-    -fx-border-color: #3e3e4a;
-    -fx-border-width: 1;
-    -fx-border-radius: 10;
-    -fx-spacing: 6;
-    -fx-max-width: 350px; /* Asegura que no se salga del panel */
-}
-
-.solicitud-titulo {
-    -fx-text-fill: #ff6b6b;
-    -fx-font-weight: bold;
-    -fx-font-size: 13px;
-}
-
-/* Descripción más compacta */
-.descripcion-text {
-    -fx-text-fill: #999999; /* Texto más oscuro */
-    -fx-font-size: 11px;
-    -fx-wrap-text: true;
-    -fx-background-color: transparent;
-    -fx-pref-height: 60px; /* Altura fija con scroll */
-    -fx-max-height: 60px;
-}
-
-/* Pie de tarjeta más compacto */
-.solicitud-footer {
-    -fx-text-fill: #777777;
-    -fx-font-size: 10px;
-    -fx-spacing: 8;
-}
-
-/* Estados y urgencias más compactos */
-.solicitud-estados {
-    -fx-spacing: 8;
+.contenido-metadatos {
+    -fx-spacing: 10;
     -fx-alignment: CENTER_LEFT;
 }
 
-/* Efecto hover para interactividad */
+.contenido-metadatos .label {
+    -fx-text-fill: #999999;
+    -fx-font-size: 12px;
+    -fx-padding: 0 8 0 0;
+}
+
+.descripcion-text {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* Items de solicitud */
+.solicitud-item {
+    -fx-background-color: #2c2c3c;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
 .solicitud-item:hover {
-    -fx-background-color: #343441;
+    -fx-background-color: #343446;
     -fx-border-color: #8e44ff;
     -fx-cursor: hand;
 }
 
-.contenido-item {
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
-}
-
-.contenido-titulo {
-    -fx-font-size: 14px;
+.solicitud-titulo {
+    -fx-text-fill: #ff6b6b;
     -fx-font-weight: bold;
-    -fx-text-fill: #333;
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
 }
 
-.contenido-metadatos {
-    -fx-font-size: 12px;
-    -fx-text-fill: #666;
+.solicitud-estados {
+    -fx-spacing: 10;
+    -fx-alignment: CENTER_LEFT;
 }
 
-.descripcion-text {
-    -fx-font-size: 13px;
-    -fx-text-fill: #555;
+.solicitud-footer {
+    -fx-spacing: 10;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.solicitud-footer .label {
+    -fx-text-fill: #999999;
+    -fx-font-size: 11px;
+}
+
+/* Estados y urgencias */
+.urgencia-alta { -fx-text-fill: #ff4444; }
+.urgencia-media { -fx-text-fill: #ffbb33; }
+.urgencia-baja { -fx-text-fill: #00C851; }
+
+.estado-pendiente { -fx-text-fill: #ffbb33; }
+.estado-enproceso { -fx-text-fill: #33b5e5; }
+.estado-resuelta { -fx-text-fill: #00C851; }
+.estado-cancelada { -fx-text-fill: #ff4444; }
+
+/* ScrollPane */
+.scroll-pane {
     -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-padding: 0;
+    -fx-background-insets: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0 2px 0 0;
+}
+
+.scroll-pane .scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #3a3a4a;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+    -fx-opacity: 0.7;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #4a4a5a;
+    -fx-opacity: 0.9;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:pressed {
+    -fx-background-color: #8e44ff;
+    -fx-opacity: 1;
+}
+
+.scroll-pane .scroll-bar:vertical .increment-button,
+.scroll-pane .scroll-bar:vertical .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0 0 0 0;
+}
+
+.scroll-pane .scroll-bar:vertical .increment-arrow,
+.scroll-pane .scroll-bar:vertical .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.scroll-pane .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+/* Efectos de transición */
+* {
+    -fx-transition: all 0.3s ease;
+}
+
+/* Ajustes para paneles internos */
+.panel-contenedor > .scroll-pane {
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.panel-contenedor > .scroll-pane > .viewport {
+    -fx-background-color: transparent;
 }

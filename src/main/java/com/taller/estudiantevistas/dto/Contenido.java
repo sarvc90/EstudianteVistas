@@ -18,7 +18,7 @@ public class Contenido {
     @Expose
     private String autor;
 
-    @SerializedName("fecha")
+    @SerializedName("fechaCreacion")
     @Expose
     private LocalDateTime fechaPublicacion;
 
@@ -32,6 +32,9 @@ public class Contenido {
     private String descripcion;
 
     @Expose
+    private String contenido;
+
+    @Expose
     private List<Valoracion> valoraciones;
 
     @Expose
@@ -42,7 +45,7 @@ public class Contenido {
 
     // Constructor completo
     public Contenido(String id, String titulo, String autor, LocalDateTime fechaPublicacion,
-                     TipoContenido tipo, String tema, String descripcion,
+                     TipoContenido tipo, String tema, String descripcion, String contenido,
                      List<Valoracion> valoraciones, double promedioValoraciones) {
         this.id = id;
         this.titulo = titulo;
@@ -51,6 +54,7 @@ public class Contenido {
         this.tipo = tipo;
         this.tema = tema;
         this.descripcion = descripcion;
+        this.contenido = contenido;
         this.valoraciones = valoraciones;
         this.promedioValoraciones = promedioValoraciones;
     }
@@ -112,6 +116,14 @@ public class Contenido {
         this.descripcion = descripcion;
     }
 
+    public String getContenido() {
+        return contenido;
+    }
+
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
+    }
+
     public List<Valoracion> getValoraciones() {
         return valoraciones;
     }
@@ -129,6 +141,7 @@ public class Contenido {
     }
 
     @Override
+
     public String toString() {
         return "Contenido{" +
                 "id='" + id + '\'' +
@@ -138,6 +151,7 @@ public class Contenido {
                 ", tipo=" + tipo +
                 ", tema='" + tema + '\'' +
                 ", descripcion='" + descripcion + '\'' +
+                ", contenido='" + contenido + '\'' +  // Incluido en toString
                 ", valoraciones=" + valoraciones +
                 ", promedioValoraciones=" + promedioValoraciones +
                 '}';

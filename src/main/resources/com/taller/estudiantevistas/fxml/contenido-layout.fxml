@@ -10,26 +10,28 @@
       styleClass="container" spacing="30">
 
     <!-- Caja izquierda (cuadro vacío) -->
-    <Pane styleClass="left-box" prefWidth="300" prefHeight="300" />
+    <Pane fx:id="leftBox" styleClass="left-box" prefWidth="300" prefHeight="300" />
 
     <!-- Caja derecha -->
     <VBox styleClass="right-box" spacing="20">
         <VBox styleClass="content-wrapper" spacing="20">
             <VBox styleClass="title-container">
-                <Text styleClass="content-title" text="Titulo" />
-                <Text styleClass="content-title" text="autor" />
-                <Text styleClass="content-title" text="contenidos" />
+                <Text fx:id="txtTitulo" styleClass="content-title" />
+                <Text fx:id="txtAutor" styleClass="content-title" />
+                <Text fx:id="txtFechaPublicacion" styleClass="content-title" />
+                <Text fx:id="txtTema" styleClass="content-title" />
+                <Text fx:id="txtTipo" styleClass="content-title" />
+                <TextArea fx:id="txtDescripcion" editable="false" wrapText="true" />
             </VBox>
 
             <VBox styleClass="buttons-container" spacing="15">
-                <Button styleClass="action-button" text="agregar comentario" onAction="#agregarComentario" />
-                <Button styleClass="action-button" text="agregar valoración" onAction="#agregarValoracion" />
+                <Button fx:id="btnAgregarValoracion" styleClass="action-button" text="Agregar valoración" onAction="#mostrarDialogoValoracion" />
             </VBox>
         </VBox>
 
         <VBox styleClass="bottom-buttons" spacing="15">
-            <Button styleClass="bottom-button" text="valoración promedio:" onAction="#verValoracionPromedio" />
-            <Button styleClass="bottom-button" text="ver comentarios..." onAction="#verComentarios" />
+            <Button fx:id="btnVerValoracionPromedio" styleClass="bottom-button" text="Valoración promedio:" onAction="#verValoracionPromedio" />
+            <Button fx:id="btnVerValoraciones" styleClass="bottom-button" text="Ver valoraciones..." onAction="#verValoraciones" />
         </VBox>
     </VBox>
 </HBox>

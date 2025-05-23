@@ -15,18 +15,6 @@
     -fx-alignment: center;
 }
 
-/* Caja izquierda */
-.left-box {
-    -fx-background-color: transparent;
-    -fx-border-color: #7a4de8;
-    -fx-border-radius: 15px;
-    -fx-border-width: 2px;
-    -fx-pref-width: 300px;
-    -fx-pref-height: 300px;
-    -fx-min-width: 300px;
-    -fx-min-height: 300px;
-}
-
 /* Caja derecha */
 .right-box {
     -fx-background-color: #1c1b22;
@@ -108,6 +96,77 @@
     -fx-background-color: #1e1d24;
 }
 
+.left-box {
+    -fx-background-color: #1c1b22;
+    -fx-border-color: #7a4de8;
+    -fx-border-radius: 15px;
+    -fx-border-width: 2px;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 300px;
+    -fx-min-width: 300px;
+    -fx-min-height: 300px;
+    -fx-padding: 10px;
+    -fx-alignment: center;
+}
+
+.left-box .label, .left-box .hyperlink {
+    -fx-text-fill: #ffffff;
+    -fx-font-size: 14px;
+    -fx-alignment: center;
+    -fx-text-alignment: center;
+}
+
+.left-box .button {
+    -fx-background-color: #7a4de8;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-background-radius: 15px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.left-box .scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.left-box .scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.left-box .image-view {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
+}
+
+/* Estilos para el contenido */
+.content-display {
+    -fx-padding: 15px;
+    -fx-spacing: 10px;
+}
+
+.content-display .label {
+    -fx-text-fill: #7a4de8;
+}
+
+.content-display .hyperlink {
+    -fx-text-fill: #7a4de8;
+    -fx-underline: true;
+    -fx-border-color: transparent;
+}
+
+.content-display .button {
+    -fx-background-color: #7a4de8;
+    -fx-text-fill: white;
+    -fx-background-radius: 15px;
+    -fx-padding: 8px 16px;
+}
+
+.error-display {
+    -fx-background-color: #ffeeee;
+    -fx-border-color: #ffcccc;
+    -fx-border-radius: 5px;
+    -fx-padding: 10px;
+}
+
 /* Estilos responsivos */
 @media (max-width: 600px) {
     .container {
@@ -122,8 +181,8 @@
     }
 
     .right-box {
+        -fx-min-height: 400px;
         -fx-padding: 20px;
-        -fx-min-height: USE_PREF_SIZE; /* Fixed! */
     }
 
     .buttons-container {

@@ -4,97 +4,156 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.control.Tooltip?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.taller.estudiantevistas.controlador.ControladorPrincipal"
             stylesheets="@../css/principal.css"
-            prefWidth="1200" prefHeight="700" styleClass="root">
+            prefWidth="1200" prefHeight="750" styleClass="root">
 
     <!-- BARRA SUPERIOR: Campo de búsqueda, botón buscar, combo tipo -->
     <top>
-        <HBox spacing="20" alignment="CENTER_LEFT">
+        <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-background-color: rgba(30,30,40,0.8); -fx-background-radius: 0 0 15 15;">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="20"/>
+                <Insets top="12" right="25" bottom="12" left="25"/>
             </padding>
 
-            <TextField fx:id="campoBusqueda" promptText="Buscar..." styleClass="search-field"/>
+            <!-- Logo o título de la aplicación -->
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <ImageView fitWidth="32" fitHeight="32" preserveRatio="true">
+                    <image>
+                        <Image url="@../icons/app-icon.png"/>
+                    </image>
+                </ImageView>
+                <Text text="EstudianteVistas" fill="#a569ff" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+            </HBox>
 
-            <Button fx:id="btnBuscar" graphicTextGap="0" styleClass="icon-button">
-                <graphic>
-                    <ImageView fx:id="imgLupa" fitWidth="30" fitHeight="30" preserveRatio="true"/>
-                </graphic>
-            </Button>
+            <Region HBox.hgrow="ALWAYS"/>
 
-            <ComboBox fx:id="comboTipo" promptText="Tipo" styleClass="combo-box"/>
+            <!-- Grupo de búsqueda -->
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <TextField fx:id="campoBusqueda" promptText="Buscar contenidos..." styleClass="search-field"/>
+
+                <Button fx:id="btnBuscar" styleClass="icon-button">
+                    <tooltip>
+                        <Tooltip text="Buscar"/>
+                    </tooltip>
+                    <graphic>
+                        <ImageView fx:id="imgLupa" fitWidth="24" fitHeight="24" preserveRatio="true"/>
+                    </graphic>
+                </Button>
+
+                <ComboBox fx:id="comboTipo" promptText="Filtrar por" styleClass="combo-box" prefWidth="120"/>
+            </HBox>
         </HBox>
     </top>
 
     <!-- CENTRO: Contenidos y solicitudes -->
     <center>
-        <HBox spacing="50" alignment="CENTER">
+        <HBox spacing="30" alignment="CENTER" style="-fx-background-color: transparent;">
             <padding>
-                <Insets top="40" right="40" bottom="40" left="40"/>
+                <Insets top="30" right="40" bottom="30" left="40"/>
             </padding>
 
             <!-- Panel de Contenidos Educativos -->
-            <VBox spacing="15" alignment="CENTER">
-                <Button fx:id="btnRecargarContenidos" text="Recargar contenidos" styleClass="main-button"/>
-                <Pane fx:id="panelContenidos" prefWidth="350" prefHeight="400" styleClass="content-pane"/>
+            <VBox spacing="15" alignment="TOP_CENTER" style="-fx-background-color: transparent;">
+                <Label text="Contenidos Educativos" style="-fx-text-fill: #a569ff; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                <Button fx:id="btnRecargarContenidos" text="Recargar" styleClass="main-button"/>
+                <Pane fx:id="panelContenidos" prefWidth="380" prefHeight="450" styleClass="content-pane"/>
             </VBox>
 
-            <!-- Dentro del VBox que contiene el panel de solicitudes -->
-            <VBox spacing="15" alignment="CENTER">
-                <!-- Reemplaza el HBox que contiene los botones con este código mejorado -->
-                <HBox spacing="15" alignment="CENTER_RIGHT" style="-fx-padding: 0 0 10 0;">
-                    <Button fx:id="btnRecargarSolicitudes" styleClass="recargar-button">
+            <!-- Panel de Solicitudes de Ayuda -->
+            <VBox spacing="15" alignment="TOP_CENTER" style="-fx-background-color: transparent;">
+                <Label text="Solicitudes de Ayuda" style="-fx-text-fill: #ff6b6b; -fx-font-size: 16px; -fx-font-weight: bold;"/>
+                <HBox spacing="15" alignment="CENTER_RIGHT">
+                    <Button fx:id="btnRecargarSolicitudes" styleClass="icon-button">
+                        <tooltip>
+                            <Tooltip text="Recargar solicitudes"/>
+                        </tooltip>
                         <graphic>
-                            <ImageView fx:id="imgRecargar" fitWidth="20" fitHeight="20" preserveRatio="true" />
+                            <ImageView fx:id="imgRecargar" fitWidth="20" fitHeight="20" preserveRatio="true"/>
                         </graphic>
                     </Button>
-                    <Button fx:id="btnNuevaSolicitud" text="Nueva Solicitud" styleClass="nueva-solicitud-btn"
-                            style="-fx-margin: 0 0 0 20;"/>
+                    <Button fx:id="btnNuevaSolicitud" text="Nueva Solicitud" styleClass="nueva-solicitud-btn"/>
                 </HBox>
-                <Pane fx:id="panelSolicitudes" prefWidth="350" prefHeight="400" styleClass="solicitud-pane"/>
+                <Pane fx:id="panelSolicitudes" prefWidth="380" prefHeight="450" styleClass="solicitud-pane"/>
             </VBox>
         </HBox>
     </center>
 
     <!-- LADO DERECHO: Botones de usuario -->
     <right>
-        <VBox spacing="15" alignment="TOP_CENTER">
+        <VBox spacing="20" alignment="TOP_CENTER" style="-fx-background-color: transparent;">
             <padding>
-                <Insets top="20" right="20" bottom="20" left="10"/>
+                <Insets top="30" right="15" bottom="20" left="15"/>
             </padding>
 
+            <!-- Avatar del usuario -->
+            <StackPane>
+                <Circle radius="32" fill="linear-gradient(to bottom right, #8e44ff, #a569ff)"/>
+                <ImageView fitWidth="40" fitHeight="40" preserveRatio="true">
+                    <image>
+                        <Image url="@../icons/user-avatar.png"/>
+                    </image>
+                </ImageView>
+            </StackPane>
+
+            <Separator orientation="HORIZONTAL" style="-fx-background-color: #3a3a4a; -fx-padding: 0 0 5 0;"/>
+
             <Button fx:id="btnAjustes" styleClass="icon-button">
+                <tooltip>
+                    <Tooltip text="Ajustes"/>
+                </tooltip>
                 <graphic>
-                    <ImageView fx:id="imgAjustes" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                    <ImageView fx:id="imgAjustes" fitWidth="24" fitHeight="24" preserveRatio="true"/>
                 </graphic>
             </Button>
 
             <Button fx:id="btnNotificaciones" styleClass="icon-button">
+                <tooltip>
+                    <Tooltip text="Notificaciones"/>
+                </tooltip>
                 <graphic>
-                    <ImageView fx:id="imgCampana" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                    <ImageView fx:id="imgCampana" fitWidth="24" fitHeight="24" preserveRatio="true"/>
                 </graphic>
             </Button>
 
             <Button fx:id="btnChat" styleClass="icon-button">
+                <tooltip>
+                    <Tooltip text="Chat"/>
+                </tooltip>
                 <graphic>
-                    <ImageView fx:id="imgChat" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                    <ImageView fx:id="imgChat" fitWidth="24" fitHeight="24" preserveRatio="true"/>
                 </graphic>
             </Button>
 
             <Button fx:id="btnPerfil" styleClass="icon-button">
+                <tooltip>
+                    <Tooltip text="Mi Perfil"/>
+                </tooltip>
                 <graphic>
-                    <ImageView fx:id="imgPerfil" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                    <ImageView fx:id="imgPerfil" fitWidth="24" fitHeight="24" preserveRatio="true"/>
                 </graphic>
             </Button>
 
             <Button fx:id="btnContacto" styleClass="icon-button">
+                <tooltip>
+                    <Tooltip text="Contacto"/>
+                </tooltip>
                 <graphic>
-                    <ImageView fx:id="imgContacto" fitWidth="32" fitHeight="32" preserveRatio="true"/>
+                    <ImageView fx:id="imgContacto" fitWidth="24" fitHeight="24" preserveRatio="true"/>
                 </graphic>
             </Button>
+
+            <Separator orientation="HORIZONTAL" style="-fx-background-color: #3a3a4a; -fx-padding: 5 0 0 0;"/>
+
+            <!-- Estado en línea -->
+            <HBox alignment="CENTER" spacing="5">
+                <Circle radius="5" fill="#00C851"/>
+                <Label text="En línea" style="-fx-text-fill: #999; -fx-font-size: 12px;"/>
+            </HBox>
         </VBox>
     </right>
 </BorderPane>

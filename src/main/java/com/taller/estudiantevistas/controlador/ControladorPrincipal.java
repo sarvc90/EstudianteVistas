@@ -52,6 +52,9 @@ public class ControladorPrincipal {
     @FXML private Button btnRecargarContenidos, btnRecargarSolicitudes, btnNuevaSolicitud;
     @FXML private Pane panelContenidos, panelSolicitudes;
 
+    private static final String[] TIPOS_CONTENIDO = {"Tema", "Autor", "Tipo", "Fecha"};
+    private static final String[] FILTROS_SOLICITUD = {"Todas", "Pendientes", "En proceso", "Resueltas"};
+
     // Listeners para actualizaciones
     private final List<ActualizacionListener> listeners = new ArrayList<>();
 
@@ -78,6 +81,8 @@ public class ControladorPrincipal {
             cargarImagenes();
             configurarComboBox();
         });
+        panelContenidos.getStyleClass().add("panel-contenedor");
+        panelSolicitudes.getStyleClass().add("panel-contenedor");
     }
 
     // ==================== CONFIGURACIÓN INICIAL ====================
@@ -104,8 +109,23 @@ public class ControladorPrincipal {
     }
 
     private void configurarComboBox() {
-        comboTipo.getItems().addAll("Tema", "Autor", "Tipo");
+        comboTipo.getItems().addAll(TIPOS_CONTENIDO);
         comboTipo.getSelectionModel().selectFirst();
+
+        // Estilo adicional para el combo box
+        comboTipo.setCellFactory(lv -> new ListCell<String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : item);
+                setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
+                if (!empty && getIndex() % 2 == 0) {
+                    setStyle("-fx-background-color: #2a2a3a; -fx-text-fill: white;");
+                } else if (!empty) {
+                    setStyle("-fx-background-color: #252535; -fx-text-fill: white;");
+                }
+            }
+        });
     }
 
     private void configurarEventos() {
@@ -204,6 +224,7 @@ public class ControladorPrincipal {
     /**
      * Muestra contenidos en el panel - IDÉNTICO a mostrarSolicitudesEnPanel()
      */
+    /**
     private void mostrarContenidosEnPanel(JsonArray contenidos, Pane panel) {
         VBox contenedor = new VBox(5);
         contenedor.setPadding(new Insets(10));
@@ -236,7 +257,7 @@ public class ControladorPrincipal {
 
         panel.getChildren().clear();
         panel.getChildren().add(crearScrollPane(contenedor));
-    }
+    }*/
 
     /**
      * Crea items de contenido con el MISMO ESTILO que las solicitudes
@@ -414,10 +435,12 @@ public class ControladorPrincipal {
     /**
      * Muestra las solicitudes de ayuda en el panel especificado
      */
+
     private void mostrarSolicitudesEnPanel(JsonArray solicitudes, Pane panel) {
         VBox contenedor = new VBox(10);
         contenedor.setPadding(new Insets(10));
         contenedor.setStyle("-fx-background-color: #f5f5f5;");
+        contenedor.setMaxWidth(panel.getWidth() - 20);
 
         // Limpiar contenedor primero
         contenedor.getChildren().clear();
@@ -448,9 +471,10 @@ public class ControladorPrincipal {
                 }
             }
         }
-
+        ScrollPane scrollPane = crearScrollPane(contenedor);
+        scrollPane.setPrefViewportWidth(panel.getWidth() - 15);
         panel.getChildren().clear();
-        panel.getChildren().add(crearScrollPane(contenedor));
+        panel.getChildren().add(scrollPane);
     }
 
     // ==================== COMPONENTES UI ====================
@@ -458,6 +482,7 @@ public class ControladorPrincipal {
     /**
      * Crea un ítem de contenido educativo para mostrar en la UI (versión mejorada)
      */
+    /**
     private Node crearItemContenido(JsonObject contenido) {
         VBox item = new VBox(5); // Espaciado reducido para mejor compactación
         item.getStyleClass().add("contenido-item");
@@ -497,7 +522,7 @@ public class ControladorPrincipal {
         item.getChildren().addAll(titulo, metadatos, descripcion, contenidoVisual);
         return item;
     }
-
+*/
     /**
      * Mejora el formato de visualización del contenido según su tipo
      */
@@ -546,6 +571,7 @@ public class ControladorPrincipal {
     /**
      * Crea un ítem de solicitud de ayuda para mostrar en la UI
      */
+
     private Node crearItemSolicitud(JsonObject solicitud) {
         VBox item = new VBox();
         item.getStyleClass().add("solicitud-item");
@@ -624,13 +650,13 @@ public class ControladorPrincipal {
         cajaMensaje.getChildren().addAll(lblTitulo, lblDetalle, btnRecargar);
         return cajaMensaje;
     }
-
+/**
     private ScrollPane crearScrollPane(Node contenido) {
         ScrollPane scrollPane = new ScrollPane(contenido);
         scrollPane.setFitToWidth(true);
         scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
         return scrollPane;
-    }
+    }*/
 
     // ==================== UTILIDADES ====================
 
@@ -836,5 +862,218 @@ public class ControladorPrincipal {
         listeners.add(Objects.requireNonNull(listener));
     }
 
+    /////////
+    /**
+     * Crea un ítem de contenido educativo con nuevo estilo
+     */
+    private Node crearItemContenido(JsonObject contenido) {
+        VBox item = new VBox(8);
+        item.getStyleClass().add("contenido-item");
+
+        // Título con icono según tipo
+        HBox tituloBox = new HBox(5);
+        tituloBox.setAlignment(Pos.CENTER_LEFT);
+
+        String tipoContenido = contenido.get("tipo").getAsString();
+        Label iconoTipo = new Label(obtenerIconoTipo(tipoContenido));
+        iconoTipo.setStyle("-fx-font-size: 16px;");
+
+        Label titulo = new Label(contenido.get("titulo").getAsString());
+        titulo.getStyleClass().add("contenido-titulo");
+
+        tituloBox.getChildren().addAll(iconoTipo, titulo);
+
+        // Metadatos
+        HBox metadatos = new HBox(10);
+        metadatos.getStyleClass().add("contenido-metadatos");
+
+        Label autor = crearMetadataLabel("👤 " + contenido.get("autor").getAsString());
+        Label fecha = crearMetadataLabel("📅 " + formatFechaContenido(contenido.get("fechaCreacion").getAsString()));
+        Label tema = crearMetadataLabel("🏷 " + contenido.get("tema").getAsString());
+
+        metadatos.getChildren().addAll(autor, fecha, tema);
+
+        // Descripción
+        Text descripcion = new Text(contenido.get("descripcion").getAsString());
+        descripcion.getStyleClass().add("descripcion-text");
+        descripcion.setWrappingWidth(panelContenidos.getWidth() - 40);
+
+        // Contenido principal
+        Node contenidoVisual = crearVisualizacionContenido(contenido);
+
+        item.getChildren().addAll(tituloBox, metadatos, descripcion, contenidoVisual);
+
+        // Efecto de hover
+        item.setOnMouseEntered(e -> item.setStyle("-fx-border-color: #bdc3c7;"));
+        item.setOnMouseExited(e -> item.setStyle("-fx-border-color: #e0e0e0;"));
+        item.setOnMouseClicked(e -> abrirVistaContenido(contenido));
+        return item;
+    }
+
+    private void abrirVistaContenido(JsonObject contenido) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/contenido-layout.fxml"));
+            Parent root = loader.load();
+
+            ControladorContenido controlador = loader.getController();
+            controlador.inicializar(contenido, cliente, usuarioData);
+
+            Stage stage = new Stage();
+            stage.setTitle("Detalles del Contenido");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            manejarError("abrir vista de contenido", e);
+        }
+    }
+
+    private Label crearMetadataLabel(String text) {
+        Label label = new Label(text);
+        label.getStyleClass().add("metadata-label");
+        return label;
+    }
+
+    private String obtenerIconoTipo(String tipo) {
+        switch(tipo.toUpperCase()) {
+            case "VIDEO": return "🎬";
+            case "DOCUMENTO": return "📄";
+            case "ENLACE": return "🔗";
+            case "IMAGEN": return "🖼";
+            case "AUDIO": return "🎧";
+            default: return "📌";
+        }
+    }
+
+    /**
+     * Crea un ítem de solicitud de ayuda con nuevo estilo
+     */
+    /**
+    private Node crearItemSolicitud(JsonObject solicitud) {
+        VBox item = new VBox(8);
+        item.getStyleClass().add("solicitud-item");
+
+        // Título
+        Label temaLabel = new Label(solicitud.get("tema").getAsString());
+        temaLabel.getStyleClass().add("solicitud-titulo");
+
+        // Estados y urgencia
+        HBox estadosBox = new HBox(10);
+        estadosBox.setAlignment(Pos.CENTER_LEFT);
+
+        String urgencia = solicitud.get("urgencia").getAsString();
+        String estado = solicitud.get("estado").getAsString();
+
+        Label urgenciaLabel = new Label("🔺 " + urgencia);
+        urgenciaLabel.getStyleClass().add("urgencia-" + urgencia.toLowerCase());
+
+        Label estadoLabel = new Label("◉ " + estado);
+        estadoLabel.getStyleClass().add("estado-" + estado.toLowerCase());
+
+        estadosBox.getChildren().addAll(urgenciaLabel, estadoLabel);
+
+        // Descripción
+        Text descripcion = new Text(solicitud.get("descripcion").getAsString());
+        descripcion.getStyleClass().add("descripcion-text");
+        descripcion.setWrappingWidth(panelSolicitudes.getWidth() - 40);
+
+        // Footer
+        HBox footer = new HBox(10);
+        footer.getStyleClass().add("solicitud-footer");
+
+        String fechaStr = formatFecha(solicitud.get("fecha").getAsLong());
+        String solicitante = obtenerNombreSolicitante(solicitud);
+
+        Label fechaLabel = crearMetadataLabel("📅 " + fechaStr);
+        Label solicitanteLabel = crearMetadataLabel("👤 " + solicitante);
+
+        footer.getChildren().addAll(fechaLabel, solicitanteLabel);
+
+        item.getChildren().addAll(temaLabel, estadosBox, descripcion, footer);
+
+        // Efecto de hover
+        item.setOnMouseEntered(e -> item.setStyle("-fx-border-color: #bdc3c7;"));
+        item.setOnMouseExited(e -> item.setStyle("-fx-border-color: #e0e0e0;"));
+
+        return item;
+    }*/
+
+    private void mostrarContenidosEnPanel(JsonArray contenidos, Pane panel) {
+        VBox contenedor = new VBox(10);
+        contenedor.setPadding(new Insets(10));
+        contenedor.getStyleClass().add("contenido-panel");
+        contenedor.setMaxWidth(panel.getWidth() - 20);
+
+        if (esMensajeEspecial(contenidos)) {
+            JsonObject mensaje = contenidos.get(0).getAsJsonObject();
+            contenedor.getChildren().add(crearMensajeUI(
+                    mensaje.get("titulo").getAsString(),
+                    mensaje.get("detalle").getAsString(),
+                    this::recargarContenidos
+            ));
+        } else {
+            Set<String> idsMostrados = new HashSet<>();
+            for (JsonElement elemento : contenidos) {
+                JsonObject contenido = elemento.getAsJsonObject();
+                String id = contenido.get("id").getAsString();
+
+                if (!idsMostrados.contains(id)) {
+                    contenedor.getChildren().add(crearItemContenido(contenido));
+                    idsMostrados.add(id);
+                }
+            }
+        }
+
+        ScrollPane scrollPane = crearScrollPane(contenedor);
+        scrollPane.setPrefViewportWidth(panel.getWidth() - 15);
+        panel.getChildren().clear();
+        panel.getChildren().add(scrollPane);
+    }
+/**
+    private void mostrarSolicitudesEnPanel(JsonArray solicitudes, Pane panel) {
+        VBox contenedor = new VBox(10);
+        contenedor.setPadding(new Insets(15));
+        contenedor.getStyleClass().add("solicitud-panel");
+
+        if (esMensajeEspecial(solicitudes)) {
+            JsonObject mensaje = solicitudes.get(0).getAsJsonObject();
+            contenedor.getChildren().add(crearMensajeUI(
+                    mensaje.get("titulo").getAsString(),
+                    mensaje.get("detalle").getAsString(),
+                    this::recargarSolicitudes
+            ));
+        } else {
+            Set<String> idsMostrados = new HashSet<>();
+            for (JsonElement elemento : solicitudes) {
+                JsonObject solicitud = elemento.getAsJsonObject();
+                String id = solicitud.get("id").getAsString();
+
+                if (!idsMostrados.contains(id)) {
+                    contenedor.getChildren().add(crearItemSolicitud(solicitud));
+                    idsMostrados.add(id);
+                }
+            }
+        }
+
+        ScrollPane scrollPane = crearScrollPane(contenedor);
+        panel.getChildren().clear();
+        panel.getChildren().add(scrollPane);
+    }
+*/
+private ScrollPane crearScrollPane(Node contenido) {
+    ScrollPane scrollPane = new ScrollPane(contenido);
+    scrollPane.setFitToWidth(true);
+    scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+    scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+    scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+
+    // Ajustar el padding y márgenes para que ocupe menos espacio
+    scrollPane.setPadding(new Insets(0));
+    scrollPane.setPrefViewportWidth(panelContenidos.getWidth() - 15); // 15px menos que el panel padre
+
+    // Aplicar estilos CSS
+    scrollPane.getStyleClass().add("scroll-pane");
+
+    return scrollPane;
+}
 
 }
