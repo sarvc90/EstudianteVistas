@@ -198,3 +198,15 @@
         -fx-pref-width: 250px;
     }
 }
+
+.valoracion-item {
+    -fx-background-color: #f8f8f8;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+.valoracion-item:hover {
+    -fx-background-color: #f0f0f0;
+}

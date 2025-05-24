@@ -29,6 +29,11 @@
             </VBox>
         </VBox>
 
+        <!-- Contenedor de valoraciones (NUEVO) -->
+        <VBox fx:id="valoracionesContainer" styleClass="valoraciones-container" visible="false" managed="false">
+            <!-- Las valoraciones se agregarán dinámicamente -->
+        </VBox>
+
         <VBox styleClass="bottom-buttons" spacing="15">
             <Button fx:id="btnVerValoracionPromedio" styleClass="bottom-button" text="Valoración promedio:" onAction="#verValoracionPromedio" />
             <Button fx:id="btnVerValoraciones" styleClass="bottom-button" text="Ver valoraciones..." onAction="#verValoraciones" />

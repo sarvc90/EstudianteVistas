@@ -5,6 +5,8 @@ import com.taller.estudiantevistas.dto.Contenido;
 import com.taller.estudiantevistas.dto.TipoContenido;
 import com.taller.estudiantevistas.dto.Valoracion;
 import com.taller.estudiantevistas.servicio.ClienteServicio;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -19,6 +21,7 @@ import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -64,6 +67,7 @@ public class ControladorContenido {
     private ClienteServicio cliente;
     private JsonObject usuarioData;
     private boolean usuarioYaValoro;
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
      * Inicializa el controlador con los datos del contenido
@@ -112,6 +116,9 @@ public class ControladorContenido {
 
                     // 4.5. Actualizar el promedio de valoraciones
                     actualizarPromedio();
+                    if (valoracionesContainer != null && valoracionesContainer.getParent() != null) {
+                        ((Pane)valoracionesContainer.getParent()).getChildren().remove(valoracionesContainer);
+                    }
 
                     // 4.6. Log de éxito
                     LOGGER.info("Contenido inicializado correctamente: " + contenido.getTitulo());
@@ -213,6 +220,10 @@ public class ControladorContenido {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error al mostrar contenido", e);
             mostrarErrorContenido("Error al mostrar el contenido");
+        }
+        // Asegurarse de que las valoraciones no se muestren aquí
+        if (valoracionesContainer != null && valoracionesContainer.getParent() == leftBox) {
+            leftBox.getChildren().remove(valoracionesContainer);
         }
     }
 
@@ -467,6 +478,11 @@ public class ControladorContenido {
 
     @FXML
     private void mostrarDialogoValoracion() {
+        // Verificar primero que tenemos los datos necesarios del usuario
+        if (usuarioData == null || !usuarioData.has("id")) {
+            mostrarAlerta("Error", "No se puede valorar sin estar autenticado", Alert.AlertType.ERROR);
+            return;
+        }
         Dialog<Valoracion> dialog = new Dialog<>();
         dialog.setTitle("Agregar Valoración");
         dialog.setHeaderText("Valora este contenido");
@@ -495,9 +511,13 @@ public class ControladorContenido {
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == agregarButtonType) {
+                String nombreUsuario = usuarioData.has("nombre") ?
+                        usuarioData.get("nombre").getAsString() :
+                        "Usuario " + usuarioData.get("id").getAsString();
+
                 return new Valoracion(
-                        null,
-                        usuarioData.get("nombre").getAsString(),
+                        usuarioData.get("id").getAsString(),
+                        nombreUsuario,
                         ratingControl.getRating(),
                         txtComentario.getText(),
                         new Date()
@@ -511,26 +531,32 @@ public class ControladorContenido {
     }
 
     private void agregarValoracion(Valoracion valoracion) {
+        if (valoracion == null) return;
+
         ejecutarTareaAsync(
                 () -> {
                     try {
                         return enviarValoracionAlServidor(valoracion);
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        LOGGER.log(Level.SEVERE, "Error al enviar valoración", e);
+                        throw new RuntimeException("Error al enviar valoración: " + e.getMessage());
                     }
                 },
                 nuevaValoracion -> Platform.runLater(() -> {
-                    contenido.getValoraciones().add(nuevaValoracion);
-                    usuarioYaValoro = true;
-                    btnAgregarValoracion.setDisable(true);
-                    btnAgregarValoracion.setText("Ya valoraste este contenido");
-                    btnAgregarValoracion.setStyle("-fx-background-color: #cccccc;");
-                    actualizarPromedio();
-                    mostrarAlerta("Éxito", "Valoración agregada correctamente", Alert.AlertType.INFORMATION);
+                    if (nuevaValoracion != null) {
+                        contenido.getValoraciones().add(nuevaValoracion);
+                        usuarioYaValoro = true;
+                        btnAgregarValoracion.setDisable(true);
+                        btnAgregarValoracion.setText("Ya valoraste este contenido");
+                        btnAgregarValoracion.setStyle("-fx-background-color: #cccccc;");
+                        actualizarPromedio();
+                        mostrarAlerta("Éxito", "Valoración agregada correctamente", Alert.AlertType.INFORMATION);
+                    }
                 }),
-                error -> Platform.runLater(() ->
-                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR)
-                ),
+                error -> Platform.runLater(() -> {
+                    LOGGER.log(Level.SEVERE, "Error en agregar valoración", error);
+                    mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR);
+                }),
                 "agregar valoración"
         );
     }
@@ -554,16 +580,109 @@ public class ControladorContenido {
 
     @FXML
     private void verValoraciones() {
+        // Mostrar indicador de carga
+        btnVerValoraciones.setDisable(true);
+        btnVerValoraciones.setText("Cargando...");
+
         ejecutarTareaAsync(
                 this::obtenerValoracionesActualizadas,
-                valoraciones -> Platform.runLater(() ->
-                        mostrarTodasValoraciones(valoraciones)
-                ),
-                error -> Platform.runLater(() ->
-                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR)
-                ),
+                respuesta -> Platform.runLater(() -> {
+                    btnVerValoraciones.setDisable(false);
+                    btnVerValoraciones.setText("Ver Valoraciones");
+
+                    if (respuesta.get("exito").getAsBoolean()) {
+                        mostrarDialogoValoraciones(respuesta);
+                    } else {
+                        mostrarAlerta("Error", respuesta.get("mensaje").getAsString(), Alert.AlertType.ERROR);
+                    }
+                }),
+                error -> Platform.runLater(() -> {
+                    btnVerValoraciones.setDisable(false);
+                    btnVerValoraciones.setText("Ver Valoraciones");
+                    mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR);
+                }),
                 "obtener valoraciones"
         );
+    }
+
+    private void mostrarDialogoValoraciones(JsonObject respuestaJson) {
+        // Crear el diálogo
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("Valoraciones - " + contenido.getTitulo());
+
+        // Contenedor principal
+        VBox mainContainer = new VBox(10);
+        mainContainer.setPadding(new Insets(15));
+        mainContainer.setAlignment(Pos.TOP_CENTER);
+
+        // Estadísticas
+        double promedio = respuestaJson.get("promedio").getAsDouble();
+        int total = respuestaJson.get("total").getAsInt();
+
+        Label lblStats = new Label(String.format(
+                "★ Promedio: %.1f/5.0 (%d valoraciones)", promedio, total
+        ));
+        lblStats.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        // Contenedor para las valoraciones
+        VBox valoracionesContainer = new VBox(10);
+        valoracionesContainer.setPadding(new Insets(10));
+
+        // Procesar cada valoración
+        JsonArray valoraciones = respuestaJson.getAsJsonArray("valoraciones");
+        if (valoraciones.size() == 0) {
+            Label lblEmpty = new Label("No hay valoraciones aún");
+            lblEmpty.setStyle("-fx-font-style: italic;");
+            valoracionesContainer.getChildren().add(lblEmpty);
+        } else {
+            // Usar un Set para evitar duplicados (por si acaso)
+            Set<String> valoracionesMostradas = new HashSet<>();
+
+            for (JsonElement element : valoraciones) {
+                JsonObject valoracionJson = element.getAsJsonObject();
+                String idValoracion = valoracionJson.get("id").getAsString();
+
+                // Evitar mostrar valoraciones duplicadas
+                if (!valoracionesMostradas.contains(idValoracion)) {
+                    valoracionesContainer.getChildren().add(crearItemValoracion(valoracionJson));
+                    valoracionesMostradas.add(idValoracion);
+                }
+            }
+        }
+
+        // ScrollPane para las valoraciones
+        ScrollPane scrollPane = new ScrollPane(valoracionesContainer);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setPrefViewportHeight(400);
+
+        // Botón de cerrar
+        Button btnCerrar = new Button("Cerrar");
+        btnCerrar.setOnAction(e -> dialog.close());
+        btnCerrar.setStyle("-fx-background-color: #7a4de8; -fx-text-fill: white;");
+
+        // Agregar componentes al contenedor principal
+        mainContainer.getChildren().addAll(lblStats, scrollPane, btnCerrar);
+
+        // Configurar y mostrar el diálogo
+        Scene scene = new Scene(mainContainer, 500, 500);
+        dialog.setScene(scene);
+        dialog.show();
+    }
+
+    private void scheduleValoracionesRefresh() {
+        // Actualizar cada 5 segundos
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(5), event -> verValoraciones())
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        // Detener la actualización cuando se cierre el diálogo
+        if (valoracionesContainer.getScene() != null &&
+                valoracionesContainer.getScene().getWindow() != null) {
+            valoracionesContainer.getScene().getWindow().setOnHidden(e -> timeline.stop());
+        }
     }
 
 
@@ -577,34 +696,81 @@ public class ControladorContenido {
     // ==================== MÉTODOS DE SERVICIO ====================
 
     private Valoracion enviarValoracionAlServidor(Valoracion valoracion) throws Exception {
+        // 1. Validación básica de usuarioData
+        if (usuarioData == null) {
+            throw new RuntimeException("No hay datos de usuario disponibles para enviar valoración");
+        }
+
+        // 2. Validar campos obligatorios
+        if (!usuarioData.has("id")) {
+            throw new RuntimeException("Falta el ID de usuario en los datos");
+        }
+
+        // 3. Preparar la solicitud con validaciones
         JsonObject solicitud = new JsonObject();
         solicitud.addProperty("tipo", "AGREGAR_VALORACION");
 
         JsonObject datos = new JsonObject();
         datos.addProperty("contenidoId", contenido.getId());
-        datos.addProperty("usuarioId", usuarioData.get("id").getAsString());
-        datos.addProperty("usuarioNombre", usuarioData.get("nombre").getAsString());
+
+        // Obtener ID de usuario (ya validado que existe)
+        String usuarioId = usuarioData.get("id").getAsString();
+        datos.addProperty("usuarioId", usuarioId);
+
+        // Obtener nombre con valor por defecto si no existe
+        String nombreUsuario = usuarioData.has("nombre") ?
+                usuarioData.get("nombre").getAsString() :
+                "Usuario " + usuarioId;
+        datos.addProperty("usuarioNombre", nombreUsuario);
+
         datos.addProperty("puntuacion", valoracion.getPuntuacion());
         datos.addProperty("comentario", valoracion.getComentario());
 
         solicitud.add("datos", datos);
 
+        // 4. Enviar solicitud y procesar respuesta
         cliente.getSalida().println(solicitud.toString());
         String respuesta = cliente.getEntrada().readLine();
+
+        // 5. Validar respuesta del servidor
+        if (respuesta == null || respuesta.isEmpty()) {
+            throw new RuntimeException("No se recibió respuesta del servidor");
+        }
+
         JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
 
         if (!jsonRespuesta.get("exito").getAsBoolean()) {
-            throw new RuntimeException(jsonRespuesta.get("mensaje").getAsString());
+            throw new RuntimeException(
+                    jsonRespuesta.has("mensaje") ?
+                            jsonRespuesta.get("mensaje").getAsString() :
+                            "Error desconocido al agregar valoración"
+            );
         }
 
-        // Mapear la respuesta a un objeto Valoracion para el cliente
+        // 6. Mapear respuesta a objeto Valoracion con validaciones
         JsonObject valoracionJson = jsonRespuesta.getAsJsonObject("valoracion");
+        Date fechaValoracion;
+        try {
+            if (valoracionJson.get("fecha").isJsonPrimitive() &&
+                    valoracionJson.get("fecha").getAsJsonPrimitive().isNumber()) {
+                // Si es un número (timestamp)
+                fechaValoracion = new Date(valoracionJson.get("fecha").getAsLong());
+            } else {
+                // Si es un string con formato "yyyy-MM-dd HH:mm:ss"
+                String fechaStr = valoracionJson.get("fecha").getAsString();
+                SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                fechaValoracion = formatoFecha.parse(fechaStr);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error al parsear fecha, usando fecha actual", e);
+            fechaValoracion = new Date(); // Usar fecha actual como fallback
+        }
         return new Valoracion(
-                valoracionJson.get("id").getAsString(),
-                valoracionJson.get("autor").getAsString(),
+                valoracionJson.has("id") ? valoracionJson.get("id").getAsString() : null,
+                valoracionJson.has("autor") ? valoracionJson.get("autor").getAsString() : nombreUsuario,
                 valoracionJson.get("puntuacion").getAsInt(),
-                valoracionJson.get("comentario").getAsString(),
-                new Date(valoracionJson.get("fecha").getAsLong())
+                valoracionJson.has("comentario") ? valoracionJson.get("comentario").getAsString() : "",
+                fechaValoracion
         );
     }
 
@@ -633,28 +799,24 @@ public class ControladorContenido {
         }
     }
 
-    private JsonArray obtenerValoracionesActualizadas() {
+    private JsonObject obtenerValoracionesActualizadas() {
         try {
             JsonObject solicitud = new JsonObject();
             solicitud.addProperty("tipo", "OBTENER_VALORACIONES");
 
             JsonObject datos = new JsonObject();
             datos.addProperty("contenidoId", contenido.getId());
-
             solicitud.add("datos", datos);
 
+            LOGGER.info("Enviando solicitud al servidor: " + solicitud.toString());
             cliente.getSalida().println(solicitud.toString());
+
             String respuesta = cliente.getEntrada().readLine();
-            JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+            LOGGER.info("Respuesta del servidor: " + respuesta);
 
-            if (!jsonRespuesta.get("exito").getAsBoolean()) {
-                throw new RuntimeException(jsonRespuesta.get("mensaje").getAsString());
-            }
-
-            return jsonRespuesta.getAsJsonArray("valoraciones");
+            return JsonParser.parseString(respuesta).getAsJsonObject();
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Error al obtener valoraciones", e);
-            throw new RuntimeException("No se pudo obtener las valoraciones: " + e.getMessage());
+            throw new RuntimeException("Error al obtener valoraciones: " + e.getMessage());
         }
     }
 
@@ -670,75 +832,157 @@ public class ControladorContenido {
         btnVerValoracionPromedio.setText(String.format("⭐ %.1f/5", promedio));
     }
 
-    private void mostrarTodasValoraciones(JsonArray valoracionesJson) {
-        valoracionesContainer.getChildren().clear();
+    private void mostrarTodasValoraciones(JsonObject respuestaJson) {
+        // Crear contenedor principal
+        VBox contenedorValoraciones = new VBox(10);
+        contenedorValoraciones.setPadding(new Insets(10));
+        contenedorValoraciones.setAlignment(Pos.TOP_CENTER);
 
-        if (valoracionesJson.size() == 0) {
+        // Verificar si hay valoraciones
+        if (!respuestaJson.has("valoraciones") || respuestaJson.get("valoraciones").getAsJsonArray().size() == 0) {
             Label lblEmpty = new Label("No hay valoraciones aún");
             lblEmpty.setStyle("-fx-font-style: italic; -fx-text-fill: #666;");
-            valoracionesContainer.getChildren().add(lblEmpty);
-            return;
+            contenedorValoraciones.getChildren().add(lblEmpty);
+        } else {
+            JsonArray valoracionesArray = respuestaJson.getAsJsonArray("valoraciones");
+
+            // Mostrar estadísticas
+            Label lblEstadisticas = new Label(String.format(
+                    "Valoraciones: %d • Promedio: %.1f ⭐",
+                    respuestaJson.get("total").getAsInt(),
+                    respuestaJson.get("promedio").getAsDouble()
+            ));
+            lblEstadisticas.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+            contenedorValoraciones.getChildren().add(lblEstadisticas);
+
+            // Agregar cada valoración
+            for (JsonElement element : valoracionesArray) {
+                JsonObject valoracionJson = element.getAsJsonObject();
+                contenedorValoraciones.getChildren().add(crearItemValoracion(valoracionJson));
+            }
         }
 
-        Gson gson = new Gson();
-        for (JsonElement elemento : valoracionesJson) {
-            Valoracion valoracion = gson.fromJson(elemento, Valoracion.class);
-            valoracionesContainer.getChildren().add(crearItemValoracion(valoracion));
-        }
-
-        // Mostrar el diálogo con las valoraciones
+        // Configurar la ventana modal
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.setTitle("Valoraciones del contenido");
+        dialog.setTitle("Valoraciones del contenido: " + contenido.getTitulo());
 
-        ScrollPane scrollPane = new ScrollPane(valoracionesContainer);
+        // Botón de actualización
+        Button btnActualizar = new Button("Actualizar");
+        btnActualizar.setOnAction(e -> verValoraciones());
+        btnActualizar.setStyle("-fx-background-color: #7a4de8; -fx-text-fill: white;");
+
+        // Configurar scroll pane
+        ScrollPane scrollPane = new ScrollPane(contenedorValoraciones);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefViewportWidth(400);
 
-        Scene scene = new Scene(scrollPane, 450, 400);
+        // Layout principal
+        VBox root = new VBox(10, scrollPane, btnActualizar);
+        root.setPadding(new Insets(10));
+        root.setAlignment(Pos.CENTER);
+
+        Scene scene = new Scene(root, 450, 500);
         dialog.setScene(scene);
-        dialog.showAndWait();
+        dialog.show();
+
+        // Configurar actualización automática
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.seconds(10), e -> verValoraciones())
+        );
+        timeline.setCycleCount(Timeline.INDEFINITE);
+        timeline.play();
+
+        // Detener la actualización al cerrar la ventana
+        dialog.setOnHidden(e -> timeline.stop());
     }
 
-    private Node crearItemValoracion(Valoracion valoracion) {
-        VBox item = new VBox(5);
-        item.getStyleClass().add("valoracion-item");
-        item.setPadding(new Insets(10));
-        item.setStyle("-fx-background-color: #f9f9f9; -fx-border-color: #ddd; -fx-border-radius: 5;");
+    private Node crearItemValoracion(JsonObject valoracionJson) {
+        VBox item = new VBox(8);
+        item.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-padding: 10;");
 
         // Cabecera con autor y fecha
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
 
-        Label lblAutor = new Label(valoracion.getAutor());
-        lblAutor.setStyle("-fx-font-weight: bold;");
+        // Obtener nombre real del usuario si es posible
+        String autorId = valoracionJson.get("autor").getAsString().replace("Usuario ", "");
+        String nombreAutor = "Usuario " + autorId;
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-        Label lblFecha = new Label(sdf.format(valoracion.getFecha()));
+        try {
+            // Intenta obtener el nombre real del usuario
+            JsonObject usuarioData = obtenerDatosUsuario(autorId);
+            if (usuarioData != null && usuarioData.has("nombre")) {
+                nombreAutor = usuarioData.get("nombre").getAsString();
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "No se pudo obtener nombre del usuario " + autorId, e);
+        }
+
+        Label lblAutor = new Label(nombreAutor);
+        lblAutor.setStyle("-fx-font-weight: bold; -fx-text-fill: #333;");
+
+        // Formatear fecha
+        String fechaStr = "Fecha desconocida";
+        try {
+            SimpleDateFormat serverFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date fecha = serverFormat.parse(valoracionJson.get("fecha").getAsString());
+
+            SimpleDateFormat displayFormat = new SimpleDateFormat("dd MMM yyyy 'a las' HH:mm");
+            fechaStr = displayFormat.format(fecha);
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error al formatear fecha", e);
+        }
+
+        Label lblFecha = new Label(fechaStr);
         lblFecha.setStyle("-fx-text-fill: #666; -fx-font-size: 12px;");
 
         header.getChildren().addAll(lblAutor, lblFecha);
 
         // Rating con estrellas
-        HBox ratingBox = new HBox(2);
+        HBox ratingBox = new HBox(5);
         ratingBox.setAlignment(Pos.CENTER_LEFT);
 
-        int puntuacion = valoracion.getPuntuacion();
+        int puntuacion = valoracionJson.get("puntuacion").getAsInt();
         for (int i = 0; i < 5; i++) {
             Label star = new Label(i < puntuacion ? "★" : "☆");
-            star.setStyle(i < puntuacion ? "-fx-text-fill: gold;" : "-fx-text-fill: #ccc;");
+            star.setStyle((i < puntuacion ?
+                    "-fx-text-fill: gold; -fx-font-size: 16px;" :
+                    "-fx-text-fill: #ccc; -fx-font-size: 16px;"));
             ratingBox.getChildren().add(star);
         }
 
         // Comentario
-        TextArea comentario = new TextArea(valoracion.getComentario());
+        TextArea comentario = new TextArea(valoracionJson.get("comentario").getAsString());
         comentario.setEditable(false);
         comentario.setWrapText(true);
         comentario.setPrefRowCount(2);
         comentario.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
-
+        item.getStyleClass().add("valoracion-item");
         item.getChildren().addAll(header, ratingBox, comentario);
         return item;
+    }
+
+    private JsonObject obtenerDatosUsuario(String usuarioId) {
+        try {
+            JsonObject solicitud = new JsonObject();
+            solicitud.addProperty("tipo", "OBTENER_USUARIO");
+
+            JsonObject datos = new JsonObject();
+            datos.addProperty("id", usuarioId);
+            solicitud.add("datos", datos);
+
+            cliente.getSalida().println(solicitud.toString());
+            String respuesta = cliente.getEntrada().readLine();
+            JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+
+            if (jsonRespuesta.get("exito").getAsBoolean()) {
+                return jsonRespuesta.getAsJsonObject("usuario");
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error al obtener datos del usuario", e);
+        }
+        return null;
     }
 
     // ==================== UTILIDADES ====================

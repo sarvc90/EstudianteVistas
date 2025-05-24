@@ -9,6 +9,8 @@ import java.util.Date;
 public class Valoracion {
     @Expose
     private String id;
+    @Expose
+    private String tema;
 
     @Expose
     private String autor;
@@ -26,6 +28,15 @@ public class Valoracion {
     public Valoracion() {}
 
     // Constructor completo
+    public Valoracion(String id,String tema, String autor, int puntuacion, String comentario, Date fecha) {
+        this.id = id;
+        this.tema = tema;
+        this.autor = autor;
+        this.puntuacion = puntuacion;
+        this.comentario = comentario;
+        this.fecha = fecha;
+    }
+    //Constructor sin tema
     public Valoracion(String id, String autor, int puntuacion, String comentario, Date fecha) {
         this.id = id;
         this.autor = autor;
@@ -41,6 +52,13 @@ public class Valoracion {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getTema() {
+        return tema;
+    }
+    public void setTema(String tema) {
+        this.tema = tema;
     }
 
     public String getAutor() {
