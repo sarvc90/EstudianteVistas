@@ -84,7 +84,7 @@ public class ControladorContenido {
 
             // 2. Convertir JSON a objeto Contenido
             this.contenido = gson.fromJson(contenidoJson, Contenido.class);
-
+            verificarYLimpiarDuplicados();
             // 3. Verificar que el contenido sea válido
             if (contenido == null) {
                 throw new IllegalArgumentException("El contenido no puede ser nulo");
@@ -195,36 +195,47 @@ public class ControladorContenido {
         leftBox.getChildren().clear();
         leftBox.setStyle("-fx-alignment: center; -fx-padding: 10;");
 
-        if (contenido.getContenido() == null || contenido.getContenido().isEmpty()) {
-            Label lblNoContenido = new Label("No hay contenido para mostrar");
-            lblNoContenido.setStyle("-fx-text-fill: #666; -fx-font-style: italic;");
-            leftBox.getChildren().add(lblNoContenido);
+        // Extraer la ruta real del contenido (evitando valoraciones)
+        String rutaContenido = contenido.getContenido();
+        if (rutaContenido == null || rutaContenido.isEmpty()) {
+            mostrarNoContenidoDisponible();
             return;
+        }
+
+        // Si hay múltiples partes separadas por |, tomar solo la primera
+        if (rutaContenido.contains("|")) {
+            rutaContenido = rutaContenido.split("\\|")[0].trim();
         }
 
         try {
             switch (contenido.getTipo()) {
                 case IMAGEN:
-                    cargarImagenContenido();
+                    cargarImagenContenido(rutaContenido);
                     break;
                 case VIDEO:
-                case DOCUMENTO:
-                case ENLACE:
-                    cargarContenidoExterno();
+                    cargarReproductorVideo(rutaContenido);
                     break;
-                case OTRO:  // Caso explícito para OTRO
+                case DOCUMENTO:
+                    cargarVisualizadorDocumento(rutaContenido);
+                    break;
+                case ENLACE:
+                    cargarVisualizadorEnlace(rutaContenido);
+                    break;
+                case OTRO:
                 default:
-                    cargarContenidoGenerico();
+                    cargarContenidoGenerico(rutaContenido);
                     break;
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error al mostrar contenido", e);
-            mostrarErrorContenido("Error al mostrar el contenido");
+            mostrarErrorContenido("Error al mostrar el contenido: " + e.getMessage());
         }
-        // Asegurarse de que las valoraciones no se muestren aquí
-        if (valoracionesContainer != null && valoracionesContainer.getParent() == leftBox) {
-            leftBox.getChildren().remove(valoracionesContainer);
-        }
+    }
+
+    private void mostrarNoContenidoDisponible() {
+        Label lblNoContenido = new Label("No hay contenido para mostrar");
+        lblNoContenido.setStyle("-fx-text-fill: #666; -fx-font-style: italic;");
+        leftBox.getChildren().add(lblNoContenido);
     }
 
     private void cargarContenidoExterno() {
@@ -245,6 +256,14 @@ public class ControladorContenido {
 
         container.getChildren().addAll(typeLabel, link, openButton);
         leftBox.getChildren().add(container);
+    }
+
+    private String extraerRutaRealContenido(String contenidoRaw) {
+        // Si el contenido contiene valoraciones (separadas por |), tomamos solo la primera parte
+        if (contenidoRaw.contains("|")) {
+            return contenidoRaw.split("\\|")[0].trim();
+        }
+        return contenidoRaw.trim();
     }
 
     private void abrirContenidoExterno() {
@@ -277,7 +296,7 @@ public class ControladorContenido {
         }
     }
 
-    private void cargarContenidoGenerico() {
+    private void cargarContenidoGenerico(String rutaContenido) {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
@@ -286,10 +305,10 @@ public class ControladorContenido {
         VBox contentBox = new VBox(10);
         contentBox.setPadding(new Insets(10));
 
-        Label typeLabel = new Label("Tipo de contenido: " + contenido.getTipo());
+        Label typeLabel = new Label("Contenido de tipo: " + contenido.getTipo());
         typeLabel.setStyle("-fx-font-weight: bold;");
 
-        TextArea contentArea = new TextArea(contenido.getContenido());
+        TextArea contentArea = new TextArea(rutaContenido);
         contentArea.setEditable(false);
         contentArea.setWrapText(true);
 
@@ -315,60 +334,121 @@ public class ControladorContenido {
         });
     }
 
-    private void cargarImagenContenido() {
+    private void cargarImagenContenido(String rutaContenido) {
         try {
             leftBox.getChildren().clear();
 
-            // Convertir la ruta a formato URI
-            String ruta = contenido.getContenido();
-            File file = new File(ruta);
-
-            if (!file.exists()) {
-                throw new FileNotFoundException("Archivo no encontrado: " + ruta);
+            // Verificar si la ruta está vacía
+            if (rutaContenido == null || rutaContenido.trim().isEmpty()) {
+                mostrarErrorImagen("La ruta de la imagen está vacía");
+                return;
             }
 
-            String url = file.toURI().toString();
-            LOGGER.info("Intentando cargar imagen desde: " + url);
+            // Limpiar la ruta por si contiene múltiples partes
+            String rutaLimpia = limpiarRutaImagen(rutaContenido);
 
-            Image image = new Image(url, true); // Carga asíncrona
-            ImageView imageView = new ImageView(image);
-            imageView.setPreserveRatio(true);
-            imageView.setFitWidth(leftBox.getWidth() - 40);
-
-            // Contenedor con scroll para la imagen
-            ScrollPane scrollPane = new ScrollPane(imageView);
-            scrollPane.setFitToWidth(true);
-            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-            scrollPane.setStyle("-fx-background: transparent;");
-
-            // Manejar eventos de carga
-            image.errorProperty().addListener((obs, wasError, isNowError) -> {
-                if (isNowError) {
-                    Platform.runLater(() -> {
-                        Label errorLabel = new Label("Error al cargar imagen:\n" + ruta);
-                        errorLabel.setStyle("-fx-text-fill: red;");
-                        leftBox.getChildren().add(errorLabel);
-                        LOGGER.severe("Error al cargar imagen: " + image.getException().getMessage());
-                    });
-                }
-            });
-
-            image.progressProperty().addListener((obs, oldVal, newVal) -> {
-                if (newVal.doubleValue() == 1.0) {
-                    Platform.runLater(() -> {
-                        leftBox.getChildren().clear();
-                        leftBox.getChildren().add(scrollPane);
-                    });
-                }
-            });
-
+            // Determinar si es una URL web o una ruta local
+            if (rutaLimpia.startsWith("http://") || rutaLimpia.startsWith("https://")) {
+                cargarImagenDesdeURL(rutaLimpia);
+            } else {
+                cargarImagenDesdeArchivoLocal(rutaLimpia);
+            }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error al cargar imagen", e);
-            Label errorLabel = new Label("Error al cargar imagen:\n" + e.getMessage());
-            errorLabel.setStyle("-fx-text-fill: red;");
-            leftBox.getChildren().add(errorLabel);
+            mostrarErrorImagen("Error al cargar imagen: " + e.getMessage());
         }
     }
+    private String limpiarRutaImagen(String rutaOriginal) {
+        // Si la ruta contiene múltiples partes separadas por |, tomar solo la primera
+        if (rutaOriginal.contains("|")) {
+            return rutaOriginal.split("\\|")[0].trim();
+        }
+        return rutaOriginal.trim();
+    }
+
+    private void cargarImagenDesdeURL(String url) {
+        Image image = new Image(url, true); // Carga asíncrona
+        configurarImageView(image);
+    }
+
+    private void cargarImagenDesdeArchivoLocal(String rutaLocal) throws FileNotFoundException {
+        File file = new File(rutaLocal);
+        if (!file.exists()) {
+            throw new FileNotFoundException("Archivo no encontrado: " + rutaLocal);
+        }
+
+        String url = file.toURI().toString();
+        LOGGER.info("Cargando imagen desde: " + url);
+
+        Image image = new Image(url, true); // Carga asíncrona
+        configurarImageView(image);
+    }
+
+    private void configurarImageView(Image image) {
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        imageView.setFitWidth(leftBox.getWidth() - 40);
+
+        // Contenedor con scroll para la imagen
+        ScrollPane scrollPane = new ScrollPane(imageView);
+        scrollPane.setFitToWidth(true);
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setStyle("-fx-background: transparent;");
+
+        // Manejar eventos de carga
+        image.errorProperty().addListener((obs, wasError, isNowError) -> {
+            if (isNowError) {
+                Platform.runLater(() -> {
+                    Label errorLabel = new Label("Error al cargar imagen:\n" +
+                            (image.getException() != null ?
+                                    image.getException().getMessage() : "Error desconocido"));
+                    errorLabel.setStyle("-fx-text-fill: red;");
+                    leftBox.getChildren().add(errorLabel);
+                });
+            }
+        });
+
+        image.progressProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal.doubleValue() == 1.0) {
+                Platform.runLater(() -> {
+                    leftBox.getChildren().clear();
+                    leftBox.getChildren().add(scrollPane);
+                });
+            } else if (newVal.doubleValue() < 0) {
+                // Error en la carga
+                Platform.runLater(() -> {
+                    Label loadingLabel = new Label("Error cargando imagen...");
+                    loadingLabel.setStyle("-fx-text-fill: orange;");
+                    leftBox.getChildren().add(loadingLabel);
+                });
+            }
+        });
+
+        // Mostrar mensaje de carga mientras se carga la imagen
+        Label loadingLabel = new Label("Cargando imagen...");
+        loadingLabel.setStyle("-fx-text-fill: #666;");
+        leftBox.getChildren().add(loadingLabel);
+    }
+
+    private void mostrarErrorImagen(String mensaje) {
+        Platform.runLater(() -> {
+            leftBox.getChildren().clear();
+
+            VBox errorBox = new VBox(5);
+            errorBox.setAlignment(Pos.CENTER);
+
+            Label errorLabel = new Label(mensaje);
+            errorLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
+
+            // Mostrar la ruta que falló para diagnóstico
+            Label pathLabel = new Label("Ruta intentada: " + contenido.getContenido());
+            pathLabel.setStyle("-fx-text-fill: #666; -fx-font-size: 12px;");
+
+            errorBox.getChildren().addAll(errorLabel, pathLabel);
+            leftBox.getChildren().add(errorBox);
+        });
+    }
+
 
     private void mostrarErrorImagen() {
         Platform.runLater(() -> {
@@ -379,16 +459,16 @@ public class ControladorContenido {
         });
     }
 
-    private void cargarReproductorVideo() {
+    private void cargarReproductorVideo(String rutaContenido) {
         VBox videoBox = new VBox(10);
         videoBox.setAlignment(Pos.CENTER);
 
         Label lblVideo = new Label("Video contenido:");
-        Hyperlink link = new Hyperlink(contenido.getContenido());
-        link.setOnAction(e -> abrirEnNavegador(contenido.getContenido()));
+        Hyperlink link = new Hyperlink(rutaContenido);
+        link.setOnAction(e -> abrirEnNavegador(rutaContenido));
 
         Button btnReproducir = new Button("Reproducir Video");
-        btnReproducir.setOnAction(e -> abrirEnNavegador(contenido.getContenido()));
+        btnReproducir.setOnAction(e -> abrirEnNavegador(rutaContenido));
 
         videoBox.getChildren().addAll(lblVideo, link, btnReproducir);
         leftBox.getChildren().add(videoBox);
@@ -421,7 +501,7 @@ public class ControladorContenido {
         }
     }
 
-    private void cargarVisualizadorDocumento() {
+    private void cargarVisualizadorDocumento(String rutaContenido) {
         VBox docBox = new VBox(10);
         docBox.setAlignment(Pos.CENTER);
         docBox.setPadding(new Insets(20));
@@ -429,13 +509,13 @@ public class ControladorContenido {
         Label lblTitulo = new Label("Documento:");
         lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
 
-        Hyperlink link = new Hyperlink(contenido.getContenido());
+        Hyperlink link = new Hyperlink(rutaContenido);
         link.setStyle("-fx-text-fill: #7a4de8; -fx-font-size: 14px;");
-        link.setOnAction(e -> abrirEnNavegador(contenido.getContenido()));
+        link.setOnAction(e -> abrirEnNavegador(rutaContenido));
 
         Button btnAbrir = new Button("Abrir Documento");
         btnAbrir.setStyle("-fx-background-color: #7a4de8; -fx-text-fill: white;");
-        btnAbrir.setOnAction(e -> abrirEnNavegador(contenido.getContenido()));
+        btnAbrir.setOnAction(e -> abrirEnNavegador(rutaContenido));
 
         docBox.getChildren().addAll(lblTitulo, link, btnAbrir);
         leftBox.getChildren().add(docBox);
@@ -461,19 +541,24 @@ public class ControladorContenido {
         leftBox.getChildren().add(linkBox);
     }
 
-    private void cargarContenidoTexto() {
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setFitToWidth(true);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
+    private void cargarVisualizadorEnlace(String rutaContenido) {
+        VBox linkBox = new VBox(10);
+        linkBox.setAlignment(Pos.CENTER);
+        linkBox.setPadding(new Insets(20));
 
-        TextArea areaTexto = new TextArea(contenido.getContenido());
-        areaTexto.setEditable(false);
-        areaTexto.setWrapText(true);
-        areaTexto.setStyle("-fx-font-family: 'Roboto Mono', monospace; -fx-font-size: 14px;");
+        Label lblTitulo = new Label("Enlace externo:");
+        lblTitulo.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
 
-        scrollPane.setContent(areaTexto);
-        leftBox.getChildren().add(scrollPane);
+        Hyperlink link = new Hyperlink(rutaContenido);
+        link.setStyle("-fx-text-fill: #7a4de8; -fx-font-size: 14px;");
+        link.setOnAction(e -> abrirEnNavegador(rutaContenido));
+
+        Button btnAbrir = new Button("Abrir en Navegador");
+        btnAbrir.setStyle("-fx-background-color: #7a4de8; -fx-text-fill: white;");
+        btnAbrir.setOnAction(e -> abrirEnNavegador(rutaContenido));
+
+        linkBox.getChildren().addAll(lblTitulo, link, btnAbrir);
+        leftBox.getChildren().add(linkBox);
     }
 
     @FXML
@@ -531,36 +616,99 @@ public class ControladorContenido {
     }
 
     private void agregarValoracion(Valoracion valoracion) {
-        if (valoracion == null) return;
+        if (valoracion == null || usuarioYaValoro) return;
 
         ejecutarTareaAsync(
                 () -> {
+                    JsonObject respuesta = null;
                     try {
-                        return enviarValoracionAlServidor(valoracion);
+                        respuesta = enviarValoracionAlServidor(valoracion);
                     } catch (Exception e) {
-                        LOGGER.log(Level.SEVERE, "Error al enviar valoración", e);
-                        throw new RuntimeException("Error al enviar valoración: " + e.getMessage());
+                        throw new RuntimeException(e);
                     }
+
+                    // Verificar que la respuesta contenga la valoración
+                    if (!respuesta.has("valoracion")) {
+                        throw new RuntimeException("Respuesta del servidor no contiene datos de valoración");
+                    }
+
+                    return respuesta.getAsJsonObject("valoracion");
                 },
-                nuevaValoracion -> Platform.runLater(() -> {
-                    if (nuevaValoracion != null) {
+                valoracionJson -> Platform.runLater(() -> {
+                    try {
+                        // Parsear la valoración desde JSON
+                        Valoracion nuevaValoracion = parsearValoracionDesdeJson(valoracionJson);
+
+                        // Actualizar el estado
                         contenido.getValoraciones().add(nuevaValoracion);
                         usuarioYaValoro = true;
+
+                        // Actualizar UI
                         btnAgregarValoracion.setDisable(true);
                         btnAgregarValoracion.setText("Ya valoraste este contenido");
                         btnAgregarValoracion.setStyle("-fx-background-color: #cccccc;");
+
                         actualizarPromedio();
                         mostrarAlerta("Éxito", "Valoración agregada correctamente", Alert.AlertType.INFORMATION);
+                    } catch (Exception e) {
+                        mostrarAlerta("Error", "Error al procesar valoración: " + e.getMessage(), Alert.AlertType.ERROR);
                     }
                 }),
-                error -> Platform.runLater(() -> {
-                    LOGGER.log(Level.SEVERE, "Error en agregar valoración", error);
-                    mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR);
-                }),
+                error -> Platform.runLater(() ->
+                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR)
+                ),
                 "agregar valoración"
         );
     }
 
+    private Valoracion parsearValoracionDesdeJson(JsonObject valoracionJson) {
+        try {
+            // Validar que el JSON tenga los campos necesarios
+            if (!valoracionJson.has("id") || !valoracionJson.has("autor") ||
+                    !valoracionJson.has("puntuacion") || !valoracionJson.has("comentario") ||
+                    !valoracionJson.has("fecha")) {
+                throw new IllegalArgumentException("JSON de valoración incompleto");
+            }
+
+            // Parsear la fecha (manejar tanto timestamp como string)
+            Date fecha;
+            if (valoracionJson.get("fecha").isJsonPrimitive() &&
+                    valoracionJson.get("fecha").getAsJsonPrimitive().isNumber()) {
+                // Si es un número (timestamp)
+                fecha = new Date(valoracionJson.get("fecha").getAsLong());
+            } else {
+                // Si es un string con formato de fecha
+                String fechaStr = valoracionJson.get("fecha").getAsString();
+                SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                fecha = formatoFecha.parse(fechaStr);
+            }
+
+            // Crear y retornar el objeto Valoracion
+            return new Valoracion(
+                    valoracionJson.get("id").getAsString(),
+                    valoracionJson.get("autor").getAsString(),
+                    valoracionJson.get("puntuacion").getAsInt(),
+                    valoracionJson.get("comentario").getAsString(),
+                    fecha
+            );
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error al parsear valoración desde JSON", e);
+            throw new RuntimeException("Error al procesar valoración: " + e.getMessage(), e);
+        }
+    }
+
+    private void verificarYLimpiarDuplicados() {
+        if (contenido.getContenido() != null && contenido.getContenido().contains("|")) {
+            String[] partes = contenido.getContenido().split("\\|");
+            if (partes.length > 1) {
+                // Conservar solo la parte del contenido (primera parte)
+                contenido.setContenido(partes[0].trim());
+
+                // Las valoraciones deben estar en la lista separada, no en el campo contenido
+                LOGGER.warning("Se detectó contenido con valoraciones embebidas. Se ha limpiado el campo contenido.");
+            }
+        }
+    }
     @FXML
     private void verValoracionPromedio() {
         ejecutarTareaAsync(
@@ -695,32 +843,29 @@ public class ControladorContenido {
 
     // ==================== MÉTODOS DE SERVICIO ====================
 
-    private Valoracion enviarValoracionAlServidor(Valoracion valoracion) throws Exception {
-        // 1. Validación básica de usuarioData
+    private JsonObject enviarValoracionAlServidor(Valoracion valoracion) throws Exception {
+        // Validación básica de usuarioData
         if (usuarioData == null) {
             throw new RuntimeException("No hay datos de usuario disponibles para enviar valoración");
         }
 
-        // 2. Validar campos obligatorios
+        // Validar campos obligatorios
         if (!usuarioData.has("id")) {
             throw new RuntimeException("Falta el ID de usuario en los datos");
         }
 
-        // 3. Preparar la solicitud con validaciones
+        // Preparar la solicitud
         JsonObject solicitud = new JsonObject();
         solicitud.addProperty("tipo", "AGREGAR_VALORACION");
 
         JsonObject datos = new JsonObject();
         datos.addProperty("contenidoId", contenido.getId());
-
-        // Obtener ID de usuario (ya validado que existe)
-        String usuarioId = usuarioData.get("id").getAsString();
-        datos.addProperty("usuarioId", usuarioId);
+        datos.addProperty("usuarioId", usuarioData.get("id").getAsString());
 
         // Obtener nombre con valor por defecto si no existe
         String nombreUsuario = usuarioData.has("nombre") ?
                 usuarioData.get("nombre").getAsString() :
-                "Usuario " + usuarioId;
+                "Usuario " + usuarioData.get("id").getAsString();
         datos.addProperty("usuarioNombre", nombreUsuario);
 
         datos.addProperty("puntuacion", valoracion.getPuntuacion());
@@ -728,11 +873,11 @@ public class ControladorContenido {
 
         solicitud.add("datos", datos);
 
-        // 4. Enviar solicitud y procesar respuesta
+        // Enviar solicitud y procesar respuesta
         cliente.getSalida().println(solicitud.toString());
         String respuesta = cliente.getEntrada().readLine();
 
-        // 5. Validar respuesta del servidor
+        // Validar respuesta del servidor
         if (respuesta == null || respuesta.isEmpty()) {
             throw new RuntimeException("No se recibió respuesta del servidor");
         }
@@ -747,31 +892,7 @@ public class ControladorContenido {
             );
         }
 
-        // 6. Mapear respuesta a objeto Valoracion con validaciones
-        JsonObject valoracionJson = jsonRespuesta.getAsJsonObject("valoracion");
-        Date fechaValoracion;
-        try {
-            if (valoracionJson.get("fecha").isJsonPrimitive() &&
-                    valoracionJson.get("fecha").getAsJsonPrimitive().isNumber()) {
-                // Si es un número (timestamp)
-                fechaValoracion = new Date(valoracionJson.get("fecha").getAsLong());
-            } else {
-                // Si es un string con formato "yyyy-MM-dd HH:mm:ss"
-                String fechaStr = valoracionJson.get("fecha").getAsString();
-                SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                fechaValoracion = formatoFecha.parse(fechaStr);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error al parsear fecha, usando fecha actual", e);
-            fechaValoracion = new Date(); // Usar fecha actual como fallback
-        }
-        return new Valoracion(
-                valoracionJson.has("id") ? valoracionJson.get("id").getAsString() : null,
-                valoracionJson.has("autor") ? valoracionJson.get("autor").getAsString() : nombreUsuario,
-                valoracionJson.get("puntuacion").getAsInt(),
-                valoracionJson.has("comentario") ? valoracionJson.get("comentario").getAsString() : "",
-                fechaValoracion
-        );
+        return jsonRespuesta;
     }
 
     private Double obtenerPromedioActualizado() {

@@ -20,6 +20,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -376,9 +377,21 @@ public class ControladorPrincipal {
         return solicitudes;
     }
 
+    private boolean esFechaValida(String fechaStr) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setLenient(false);
+        try {
+            sdf.parse(fechaStr);
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
+
     /**
      * Busca contenidos según los criterios especificados
      */
+
     private void buscarContenido() {
         String busqueda = campoBusqueda.getText().trim();
         String tipoBusqueda = comboTipo.getValue();
@@ -388,24 +401,70 @@ public class ControladorPrincipal {
             return;
         }
 
-        ejecutarTareaAsync(
-                        () -> {
-                            try {
-                                return buscarContenidoEnServidor(tipoBusqueda, busqueda);
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
+        // Validación especial para búsqueda por fecha
+        if (tipoBusqueda.equals("Fecha") && !esFechaValida(busqueda)) {
+            mostrarAlerta("Formato inválido", "Por favor ingrese una fecha en formato YYYY-MM-DD", Alert.AlertType.WARNING);
+            return;
+        }
 
-                        resultados -> Platform.runLater(() -> {
-                    mostrarContenidosEnPanel(resultados, panelContenidos);
-                    notificarListeners("contenidos", resultados);
+        ejecutarTareaAsync(
+                () -> {
+                    try {
+                        JsonObject solicitud = new JsonObject();
+                        solicitud.addProperty("tipo", "BUSCAR_CONTENIDO");
+
+                        JsonObject datos = new JsonObject();
+                        datos.addProperty("criterio", tipoBusqueda);
+                        datos.addProperty("busqueda", busqueda);
+                        datos.addProperty("userId", usuarioData.get("id").getAsString());
+
+                        solicitud.add("datos", datos);
+
+                        cliente.getSalida().println(solicitud.toString());
+                        String respuesta = cliente.getEntrada().readLine();
+                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+
+                        if (!jsonRespuesta.get("exito").getAsBoolean()) {
+                            throw new RuntimeException(jsonRespuesta.get("mensaje").getAsString());
+                        }
+
+                        return jsonRespuesta.getAsJsonArray("resultados");
+                    } catch (Exception e) {
+                        throw new RuntimeException("Error al buscar contenidos: " + e.getMessage(), e);
+                    }
+                },
+                resultados -> {
+                    if (resultados.size() == 0) {
+                        Platform.runLater(() ->
+                                mostrarAlerta("Sin resultados", "No se encontraron contenidos con esos criterios", Alert.AlertType.INFORMATION)
+                        );
+                    } else {
+                        Platform.runLater(() -> mostrarVistaBusqueda(resultados, tipoBusqueda, busqueda));
+                    }
+                },
+                error -> Platform.runLater(() -> {
+                    LOGGER.log(Level.SEVERE, "Error en búsqueda", error);
+                    mostrarAlerta("Error", "Ocurrió un error al realizar la búsqueda: " + error.getMessage(), Alert.AlertType.ERROR);
                 }),
-                error -> Platform.runLater(() ->
-                        mostrarAlerta("Error", error.getMessage(), Alert.AlertType.ERROR)
-                ),
                 "búsqueda de contenidos"
         );
+    }
+
+    private void mostrarVistaBusqueda(JsonArray resultados, String tipoBusqueda, String terminoBusqueda) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/buscar.fxml"));
+            Parent root = loader.load();
+
+            ControladorBuscar controlador = loader.getController();
+            controlador.inicializar(resultados, tipoBusqueda, terminoBusqueda, cliente, usuarioData);
+
+            Stage stage = new Stage();
+            stage.setTitle("Resultados de búsqueda");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            manejarError("mostrar vista de búsqueda", e);
+        }
     }
 
     private JsonArray buscarContenidoEnServidor(String tipoBusqueda, String busqueda) throws IOException {
