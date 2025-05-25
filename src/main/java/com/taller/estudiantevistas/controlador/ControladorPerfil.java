@@ -56,7 +56,6 @@ public class ControladorPerfil {
     public void inicializar(JsonObject datosUsuario, ClienteServicio cliente) {
         this.datosUsuario = datosUsuario;
         this.cliente = cliente;
-
         // Cargar datos básicos inmediatamente
         if (datosUsuario != null) {
             Platform.runLater(() -> {
@@ -65,9 +64,6 @@ public class ControladorPerfil {
                 lblIntereses.setText(datosUsuario.get("intereses").getAsString());
             });
         }
-
-        // Obtener datos completos del servidor (grupos, etc.)
-        obtenerDatosUsuarioCompletos(datosUsuario.get("id").getAsString());
     }
 
     private void obtenerDatosUsuarioCompletos(String userId) {
@@ -258,8 +254,60 @@ public class ControladorPerfil {
     }
 
     private void manejarVerSugerencias() {
-        LOGGER.info("Mostrando sugerencias...");
-        // Implementar lógica para obtener y mostrar sugerencias
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/sugerencias-perfil.fxml"));
+            Parent root = loader.load();
+
+            ControladorSugerenciasPerfil controlador = loader.getController();
+            Stage stageActual = (Stage) btnVerSugerencias.getScene().getWindow();
+
+            controlador.inicializar(
+                    datosUsuario.get("id").getAsString(),
+                    cliente,
+                    this::cargarSugerenciasDesdeServidor
+            );
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Sugerencias de Compañeros");
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(stageActual);
+            stage.show();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo cargar la vista de sugerencias", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void cargarSugerenciasDesdeServidor(String userId, Consumer<JsonArray> callback) {
+        ejecutarTareaAsync(
+                () -> {
+                    JsonObject solicitud = new JsonObject();
+                    solicitud.addProperty("tipo", "OBTENER_SUGERENCIAS");
+
+                    JsonObject datos = new JsonObject();
+                    datos.addProperty("userId", userId);
+                    solicitud.add("datos", datos);
+
+                    cliente.getSalida().println(solicitud.toString());
+                    String respuesta = null;
+                    try {
+                        respuesta = cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return JsonParser.parseString(respuesta).getAsJsonObject();
+                },
+                respuesta -> {
+                    if (respuesta.get("exito").getAsBoolean()) {
+                        callback.accept(respuesta.getAsJsonArray("sugerencias"));
+                    } else {
+                        Platform.runLater(() ->
+                                mostrarAlerta("Error", respuesta.get("mensaje").getAsString(), Alert.AlertType.ERROR)
+                        );
+                    }
+                },
+                "carga de sugerencias"
+        );
     }
 
     private void manejarBuscarGrupos() {
@@ -268,7 +316,62 @@ public class ControladorPerfil {
     }
 
     private void manejarVerSolicitudes() {
-        LOGGER.info("Viendo solicitudes activas...");
-        // Implementar lógica para obtener y mostrar solicitudes
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/solicitudes-perfil.fxml"));
+            Parent root = loader.load();
+
+            ControladorSolicitudesPerfil controlador = loader.getController();
+
+            // Obtener el Stage actual
+            Stage stageActual = (Stage) btnVerSolicitudes.getScene().getWindow();
+
+            // Pasar la función de carga al controlador de solicitudes
+            controlador.inicializar(
+                    datosUsuario.get("id").getAsString(),
+                    cliente,
+                    this::cargarSolicitudesDesdeServidor
+            );
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Mis Solicitudes");
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(stageActual);
+            stage.show();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo cargar la vista de solicitudes", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void cargarSolicitudesDesdeServidor(String userId, Consumer<JsonArray> callback) {
+        ejecutarTareaAsync(
+                () -> {
+                    JsonObject solicitud = new JsonObject();
+                    solicitud.addProperty("tipo", "OBTENER_SOLICITUDES_USUARIO");
+
+                    JsonObject datos = new JsonObject();
+                    datos.addProperty("userId", userId);
+                    solicitud.add("datos", datos);
+
+                    cliente.getSalida().println(solicitud.toString());
+                    String respuesta = null;
+                    try {
+                        respuesta = cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return JsonParser.parseString(respuesta).getAsJsonObject();
+                },
+                respuesta -> {
+                    if (respuesta.get("exito").getAsBoolean()) {
+                        callback.accept(respuesta.getAsJsonArray("solicitudes"));
+                    } else {
+                        Platform.runLater(() ->
+                                mostrarAlerta("Error", respuesta.get("mensaje").getAsString(), Alert.AlertType.ERROR)
+                        );
+                    }
+                },
+                "carga de solicitudes específicas"
+        );
     }
 }

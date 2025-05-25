@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.taller.estudiantevistas.controlador.ControladorSugerenciasPerfil"
+            stylesheets="@../css/sugerencias-perfil.css"
+            prefWidth="500" prefHeight="400">
+
+    <center>
+        <VBox spacing="15" alignment="TOP_CENTER" style="-fx-background-color: transparent;">
+            <Label text="Sugerencias de Compañeros" style="-fx-text-fill: #a569ff; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Button text="Recargar" styleClass="reload-button" onAction="#cargarSugerencias"/>
+
+            <ScrollPane fx:id="scrollSugerencias" styleClass="scroll-pane" fitToWidth="true" hbarPolicy="NEVER">
+                <VBox fx:id="panelSugerencias" styleClass="sugerencias-container" spacing="15" fillWidth="true"/>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>

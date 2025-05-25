@@ -1,43 +1,138 @@
-/* Estilo base del ScrollPane */
-.contenidos-scroll-pane {
-    -fx-background: transparent;
-    -fx-background-color: transparent;
-    -fx-padding: 10px;
+/* contenido-perfil.css */
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
+    -fx-font-family: "Segoe UI", sans-serif;
 }
 
-.contenidos-scroll-pane .viewport {
-    -fx-background-color: transparent;
-}
-
-/* Contenedor de contenidos */
+/* Panel principal */
 .contenidos-container {
-    -fx-background-color: #f9f9f9;
-    -fx-padding: 10px;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
 
-/* Estilo para cada item de contenido */
+/* ScrollPane personalizado */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-padding: 0 2px 0 0;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb {
+    -fx-background-color: #3a3a4a;
+    -fx-background-radius: 4px;
+    -fx-opacity: 0.7;
+}
+
+.scroll-pane .scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #4a4a5a;
+}
+
+/* Items de contenido */
 .contenido-item {
-    -fx-background-color: white;
-    -fx-border-color: #e0e0e0;
-    -fx-border-width: 1px;
-    -fx-border-radius: 4px;
-    -fx-padding: 10px;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 2, 0, 0, 1);
+    -fx-background-color: #2c2c3c;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
 }
 
-.contenido-item .titulo {
-    -fx-font-size: 14px;
+.contenido-item:hover {
+    -fx-background-color: #343446;
+    -fx-border-color: #8e44ff;
+    -fx-effect: dropshadow(three-pass-box, rgba(142,68,255,0.2), 8, 0, 0, 2);
+}
+
+/* Cabecera del contenido */
+.contenido-header {
+    -fx-spacing: 10;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.contenido-titulo {
+    -fx-text-fill: #a569ff;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-text-fill: #333;
-}
-
-.contenido-item .descripcion {
-    -fx-font-size: 12px;
-    -fx-text-fill: #666;
     -fx-wrap-text: true;
 }
 
-.contenido-item .meta-info {
-    -fx-font-size: 11px;
-    -fx-text-fill: #888;
+/* Icono de tipo */
+.tipo-icono {
+    -fx-font-size: 18px;
+    -fx-padding: 0 5 0 0;
+}
+
+/* Metadatos */
+.metadata-row {
+    -fx-spacing: 15;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.metadata-label {
+    -fx-text-fill: #999999;
+    -fx-font-size: 12px;
+    -fx-graphic-text-gap: 5px;
+}
+
+/* Descripción */
+.descripcion-text {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 14px;
+    -fx-wrap-text: true;
+    -fx-padding: 8 0;
+    -fx-background-color: transparent;
+}
+
+/* Tipos de contenido específicos */
+.tipo-video {
+    -fx-text-fill: #ff6b6b;
+}
+
+.tipo-documento {
+    -fx-text-fill: #33b5e5;
+}
+
+.tipo-enlace {
+    -fx-text-fill: #2ecc71;
+}
+
+.tipo-imagen {
+    -fx-text-fill: #a569ff;
+}
+
+.tipo-audio {
+    -fx-text-fill: #f39c12;
+}
+
+/* Estado vacío */
+.empty-state {
+    -fx-font-size: 14px;
+    -fx-text-fill: #95a5a6;
+    -fx-alignment: center;
+    -fx-padding: 30;
+}
+
+/* Botón de recarga */
+.reload-button {
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+    -fx-effect: dropshadow(gaussian, rgba(142,68,255,0.3), 5, 0.5, 0, 2);
+}
+
+.reload-button:hover {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
 }

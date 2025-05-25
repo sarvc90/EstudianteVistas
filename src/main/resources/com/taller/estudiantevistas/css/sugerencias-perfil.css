@@ -1,0 +1,65 @@
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
+    -fx-font-family: "Segoe UI", sans-serif;
+}
+
+.sugerencias-container {
+    -fx-background-color: transparent;
+    -fx-padding: 15px;
+}
+
+.sugerencia-item {
+    -fx-background-color: #2c2c3c;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-padding: 15;
+    -fx-spacing: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+.sugerencia-item:hover {
+    -fx-background-color: #343446;
+    -fx-border-color: #a569ff;
+}
+
+.sugerencia-nombre {
+    -fx-text-fill: #a569ff;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.sugerencia-detalle {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 14px;
+}
+
+.btn-contactar {
+    -fx-background-color: #a569ff;
+    -fx-text-fill: white;
+    -fx-background-radius: 15;
+    -fx-padding: 5 15;
+    -fx-font-weight: bold;
+}
+
+.btn-contactar:hover {
+    -fx-background-color: #8e44ff;
+}
+
+.reload-button {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+    -fx-text-fill: white;
+    -fx-background-radius: 20;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+}
+
+.scroll-pane {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+}
+
+.scroll-pane .viewport {
+    -fx-background-color: transparent;
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.taller.estudiantevistas.controlador.ControladorSolicitudesPerfil"
+            stylesheets="@../css/solicitudes-perfil.css"
+            prefWidth="600" prefHeight="400">
+
+    <center>
+        <VBox spacing="15" alignment="TOP_CENTER" style="-fx-background-color: transparent;">
+            <Label text="Mis Solicitudes" style="-fx-text-fill: #ff6b6b; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Button text="Recargar" styleClass="reload-button" onAction="#cargarSolicitudesUsuario"/>
+
+            <ScrollPane fx:id="scrollSolicitudes" styleClass="scroll-pane" fitToWidth="true" hbarPolicy="NEVER">
+                <VBox fx:id="panelSolicitudes" styleClass="solicitudes-container" spacing="15" fillWidth="true"/>
+            </ScrollPane>
+        </VBox>
+    </center>
+</BorderPane>
