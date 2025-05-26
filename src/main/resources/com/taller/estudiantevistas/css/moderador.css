@@ -1,62 +1,91 @@
+/* Tema principal - Oscuro moderno con toques morados */
 .root {
-    -fx-background-color: #1e1e2f;
+    -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
     -fx-font-family: "Segoe UI", sans-serif;
 }
 
-.label {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 14px;
-}
-
+/* Panel lateral izquierdo (perfil) */
 .perfil-vbox {
-    -fx-padding: 20;
-    -fx-spacing: 15;
+    -fx-padding: 25 20;
+    -fx-spacing: 20;
     -fx-alignment: top-center;
-    -fx-background-color: #2a2a40;
-    -fx-border-color: #3f3f5f;
-    -fx-border-width: 0 2 0 0;
+    -fx-background-color: rgba(30, 30, 40, 0.8);
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 0 1 0 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 0);
 }
 
 .imagen-perfil {
-    -fx-effect: dropshadow(gaussian, #9b59b6, 10, 0.5, 0, 0);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 15, 0.5, 0, 0);
+    -fx-border-radius: 50%;
+    -fx-border-color: #8e44ff;
+    -fx-border-width: 2;
 }
 
+/* Etiquetas de datos */
 .etiqueta-dato {
     -fx-font-weight: bold;
-    -fx-text-fill: #9b59b6;
+    -fx-text-fill: #a569ff;
     -fx-font-size: 13px;
+    -fx-padding: 5 0 0 0;
 }
 
 .valor-dato {
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: #e0e0e0;
     -fx-font-size: 13px;
-    -fx-padding: 0 0 8 10;
+    -fx-padding: 0 0 10 15;
+    -fx-wrap-text: true;
 }
 
+/* Botones principales */
 .boton-morado {
-    -fx-background-color: linear-gradient(to bottom, #8e44ad, #732d91);
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-font-size: 13px;
-    -fx-background-radius: 10;
+    -fx-background-radius: 20;
+    -fx-padding: 10 25;
     -fx-cursor: hand;
-    -fx-padding: 10 20;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 2);
 }
 
 .boton-morado:hover {
-    -fx-background-color: linear-gradient(to bottom, #a569bd, #8e44ad);
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 3);
 }
 
+.boton-morado:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.2), 5, 0.3, 0, 1);
+}
+
+/* Contenedores de información */
 .contenedor-negro {
-    -fx-background-color: #2f2f3f;
-    -fx-border-color: #444;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
+    -fx-background-color: #252535;
+    -fx-background-radius: 15;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
 }
 
+.contenedor-negro:hover {
+    -fx-border-color: #8e44ff;
+}
+
+/* Títulos */
 .titulo-pequeno {
-    -fx-text-fill: #ffffff;
-    -fx-font-size: 15px;
+    -fx-text-fill: #a569ff;
+    -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-padding: 5 0 10 0;
+    -fx-padding: 5 0 15 0;
+}
+
+/* Estilo para el panel central */
+.center {
+    -fx-padding: 30;
+    -fx-background-color: transparent;
+}
+
+/* Estilo para las cajas de botones */
+.info-labels {
+    -fx-padding: 0 15;
 }

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.geometry.*?>
+
+<?import java.net.URL?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorGestionUsuarios"
+      styleClass="root" spacing="20" prefWidth="800" prefHeight="600">
+
+    <stylesheets>
+        <URL value="@/com/taller/estudiantevistas/css/estilos.css" />
+    </stylesheets>
+
+    <!-- Barra superior -->
+    <HBox styleClass="top" alignment="CENTER" spacing="20">
+        <Label text="Gestión de Usuarios" styleClass="titulo-principal">
+            <font>
+                <Font name="Segoe UI" size="24.0" />
+            </font>
+        </Label>
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <Button text="Actualizar" styleClass="main-button" onAction="#cargarUsuarios" />
+    </HBox>
+
+    <!-- Contenido principal -->
+    <VBox styleClass="content-pane" spacing="15" VBox.vgrow="ALWAYS">
+        <!-- Barra de herramientas -->
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <Button text="Suspender" styleClass="main-button" fx:id="btnSuspender" disable="true"
+                    onAction="#manejarSuspender" />
+            <Button text="Eliminar" styleClass="main-button" fx:id="btnEliminar" disable="true"
+                    onAction="#manejarEliminar" />
+            <Button text="Reactivar" styleClass="main-button" fx:id="btnReactivar" disable="true"
+                    onAction="#manejarReactivar" />
+        </HBox>
+
+        <!-- Tabla de usuarios -->
+        <TableView fx:id="tablaUsuarios" styleClass="tabla-usuarios" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn text="Nombre" fx:id="colNombre" prefWidth="200" />
+                <TableColumn text="Correo" fx:id="colCorreo" prefWidth="250" />
+                <TableColumn text="Estado" fx:id="colEstado" prefWidth="100" />
+                <TableColumn text="Suspensión hasta" fx:id="colSuspension" prefWidth="150" />
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+    </VBox>
+</VBox>

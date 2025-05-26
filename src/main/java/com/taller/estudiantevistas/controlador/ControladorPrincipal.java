@@ -821,68 +821,76 @@ public class ControladorPrincipal {
 
         ejecutarTareaAsync(
                 () -> {
+                    JsonObject solicitud = new JsonObject();
+                    solicitud.addProperty("tipo", "OBTENER_DATOS_PERFIL");
+
+                    JsonObject datos = new JsonObject();
+                    datos.addProperty("userId", usuarioData.get("id").getAsString());
+                    solicitud.add("datos", datos);
+
+                    cliente.getSalida().println(solicitud.toString());
+                    String respuesta = null;
                     try {
-                        String tipoSolicitud = usuarioData.has("esModerador") && usuarioData.get("esModerador").getAsBoolean()
-                                ? "OBTENER_DATOS_MODERADOR"
-                                : "OBTENER_DATOS_PERFIL";
-
-                        JsonObject solicitud = new JsonObject();
-                        solicitud.addProperty("tipo", tipoSolicitud);
-
-                        JsonObject datos = new JsonObject();
-                        datos.addProperty("userId", usuarioData.get("id").getAsString());
-                        solicitud.add("datos", datos);
-
-                        cliente.getSalida().println(solicitud.toString());
-                        String respuesta = cliente.getEntrada().readLine();
-                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
-
-                        if (!jsonRespuesta.get("exito").getAsBoolean()) {
-                            throw new RuntimeException(jsonRespuesta.get("mensaje").getAsString());
-                        }
-
-                        JsonObject datosRetorno = new JsonObject();
-                        datosRetorno.add("datosUsuario", jsonRespuesta.get("datosUsuario"));
-                        datosRetorno.addProperty("esModerador", tipoSolicitud.equals("OBTENER_DATOS_MODERADOR"));
-                        return datosRetorno;
-                    } catch (Exception e) {
-                        throw new RuntimeException("Error al obtener datos del perfil: " + e.getMessage(), e);
-                    }
-                },
-                datosRetorno -> Platform.runLater(() -> {
-                    try {
-                        JsonObject datosUsuario = datosRetorno.getAsJsonObject("datosUsuario");
-                        boolean esModerador = datosRetorno.get("esModerador").getAsBoolean();
-
-                        String fxmlPath = esModerador
-                                ? "/com/taller/estudiantevistas/fxml/moderador.fxml"
-                                : "/com/taller/estudiantevistas/fxml/perfil.fxml";
-
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
-                        Parent root = loader.load();
-
-                        if (esModerador) {
-                            ControladorModerador controlador = loader.getController();
-                            controlador.inicializar(datosUsuario, cliente);
-                        } else {
-                            ControladorPerfil controlador = loader.getController();
-                            controlador.inicializar(datosUsuario, cliente);
-                        }
-
-                        Stage stage = new Stage();
-                        stage.setTitle(esModerador ? "Panel de Moderador" : "Perfil de Usuario");
-                        stage.setScene(new Scene(root));
-                        stage.initModality(Modality.APPLICATION_MODAL);
-                        stage.show();
+                        respuesta = cliente.getEntrada().readLine();
                     } catch (IOException e) {
-                        manejarError("cargar vista de perfil/moderador", e);
+                        throw new RuntimeException(e);
                     }
-                }),
+                    return JsonParser.parseString(respuesta).getAsJsonObject();
+                },
+                respuesta -> {
+                    if (!respuesta.get("exito").getAsBoolean()) {
+                        throw new RuntimeException(respuesta.get("mensaje").getAsString());
+                    }
+
+                    // Merge basic user data with profile data
+                    JsonObject usuarioCompleto = usuarioData.deepCopy();
+                    if (respuesta.has("usuario")) {
+                        JsonObject perfilData = respuesta.getAsJsonObject("usuario");
+                        for (Map.Entry<String, JsonElement> entry : perfilData.entrySet()) {
+                            usuarioCompleto.add(entry.getKey(), entry.getValue());
+                        }
+                    }
+
+                    abrirVistaSegunRol(usuarioCompleto);
+                },
                 error -> Platform.runLater(() ->
-                        mostrarAlerta("Error", "No se pudo cargar el perfil: " + error.getMessage(), Alert.AlertType.ERROR)
+                        mostrarAlerta("Error", "Error al cargar perfil: " + error.getMessage(), Alert.AlertType.ERROR)
                 ),
                 "carga de perfil"
         );
+    }
+
+    private void abrirVistaSegunRol(JsonObject datosUsuario) {
+        Platform.runLater(() -> {
+            try {
+                boolean esModerador = datosUsuario.has("esModerador")
+                        ? datosUsuario.get("esModerador").getAsBoolean()
+                        : datosUsuario.has("rol") && datosUsuario.get("rol").getAsString().equalsIgnoreCase("MODERADOR");
+
+                String fxmlPath = esModerador
+                        ? "/com/taller/estudiantevistas/fxml/moderador.fxml"
+                        : "/com/taller/estudiantevistas/fxml/perfil.fxml";
+
+                FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
+                Parent root = loader.load();
+
+                if (esModerador) {
+                    ControladorModerador controlador = loader.getController();
+                    controlador.inicializar(datosUsuario, cliente);
+                } else {
+                    ControladorPerfil controlador = loader.getController();
+                    controlador.inicializar(datosUsuario, cliente);
+                }
+
+                Stage stage = new Stage();
+                stage.setTitle(esModerador ? "Panel de Moderador" : "Perfil de Usuario");
+                stage.setScene(new Scene(root));
+                stage.initModality(Modality.APPLICATION_MODAL);
+                stage.show();
+            } catch (IOException e) {
+                manejarError("cargar vista de perfil", e);
+            }
+        });
     }
 
     private void mostrarVistaSolicitudAyuda() {
