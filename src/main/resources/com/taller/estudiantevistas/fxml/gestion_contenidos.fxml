@@ -15,7 +15,6 @@
         <Insets top="10" right="10" bottom="10" left="10"/>
     </padding>
 
-    <!-- Barra superior / Header -->
     <HBox alignment="CENTER" spacing="20" styleClass="top">
         <Label text="Gestión de Contenidos" styleClass="titulo-principal">
             <font>
@@ -26,10 +25,9 @@
         <Button text="Actualizar" styleClass="main-button" onAction="#cargarContenidos" />
     </HBox>
 
-    <!-- Contenido principal -->
     <VBox spacing="15" styleClass="content-pane" VBox.vgrow="ALWAYS">
 
-        <!-- Tabla -->
+
         <TableView fx:id="tablaContenidos" styleClass="tabla-contenidos" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn fx:id="colIdContenido" text="ID" prefWidth="80" />
@@ -44,7 +42,7 @@
             </columnResizePolicy>
         </TableView>
 
-        <!-- Barra de botones -->
+
         <HBox spacing="10" alignment="CENTER_RIGHT">
             <Button fx:id="btnEditar" text="Editar" disable="true" styleClass="main-button" onAction="#manejarEditar"/>
             <Button fx:id="btnEliminar" text="Eliminar" disable="true" styleClass="main-button" onAction="#manejarEliminarContenido"/>

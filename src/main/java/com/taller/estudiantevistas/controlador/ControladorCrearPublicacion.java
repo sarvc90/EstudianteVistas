@@ -19,6 +19,11 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Controlador para la vista de creación de publicaciones.
+ * Permite a los usuarios crear publicaciones con diferentes tipos de contenido.
+ */
+
 public class ControladorCrearPublicacion {
 
     @FXML private TextField tituloField;
@@ -44,31 +49,47 @@ public class ControladorCrearPublicacion {
             ".ppt", ".pptx", ".odp", ".key"
     );
 
+    /**
+     * Metodo que se llama al inicializar la vista.
+     * Configura los eventos de los botones y campos.
+     */
+
     @FXML
     public void initialize() {
         agregarArchivoBtn.setOnAction(event -> agregarArchivo());
         enlaceField.setEditable(false);
     }
 
+    /**
+     * Inicializa el controlador con los datos del usuario y el cliente de servicio.
+     * @param usuarioData Datos del usuario que crea la publicación.
+     * @param cliente Cliente de servicio para la comunicación con el servidor.
+     */
+
     public void inicializar(JsonObject usuarioData, ClienteServicio cliente) {
         this.usuarioData = usuarioData;
         this.cliente = cliente;
     }
+
+    /**
+     * Metodo que se llama al hacer clic en el botón de publicar.
+     * Válida los campos y envía la solicitud de creación de publicación al servidor.
+     */
 
     @FXML
     private void publicar() {
         if (!validarCampos()) return;
 
         try {
-            // 1. Determinar tipo de contenido
+
             TipoContenido tipo = determinarTipoContenido();
 
-            // 2. Obtener la ruta del contenido (archivo o enlace)
+
             String contenidoRuta = archivoSeleccionado != null ?
                     archivoSeleccionado.getAbsolutePath() :
                     enlaceField.getText();
 
-            // 3. Construir el JSON de solicitud
+
             JsonObject solicitud = new JsonObject();
             solicitud.addProperty("tipo", "CREAR_PUBLICACION");
 
@@ -82,12 +103,12 @@ public class ControladorCrearPublicacion {
 
             solicitud.add("datos", datos);
 
-            // 4. Enviar solicitud usando los métodos públicos existentes
+
             cliente.getSalida().println(solicitud.toString());
             String respuesta = cliente.getEntrada().readLine();
             JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
 
-            // 5. Procesar respuesta
+
             if (jsonRespuesta.get("exito").getAsBoolean()) {
                 mostrarAlerta("Éxito", "Publicación creada exitosamente", Alert.AlertType.INFORMATION);
                 cerrarVentana();
@@ -101,6 +122,11 @@ public class ControladorCrearPublicacion {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Abre la ventana del perfil del usuario.
+     * Carga el FXML del perfil y lo muestra en una nueva ventana.
+     */
 
     private void abrirVentanaPerfil() {
         try {
@@ -119,12 +145,16 @@ public class ControladorCrearPublicacion {
         }
     }
 
+    /**
+     * Abre un diálogo para seleccionar un archivo y lo asigna al campo de enlace.
+     * Configura filtros para diferentes tipos de archivos.
+     */
+
     @FXML
     private void agregarArchivo() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Seleccionar archivo");
 
-        // Configurar filtros de extensión
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter("Documentos", "*.pdf", "*.doc", "*.docx", "*.txt"),
                 new FileChooser.ExtensionFilter("Videos", "*.mp4", "*.avi", "*.mov", "*.mkv"),
@@ -138,6 +168,12 @@ public class ControladorCrearPublicacion {
             enlaceField.setText(archivoSeleccionado.getAbsolutePath());
         }
     }
+
+    /**
+     * Determina el tipo de contenido basado en la extensión del archivo seleccionado.
+     * Si no hay archivo, asume que es un enlace.
+     * @return TipoContenido correspondiente al archivo o enlace.
+     */
 
     private TipoContenido determinarTipoContenido() {
         if (archivoSeleccionado == null) {
@@ -159,6 +195,12 @@ public class ControladorCrearPublicacion {
         return TipoContenido.OTRO;
     }
 
+    /**
+     * Valida los campos de entrada antes de enviar la solicitud de publicación.
+     * Muestra alertas si hay errores en los campos obligatorios.
+     * @return true si todos los campos son válidos, false en caso contrario.
+     */
+
     private boolean validarCampos() {
         if (tituloField.getText().trim().isEmpty()) {
             mostrarAlerta("Error", "El título es obligatorio", Alert.AlertType.ERROR);
@@ -171,6 +213,11 @@ public class ControladorCrearPublicacion {
         return true;
     }
 
+    /**
+     * Limpia los campos de entrada después de publicar o cancelar.
+     * Resetea los campos de texto y el archivo seleccionado.
+     */
+
     private void limpiarCampos() {
         tituloField.clear();
         descripcionField.clear();
@@ -179,10 +226,22 @@ public class ControladorCrearPublicacion {
         archivoSeleccionado = null;
     }
 
+    /**
+     * Cierra la ventana actual de creación de publicación.
+     * Se llama al cancelar o después de publicar exitosamente.
+     */
+
     private void cerrarVentana() {
         Stage stage = (Stage) tituloField.getScene().getWindow();
         stage.close();
     }
+
+    /**
+     * Muestra una alerta con el título, mensaje y tipo especificado.
+     * @param titulo Título de la alerta.
+     * @param mensaje Mensaje de la alerta.
+     * @param tipo Tipo de alerta (INFORMATION, ERROR, etc.).
+     */
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);

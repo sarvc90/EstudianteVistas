@@ -15,6 +15,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 
+/**
+ * Controlador para la vista de ajustes del usuario.
+ * Permite actualizar datos del usuario y eliminar la cuenta.
+ */
+
 public class ControladorAjustesUsuario {
     @FXML private TextField nombreField;
     @FXML private TextField emailField;
@@ -24,30 +29,40 @@ public class ControladorAjustesUsuario {
     private String usuarioId;
     private Stage stage;
 
+    /**
+     * Inicializa el controlador con el ID del usuario y el cliente de servicio.
+     * Si el ID es un JSON, lo parsea para obtener el campo "id".
+     *
+     * @param usuarioId ID del usuario (puede ser un JSON o un String simple)
+     * @param cliente ClienteServicio para comunicarse con el servidor
+     * @param stage Stage actual para cerrar al eliminar cuenta
+     */
+
     public void inicializar(String usuarioId, ClienteServicio cliente, Stage stage) {
         this.cliente = cliente;
         this.stage = stage;
 
-        // Si usuarioId viene como JSON stringificado, extraemos el id real
         if (usuarioId.trim().startsWith("{")) {
             try {
                 JsonObject obj = JsonParser.parseString(usuarioId).getAsJsonObject();
                 this.usuarioId = obj.get("id").getAsString();
             } catch (Exception e) {
-                // Si falla, dejar el valor original y mostrar error o log
                 this.usuarioId = usuarioId;
                 System.err.println("Error al parsear usuarioId: " + e.getMessage());
             }
         } else {
-            this.usuarioId = usuarioId; // ya es un id simple
+            this.usuarioId = usuarioId;
         }
 
         pedirDatosUsuarioDesdeServidor();
     }
 
+    /**
+     * Solicita los datos del usuario al servidor y los muestra en la interfaz.
+     * Si hay un error, muestra una alerta.
+     */
 
     private void pedirDatosUsuarioDesdeServidor() {
-        // Ejecutar en hilo aparte para no bloquear UI
         new Thread(() -> {
             try {
                 JsonObject solicitud = new JsonObject();
@@ -88,6 +103,11 @@ public class ControladorAjustesUsuario {
         }).start();
     }
 
+    /**
+     * Actualiza los datos del usuario en el servidor.
+     * Muestra una alerta de éxito o error según la respuesta del servidor.
+     */
+
     @FXML
     private void actualizarDatos() {
         JsonObject datosActualizados = new JsonObject();
@@ -119,6 +139,11 @@ public class ControladorAjustesUsuario {
         }).start();
     }
 
+    /**
+     * Solicita la eliminación de la cuenta del usuario.
+     * Muestra una alerta de confirmación antes de proceder.
+     * Si se confirma, envía la solicitud al servidor y maneja la respuesta.
+     */
 
     @FXML
     private void solicitarEliminarCuenta() {
@@ -187,8 +212,13 @@ public class ControladorAjustesUsuario {
         }
     }
 
-
-
+    /**
+     * Muestra una alerta con el título, mensaje y tipo especificados.
+     *
+     * @param titulo Título de la alerta
+     * @param mensaje Mensaje de la alerta
+     * @param tipo Tipo de alerta (INFORMATION, ERROR, CONFIRMATION, etc.)
+     */
 
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);

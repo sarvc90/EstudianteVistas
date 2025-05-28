@@ -8,9 +8,8 @@
       alignment="CENTER"
       spacing="20"
       styleClass="login-container"
-      stylesheets="@../css/estilos.css"> <!-- Añade esta línea -->
+      stylesheets="@../css/estilos.css">
 
-    <!-- El resto de tu contenido permanece igual -->
     <Label text="Iniciar sesión en red de aprendizaje" styleClass="titulo" />
     <TextField fx:id="nombreField" promptText="Correo..." styleClass="text-field" />
     <PasswordField fx:id="contrasenaField" promptText="Contraseña..." styleClass="password-field" />

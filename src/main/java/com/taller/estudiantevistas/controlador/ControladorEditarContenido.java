@@ -55,9 +55,9 @@ public class ControladorEditarContenido {
         this.moderadorId = moderadorId;
         this.callbackActualizacion = callback;
 
-        initUI(); // Primero inicializa la interfaz
+        initUI();
 
-        // Retrasa ligeramente la conexión al servidor
+
         Platform.runLater(() -> {
             conectarAlServidor();
         });
@@ -256,7 +256,6 @@ public class ControladorEditarContenido {
                     mostrarError("No se pudo conectar al servidor. Verifique que el servidor esté ejecutándose.");
                     btnGuardar.setDisable(true);
 
-                    // Opcional: Botón para reintentar conexión
                     Button btnReintentar = new Button("Reintentar conexión");
                     btnReintentar.setOnAction(evt -> conectarAlServidor());
                     if (contenedorPrincipal.getChildren().size() > 2) {

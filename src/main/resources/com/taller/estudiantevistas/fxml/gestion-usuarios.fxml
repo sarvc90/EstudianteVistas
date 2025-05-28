@@ -15,7 +15,6 @@
         <URL value="@../css/gestion-usuarios.css" />
     </stylesheets>
 
-    <!-- Barra superior -->
     <HBox styleClass="top" alignment="CENTER" spacing="20">
         <Label text="Gestión de Usuarios" styleClass="titulo-principal">
             <font>
@@ -28,9 +27,7 @@
         <Button text="Actualizar" styleClass="main-button" onAction="#cargarUsuarios" />
     </HBox>
 
-    <!-- Contenido principal -->
     <VBox styleClass="content-pane" spacing="15" VBox.vgrow="ALWAYS">
-        <!-- Barra de herramientas -->
         <HBox spacing="10" alignment="CENTER_LEFT">
             <Button text="Suspender" styleClass="main-button" fx:id="btnSuspender" disable="true"
                     onAction="#manejarSuspender" />
@@ -39,8 +36,6 @@
             <Button text="Reactivar" styleClass="main-button" fx:id="btnReactivar" disable="true"
                     onAction="#manejarReactivar" />
         </HBox>
-
-        <!-- Tabla de usuarios -->
         <TableView fx:id="tablaUsuarios" styleClass="tabla-usuarios" VBox.vgrow="ALWAYS">
             <columns>
                 <TableColumn text="Nombre" fx:id="colNombre" prefWidth="200" />

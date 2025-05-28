@@ -1,11 +1,11 @@
-/* Estilo raíz */
+
 .root {
     -fx-background-color: #1c1b22;
     -fx-font-family: 'Roboto Mono', monospace;
     -fx-text-fill: #7a4de8;
 }
 
-/* Contenedor principal */
+
 .container {
     -fx-background-color: #16161b;
     -fx-background-radius: 25px;
@@ -15,7 +15,7 @@
     -fx-alignment: center;
 }
 
-/* Caja derecha */
+
 .right-box {
     -fx-background-color: #1c1b22;
     -fx-background-radius: 20px;
@@ -26,20 +26,20 @@
     -fx-pref-width: 500px;
 }
 
-/* Contenedor de contenido */
+
 .content-wrapper {
     -fx-spacing: 20px;
     -fx-max-width: infinity;
     -fx-alignment: center;
 }
 
-/* Contenedor del título */
+
 .title-container {
     -fx-spacing: 5px;
     -fx-alignment: center-left;
 }
 
-/* Título del contenido */
+
 .content-title {
     -fx-font-size: 28px;
     -fx-font-weight: normal;
@@ -47,14 +47,14 @@
     -fx-fill: #7a4de8;
 }
 
-/* Contenedor de botones superiores */
+
 .buttons-container {
     -fx-spacing: 15px;
     -fx-alignment: center;
     -fx-padding: 10px 0 0 0;
 }
 
-/* Botones de acción */
+
 .action-button {
     -fx-background-color: #7a4de8;
     -fx-text-fill: white;
@@ -71,14 +71,14 @@
     -fx-background-color: #6b43d0;
 }
 
-/* Contenedor de botones inferiores */
+
 .bottom-buttons {
     -fx-spacing: 15px;
     -fx-alignment: center;
     -fx-padding: 30px 0 0 0;
 }
 
-/* Botones inferiores */
+
 .bottom-button {
     -fx-background-color: #16161b;
     -fx-text-fill: white;
@@ -137,7 +137,7 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 0);
 }
 
-/* Estilos para el contenido */
+
 .content-display {
     -fx-padding: 15px;
     -fx-spacing: 10px;
@@ -167,7 +167,6 @@
     -fx-padding: 10px;
 }
 
-/* Estilos responsivos */
 @media (max-width: 600px) {
     .container {
         -fx-padding: 15px;

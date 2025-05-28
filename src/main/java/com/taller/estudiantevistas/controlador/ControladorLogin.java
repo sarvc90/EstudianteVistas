@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 public class ControladorLogin {
     private static final String SERVER_HOST = "localhost";
-    private static final int SERVER_PORT = 12345; // Asegúrate que coincide con el servidor
+    private static final int SERVER_PORT = 12345;
 
     private ClienteServicio cliente;
 
@@ -47,7 +47,6 @@ public class ControladorLogin {
             mostrarAlerta("Error crítico",
                     "No se pudo conectar al servidor:\n" + e.getMessage(),
                     AlertType.ERROR);
-            // Deshabilitar interfaz si no hay conexión
             nombreField.setDisable(true);
             contrasenaField.setDisable(true);
         }
@@ -77,7 +76,7 @@ public class ControladorLogin {
             datos.addProperty("contrasena", contrasena);
             loginRequest.add("datos", datos);
 
-            // Usar la conexión persistente
+
             cliente.getSalida().println(loginRequest.toString());
             String respuesta = cliente.getEntrada().readLine();
 
@@ -104,7 +103,7 @@ public class ControladorLogin {
 
     private void abrirPantallaPrincipal(String datosUsuario) {
         try {
-            // Parsear el JSON primero para validarlo
+
             JsonObject usuarioJson;
             try {
                 usuarioJson = JsonParser.parseString(datosUsuario).getAsJsonObject();

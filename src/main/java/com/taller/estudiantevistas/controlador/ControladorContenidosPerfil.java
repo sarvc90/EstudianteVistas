@@ -26,19 +26,33 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
+/**
+ * Controlador para la vista de contenidos del perfil de usuario.
+ * Permite cargar y mostrar los contenidos publicados por un usuario específico.
+ */
+
 public class ControladorContenidosPerfil {
     private static final Logger LOGGER = Logger.getLogger(ControladorContenidosPerfil.class.getName());
 
+    // Executor para manejar tareas asíncronas
     private final Executor executor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
         return t;
     });
 
+
     @FXML private Pane panelContenidos;
     private String userId;
     private ClienteServicio cliente;
     private BiConsumer<String, Consumer<JsonArray>> cargadorContenidos;
+
+    /**
+     * Inicializa el controlador con el ID del usuario, el cliente de servicio y un cargador de contenidos.
+     * @param userId ID del usuario cuyos contenidos se van a cargar.
+     * @param cliente ClienteServicio para la comunicación con el servidor.
+     * @param cargadorContenidos Función que carga los contenidos del usuario de forma asíncrona.
+     */
 
     public void inicializar(String userId, ClienteServicio cliente, BiConsumer<String, Consumer<JsonArray>> cargadorContenidos) {
         this.userId = userId;
@@ -47,11 +61,15 @@ public class ControladorContenidosPerfil {
         cargarContenidosUsuario();
     }
 
+    /**
+     * Carga los contenidos del usuario especificado.
+     * Si se proporciona un cargador de contenidos, lo utiliza para cargar los datos.
+     * Si no, utiliza la implementación original para obtener los contenidos del servidor.
+     */
     private void cargarContenidosUsuario() {
         panelContenidos.getChildren().clear();
 
         if (cargadorContenidos != null) {
-            // Use the callback-based loading
             cargadorContenidos.accept(userId, contenidos -> {
                 Platform.runLater(() -> {
                     if (contenidos == null || contenidos.size() == 0) {
@@ -64,7 +82,6 @@ public class ControladorContenidosPerfil {
                 });
             });
         } else {
-            // Fallback to original implementation
             ejecutarTareaAsync(
                     () -> {
                         try {
@@ -104,6 +121,13 @@ public class ControladorContenidosPerfil {
         }
     }
 
+    /**
+     * Filtra los contenidos duplicados basándose en el campo "id".
+     * Si un contenido no tiene "id", se considera único.
+     * @param array JsonArray de contenidos a filtrar.
+     * @return JsonArray sin duplicados.
+     */
+
     private JsonArray filtrarDuplicados(JsonArray array) {
         Set<String> idsVistos = new HashSet<>();
         JsonArray resultado = new JsonArray();
@@ -121,6 +145,13 @@ public class ControladorContenidosPerfil {
         }
         return resultado;
     }
+
+    /**
+     * Muestra los contenidos en el panel de contenidos.
+     * Si no hay contenidos, muestra un mensaje informativo.
+     * Si hay un mensaje especial, lo muestra en lugar de los contenidos.
+     * @param contenidos JsonArray de contenidos a mostrar.
+     */
 
     private void mostrarContenidosEnPanel(JsonArray contenidos) {
         VBox contenedor = new VBox(10);
@@ -173,6 +204,13 @@ public class ControladorContenidosPerfil {
         panelContenidos.getChildren().add(scrollPane);
     }
 
+    /**
+     * Crea un nodo que representa un contenido individual.
+     * Incluye cabecera con icono de tipo, título, metadatos y descripción.
+     * @param contenido JsonObject que representa el contenido a mostrar.
+     * @return Node que representa el contenido visualmente.
+     */
+
     private Node crearItemContenido(JsonObject contenido) {
         VBox item = new VBox(10);
         item.getStyleClass().add("contenido-item");
@@ -220,6 +258,13 @@ public class ControladorContenidosPerfil {
         return item;
     }
 
+    /**
+     * Crea una visualización del contenido dependiendo de su tipo.
+     * Si es un enlace, crea un Hyperlink; si es texto, un TextArea.
+     * @param contenido JsonObject que contiene los datos del contenido.
+     * @return Node que representa la visualización del contenido.
+     */
+
     private Node crearVisualizacionContenido(JsonObject contenido) {
         String tipo = contenido.has("tipo") ? contenido.get("tipo").getAsString() : "TEXTO";
         String contenidoStr = contenido.has("contenido") ? contenido.get("contenido").getAsString() : "Contenido no disponible";
@@ -252,6 +297,13 @@ public class ControladorContenidosPerfil {
         }
     }
 
+    /**
+     * Crea un ScrollPane para el contenido dado.
+     * Configura el ScrollPane para que se ajuste al ancho del panel y tenga un estilo personalizado.
+     * @param contenido Nodo que se mostrará dentro del ScrollPane.
+     * @return ScrollPane configurado con el contenido.
+     */
+
     private ScrollPane crearScrollPane(Node contenido) {
         ScrollPane scrollPane = new ScrollPane(contenido);
         scrollPane.setFitToWidth(true);
@@ -264,6 +316,13 @@ public class ControladorContenidosPerfil {
         return scrollPane;
     }
 
+    /**
+     * Formatea una fecha en el formato "dd/MM/yyyy HH:mm".
+     * Si la fecha no es válida, devuelve la cadena original.
+     * @param fechaStr Fecha en formato "yyyy-MM-dd HH:mm:ss".
+     * @return Fecha formateada o la cadena original si hay un error.
+     */
+
     private String formatFechaContenido(String fechaStr) {
         try {
             SimpleDateFormat formatoOriginal = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -273,6 +332,13 @@ public class ControladorContenidosPerfil {
             return fechaStr;
         }
     }
+
+    /**
+     * Obtiene un icono representativo del tipo de contenido.
+     * Utiliza emojis para representar diferentes tipos de contenido.
+     * @param tipo Tipo de contenido (ej. "VIDEO", "DOCUMENTO", etc.).
+     * @return String con el emoji correspondiente al tipo de contenido.
+     */
 
     private String obtenerIconoTipo(String tipo) {
         switch(tipo.toUpperCase()) {

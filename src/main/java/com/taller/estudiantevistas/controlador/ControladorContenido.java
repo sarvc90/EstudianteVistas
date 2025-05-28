@@ -38,36 +38,58 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Controlador para la vista de contenido.
+ * Muestra información detallada de un contenido específico y permite valoraciones.
+ */
+
 public class ControladorContenido {
     private static final Logger LOGGER = Logger.getLogger(ControladorContenido.class.getName());
 
-    // Configuración de ejecución asíncrona
+    /**
+     * Adaptador personalizado para manejar LocalDateTime en Gson.
+     * Permite múltiples formatos de fecha y maneja excepciones.
+     */
     private final Executor executor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
         return t;
     });
 
-    // Componentes de la UI
-    @FXML private Text txtTitulo;
-    @FXML private Text txtAutor;
-    @FXML private Text txtFechaPublicacion;
-    @FXML private Text txtTema;
-    @FXML private Text txtTipo;
-    @FXML private TextArea txtDescripcion;
-    @FXML private Button btnAgregarValoracion;
-    @FXML private Button btnVerValoracionPromedio;
-    @FXML private Button btnVerValoraciones;
-    @FXML private Pane leftBox;
-    @FXML private ImageView imgContenido;
-    @FXML private VBox valoracionesContainer;
-    @FXML private ScrollPane scrollValoraciones;
 
-    // Datos
+    @FXML
+    private Text txtTitulo;
+    @FXML
+    private Text txtAutor;
+    @FXML
+    private Text txtFechaPublicacion;
+    @FXML
+    private Text txtTema;
+    @FXML
+    private Text txtTipo;
+    @FXML
+    private TextArea txtDescripcion;
+    @FXML
+    private Button btnAgregarValoracion;
+    @FXML
+    private Button btnVerValoracionPromedio;
+    @FXML
+    private Button btnVerValoraciones;
+    @FXML
+    private Pane leftBox;
+    @FXML
+    private ImageView imgContenido;
+    @FXML
+    private VBox valoracionesContainer;
+    @FXML
+    private ScrollPane scrollValoraciones;
+
+
     private Contenido contenido;
     private ClienteServicio cliente;
     private JsonObject usuarioData;
     private boolean usuarioYaValoro;
+    // Adaptador para LocalDateTime que maneja múltiples formatos
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
@@ -78,20 +100,19 @@ public class ControladorContenido {
         this.usuarioData = usuarioData;
 
         try {
-            // 1. Configurar el adaptador de fecha con múltiples formatos
+
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
                     .create();
 
-            // 2. Convertir JSON a objeto Contenido
+
             this.contenido = gson.fromJson(contenidoJson, Contenido.class);
             verificarYLimpiarDuplicados();
-            // 3. Verificar que el contenido sea válido
+
             if (contenido == null) {
                 throw new IllegalArgumentException("El contenido no puede ser nulo");
             }
 
-            // Corrección del tipo basado en la extensión del archivo
             if (contenido.getTipo() == TipoContenido.OTRO && contenido.getContenido() != null) {
                 TipoContenido tipoCalculado = TipoContenido.determinarPorExtension(contenido.getContenido());
                 if (tipoCalculado != TipoContenido.OTRO) {
@@ -100,28 +121,21 @@ public class ControladorContenido {
                 }
             }
 
-            // 4. Configuración inicial de UI
             Platform.runLater(() -> {
                 try {
-                    // 4.1. Configurar eventos primero para evitar problemas
                     configurarEventos();
 
-                    // 4.2. Verificar valoración del usuario
                     verificarValoracionUsuario();
 
-                    // 4.3. Cargar datos básicos
                     cargarDatosContenido();
 
-                    // 4.4. Cargar el contenido específico (imagen, video, etc.)
                     configurarVisualizacionContenido();
 
-                    // 4.5. Actualizar el promedio de valoraciones
                     actualizarPromedio();
                     if (valoracionesContainer != null && valoracionesContainer.getParent() != null) {
-                        ((Pane)valoracionesContainer.getParent()).getChildren().remove(valoracionesContainer);
+                        ((Pane) valoracionesContainer.getParent()).getChildren().remove(valoracionesContainer);
                     }
 
-                    // 4.6. Log de éxito
                     LOGGER.info("Contenido inicializado correctamente: " + contenido.getTitulo());
                     LOGGER.info("Tipo de contenido: " + contenido.getTipo());
                     LOGGER.info("Ruta del contenido: " + contenido.getContenido());
@@ -130,7 +144,6 @@ public class ControladorContenido {
                     LOGGER.log(Level.SEVERE, "Error al inicializar UI del contenido", e);
                     mostrarAlerta("Error", "No se pudo inicializar la interfaz: " + e.getMessage(), Alert.AlertType.ERROR);
 
-                    // Mostrar mensaje de error en el leftBox
                     Label errorLabel = new Label("Error al cargar contenido:\n" + e.getMessage());
                     errorLabel.setStyle("-fx-text-fill: red;");
                     leftBox.getChildren().clear();
@@ -143,7 +156,6 @@ public class ControladorContenido {
             Platform.runLater(() -> {
                 mostrarAlerta("Error Crítico", "No se pudo cargar el contenido: " + e.getMessage(), Alert.AlertType.ERROR);
 
-                // Mostrar mensaje de error más detallado
                 Label errorLabel = new Label("Error crítico al cargar:\n" + e.getMessage());
                 errorLabel.setStyle("-fx-text-fill: red; -fx-font-size: 14px;");
                 leftBox.getChildren().clear();
@@ -152,6 +164,9 @@ public class ControladorContenido {
         }
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void verificarValoracionUsuario() {
         if (usuarioData == null || !usuarioData.has("id")) return;
 
@@ -161,6 +176,9 @@ public class ControladorContenido {
                 .anyMatch(v -> v.getAutor().equals(usuarioId));
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void cargarDatosContenido() {
         try {
             txtTitulo.setText(contenido.getTitulo());
@@ -180,7 +198,6 @@ public class ControladorContenido {
             txtDescripcion.setText(contenido.getDescripcion());
             txtDescripcion.setWrapText(true);
 
-            // Configurar botón de valoración
             btnAgregarValoracion.setDisable(usuarioYaValoro);
             if (usuarioYaValoro) {
                 btnAgregarValoracion.setText("Ya valoraste este contenido");
@@ -192,18 +209,19 @@ public class ControladorContenido {
         }
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void configurarVisualizacionContenido() {
         leftBox.getChildren().clear();
         leftBox.setStyle("-fx-alignment: center; -fx-padding: 10;");
 
-        // Extraer la ruta real del contenido (evitando valoraciones)
         String rutaContenido = contenido.getContenido();
         if (rutaContenido == null || rutaContenido.isEmpty()) {
             mostrarNoContenidoDisponible();
             return;
         }
 
-        // Si hay múltiples partes separadas por |, tomar solo la primera
         if (rutaContenido.contains("|")) {
             rutaContenido = rutaContenido.split("\\|")[0].trim();
         }
@@ -233,12 +251,18 @@ public class ControladorContenido {
         }
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void mostrarNoContenidoDisponible() {
         Label lblNoContenido = new Label("No hay contenido para mostrar");
         lblNoContenido.setStyle("-fx-text-fill: #666; -fx-font-style: italic;");
         leftBox.getChildren().add(lblNoContenido);
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void cargarContenidoExterno() {
         VBox container = new VBox(10);
         container.setAlignment(Pos.CENTER);
@@ -259,8 +283,10 @@ public class ControladorContenido {
         leftBox.getChildren().add(container);
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private String extraerRutaRealContenido(String contenidoRaw) {
-        // Si el contenido contiene valoraciones (separadas por |), tomamos solo la primera parte
         if (contenidoRaw.contains("|")) {
             return contenidoRaw.split("\\|")[0].trim();
         }
@@ -275,16 +301,12 @@ public class ControladorContenido {
             String url;
 
             if (file.exists()) {
-                // Convertir ruta local a URI
                 url = file.toURI().toString();
             } else if (originalPath.startsWith("http") || originalPath.startsWith("www")) {
-                // Es una URL web
                 url = originalPath.startsWith("http") ? originalPath : "https://" + originalPath;
             } else {
                 throw new FileNotFoundException("Ruta no válida: " + originalPath);
             }
-
-            // Intentar abrir con el navegador
             java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
         } catch (Exception ex) {
             Platform.runLater(() -> {
@@ -297,6 +319,9 @@ public class ControladorContenido {
         }
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void cargarContenidoGenerico(String rutaContenido) {
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
@@ -318,6 +343,9 @@ public class ControladorContenido {
         leftBox.getChildren().add(scrollPane);
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void mostrarErrorContenido(String mensaje) {
         Platform.runLater(() -> {
             leftBox.getChildren().clear();
@@ -335,20 +363,20 @@ public class ControladorContenido {
         });
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void cargarImagenContenido(String rutaContenido) {
         try {
             leftBox.getChildren().clear();
 
-            // Verificar si la ruta está vacía
             if (rutaContenido == null || rutaContenido.trim().isEmpty()) {
                 mostrarErrorImagen("La ruta de la imagen está vacía");
                 return;
             }
 
-            // Limpiar la ruta por si contiene múltiples partes
             String rutaLimpia = limpiarRutaImagen(rutaContenido);
 
-            // Determinar si es una URL web o una ruta local
             if (rutaLimpia.startsWith("http://") || rutaLimpia.startsWith("https://")) {
                 cargarImagenDesdeURL(rutaLimpia);
             } else {
@@ -359,18 +387,33 @@ public class ControladorContenido {
             mostrarErrorImagen("Error al cargar imagen: " + e.getMessage());
         }
     }
+
+    /**
+     * Limpia la ruta de la imagen eliminando cualquier parte innecesaria.
+     * Si contiene un separador '|', se toma solo la primera parte.
+     */
+
     private String limpiarRutaImagen(String rutaOriginal) {
-        // Si la ruta contiene múltiples partes separadas por |, tomar solo la primera
         if (rutaOriginal.contains("|")) {
             return rutaOriginal.split("\\|")[0].trim();
         }
         return rutaOriginal.trim();
     }
 
+    /**
+     * Carga una imagen desde una URL o un archivo local.
+     * Configura el ImageView y maneja errores de carga.
+     */
+
     private void cargarImagenDesdeURL(String url) {
-        Image image = new Image(url, true); // Carga asíncrona
+        Image image = new Image(url, true);
         configurarImageView(image);
     }
+
+    /**
+     * Carga una imagen desde un archivo local.
+     * Configura el ImageView y maneja errores de carga.
+     */
 
     private void cargarImagenDesdeArchivoLocal(String rutaLocal) throws FileNotFoundException {
         File file = new File(rutaLocal);
@@ -381,22 +424,25 @@ public class ControladorContenido {
         String url = file.toURI().toString();
         LOGGER.info("Cargando imagen desde: " + url);
 
-        Image image = new Image(url, true); // Carga asíncrona
+        Image image = new Image(url, true);
         configurarImageView(image);
     }
+
+    /**
+     * Configura el ImageView y maneja la visualización de la imagen.
+     * Incluye manejo de errores y mensajes de carga.
+     */
 
     private void configurarImageView(Image image) {
         ImageView imageView = new ImageView(image);
         imageView.setPreserveRatio(true);
         imageView.setFitWidth(leftBox.getWidth() - 40);
 
-        // Contenedor con scroll para la imagen
         ScrollPane scrollPane = new ScrollPane(imageView);
         scrollPane.setFitToWidth(true);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setStyle("-fx-background: transparent;");
 
-        // Manejar eventos de carga
         image.errorProperty().addListener((obs, wasError, isNowError) -> {
             if (isNowError) {
                 Platform.runLater(() -> {
@@ -416,7 +462,6 @@ public class ControladorContenido {
                     leftBox.getChildren().add(scrollPane);
                 });
             } else if (newVal.doubleValue() < 0) {
-                // Error en la carga
                 Platform.runLater(() -> {
                     Label loadingLabel = new Label("Error cargando imagen...");
                     loadingLabel.setStyle("-fx-text-fill: orange;");
@@ -425,11 +470,14 @@ public class ControladorContenido {
             }
         });
 
-        // Mostrar mensaje de carga mientras se carga la imagen
         Label loadingLabel = new Label("Cargando imagen...");
         loadingLabel.setStyle("-fx-text-fill: #666;");
         leftBox.getChildren().add(loadingLabel);
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
 
     private void mostrarErrorImagen(String mensaje) {
         Platform.runLater(() -> {
@@ -441,7 +489,6 @@ public class ControladorContenido {
             Label errorLabel = new Label(mensaje);
             errorLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
 
-            // Mostrar la ruta que falló para diagnóstico
             Label pathLabel = new Label("Ruta intentada: " + contenido.getContenido());
             pathLabel.setStyle("-fx-text-fill: #666; -fx-font-size: 12px;");
 
@@ -450,7 +497,9 @@ public class ControladorContenido {
         });
     }
 
-
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
     private void mostrarErrorImagen() {
         Platform.runLater(() -> {
             leftBox.getChildren().clear();
@@ -459,6 +508,10 @@ public class ControladorContenido {
             leftBox.getChildren().add(errorLabel);
         });
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
 
     private void cargarReproductorVideo(String rutaContenido) {
         VBox videoBox = new VBox(10);
@@ -475,11 +528,14 @@ public class ControladorContenido {
         leftBox.getChildren().add(videoBox);
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
+
     private void abrirEnNavegador(String originalUrl) {
         try {
             String processedUrl = originalUrl;
 
-            // Si es una ruta local sin protocolo
             if (!processedUrl.startsWith("http://") && !processedUrl.startsWith("https://") && !processedUrl.startsWith("file://")) {
                 File file = new File(processedUrl);
                 if (file.exists()) {
@@ -492,7 +548,7 @@ public class ControladorContenido {
             String finalUrlToOpen = processedUrl;
             java.awt.Desktop.getDesktop().browse(new java.net.URI(finalUrlToOpen));
         } catch (Exception ex) {
-            String errorUrl = originalUrl; // Variable final para el lambda
+            String errorUrl = originalUrl;
             Platform.runLater(() -> {
                 mostrarAlerta("Error", "No se pudo abrir el contenido: " + ex.getMessage(), Alert.AlertType.ERROR);
                 Label errorLabel = new Label("Error al abrir:\n" + errorUrl);
@@ -501,6 +557,10 @@ public class ControladorContenido {
             });
         }
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
 
     private void cargarVisualizadorDocumento(String rutaContenido) {
         VBox docBox = new VBox(10);
@@ -522,6 +582,10 @@ public class ControladorContenido {
         leftBox.getChildren().add(docBox);
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
+
     private void cargarVisualizadorEnlace() {
         VBox linkBox = new VBox(10);
         linkBox.setAlignment(Pos.CENTER);
@@ -542,6 +606,10 @@ public class ControladorContenido {
         leftBox.getChildren().add(linkBox);
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
+
     private void cargarVisualizadorEnlace(String rutaContenido) {
         VBox linkBox = new VBox(10);
         linkBox.setAlignment(Pos.CENTER);
@@ -561,6 +629,10 @@ public class ControladorContenido {
         linkBox.getChildren().addAll(lblTitulo, link, btnAbrir);
         leftBox.getChildren().add(linkBox);
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
 
     @FXML
     private void mostrarDialogoValoracion() {
@@ -615,6 +687,10 @@ public class ControladorContenido {
         Optional<Valoracion> result = dialog.showAndWait();
         result.ifPresent(this::agregarValoracion);
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
 
     private void agregarValoracion(Valoracion valoracion) {
         if (valoracion == null || usuarioYaValoro) return;
@@ -702,6 +778,10 @@ public class ControladorContenido {
         }
     }
 
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
+
     private void verificarYLimpiarDuplicados() {
         if (contenido.getContenido() != null && contenido.getContenido().contains("|")) {
             String[] partes = contenido.getContenido().split("\\|");
@@ -714,6 +794,11 @@ public class ControladorContenido {
             }
         }
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
+
     @FXML
     private void verValoracionPromedio() {
         ejecutarTareaAsync(
@@ -730,6 +815,10 @@ public class ControladorContenido {
                 "obtener valoración promedio"
         );
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
 
     @FXML
     private void verValoraciones() {
@@ -757,6 +846,10 @@ public class ControladorContenido {
                 "obtener valoraciones"
         );
     }
+
+    /**
+     * Configura los eventos de los botones y otros elementos de la UI.
+     */
 
     private void mostrarDialogoValoraciones(JsonObject respuestaJson) {
         Stage dialog = new Stage();
@@ -812,6 +905,10 @@ public class ControladorContenido {
         dialog.show();
     }
 
+    /**
+     * Crea un elemento visual para una valoración.
+     */
+
     private void scheduleValoracionesRefresh() {
         // Actualizar cada 5 segundos
         Timeline timeline = new Timeline(
@@ -827,28 +924,28 @@ public class ControladorContenido {
         }
     }
 
-
+    /**
+     * Crea un elemento visual para una valoración.
+     */
     private void configurarEventos() {
         btnAgregarValoracion.setOnAction(e -> mostrarDialogoValoracion());
         btnVerValoracionPromedio.setOnAction(e -> verValoracionPromedio());
         btnVerValoraciones.setOnAction(e -> verValoraciones());
     }
 
-
-    // ==================== MÉTODOS DE SERVICIO ====================
+    /**
+     * Envía la valoración al servidor y maneja la respuesta.
+     */
 
     private JsonObject enviarValoracionAlServidor(Valoracion valoracion) throws Exception {
-        // Validación básica de usuarioData
         if (usuarioData == null) {
             throw new RuntimeException("No hay datos de usuario disponibles para enviar valoración");
         }
 
-        // Validar campos obligatorios
         if (!usuarioData.has("id")) {
             throw new RuntimeException("Falta el ID de usuario en los datos");
         }
 
-        // Preparar la solicitud
         JsonObject solicitud = new JsonObject();
         solicitud.addProperty("tipo", "AGREGAR_VALORACION");
 
@@ -856,7 +953,6 @@ public class ControladorContenido {
         datos.addProperty("contenidoId", contenido.getId());
         datos.addProperty("usuarioId", usuarioData.get("id").getAsString());
 
-        // Obtener nombre con valor por defecto si no existe
         String nombreUsuario = usuarioData.has("nombre") ?
                 usuarioData.get("nombre").getAsString() :
                 "Usuario " + usuarioData.get("id").getAsString();
@@ -867,11 +963,9 @@ public class ControladorContenido {
 
         solicitud.add("datos", datos);
 
-        // Enviar solicitud y procesar respuesta
         cliente.getSalida().println(solicitud.toString());
         String respuesta = cliente.getEntrada().readLine();
 
-        // Validar respuesta del servidor
         if (respuesta == null || respuesta.isEmpty()) {
             throw new RuntimeException("No se recibió respuesta del servidor");
         }
@@ -888,6 +982,10 @@ public class ControladorContenido {
 
         return jsonRespuesta;
     }
+
+    /**
+     * Envía la valoración al servidor y maneja la respuesta.
+     */
 
     private Double obtenerPromedioActualizado() {
         try {
@@ -913,6 +1011,10 @@ public class ControladorContenido {
             throw new RuntimeException("No se pudo obtener el promedio de valoraciones: " + e.getMessage());
         }
     }
+
+    /**
+     * Envía la valoración al servidor y maneja la respuesta.
+     */
 
     private JsonObject obtenerValoracionesActualizadas() {
         try {
@@ -958,7 +1060,10 @@ public class ControladorContenido {
         }
     }
 
-
+    /**
+     * Normaliza los campos de una valoración JSON para asegurar que todos los campos necesarios estén presentes.
+     * Si faltan campos, se les asigna un valor por defecto.
+     */
     private void normalizarValoracionJson(JsonObject valoracion) {
         if (!valoracion.has("id")) {
             valoracion.addProperty("id", UUID.randomUUID().toString());
@@ -977,7 +1082,10 @@ public class ControladorContenido {
         }
     }
 
-
+    /**
+     * Crea una respuesta de fallback en caso de error al obtener valoraciones.
+     * Incluye el promedio y las valoraciones del contenido.
+     */
     private JsonObject crearRespuestaFallback() {
         JsonObject respuestaFallback = new JsonObject();
         respuestaFallback.addProperty("exito", true);
@@ -1001,7 +1109,9 @@ public class ControladorContenido {
         return respuestaFallback;
     }
 
-    // ==================== MÉTODOS DE UI ====================
+    /**
+     * Actualiza el promedio de valoraciones del contenido y el botón correspondiente.
+     */
 
     private void actualizarPromedio() {
         double promedio = contenido.getValoraciones().stream()
@@ -1013,13 +1123,16 @@ public class ControladorContenido {
         btnVerValoracionPromedio.setText(String.format("⭐ %.1f/5", promedio));
     }
 
+    /**
+     * Muestra todas las valoraciones del contenido en una ventana modal.
+     * Incluye estadísticas y un botón para actualizar.
+     */
+
     private void mostrarTodasValoraciones(JsonObject respuestaJson) {
-        // Crear contenedor principal
         VBox contenedorValoraciones = new VBox(10);
         contenedorValoraciones.setPadding(new Insets(10));
         contenedorValoraciones.setAlignment(Pos.TOP_CENTER);
 
-        // Verificar si hay valoraciones
         if (!respuestaJson.has("valoraciones") || respuestaJson.get("valoraciones").getAsJsonArray().size() == 0) {
             Label lblEmpty = new Label("No hay valoraciones aún");
             lblEmpty.setStyle("-fx-font-style: italic; -fx-text-fill: #666;");
@@ -1027,7 +1140,6 @@ public class ControladorContenido {
         } else {
             JsonArray valoracionesArray = respuestaJson.getAsJsonArray("valoraciones");
 
-            // Mostrar estadísticas
             Label lblEstadisticas = new Label(String.format(
                     "Valoraciones: %d • Promedio: %.1f ⭐",
                     respuestaJson.get("total").getAsInt(),
@@ -1036,29 +1148,25 @@ public class ControladorContenido {
             lblEstadisticas.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
             contenedorValoraciones.getChildren().add(lblEstadisticas);
 
-            // Agregar cada valoración
             for (JsonElement element : valoracionesArray) {
                 JsonObject valoracionJson = element.getAsJsonObject();
                 contenedorValoraciones.getChildren().add(crearItemValoracion(valoracionJson));
             }
         }
 
-        // Configurar la ventana modal
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Valoraciones del contenido: " + contenido.getTitulo());
 
-        // Botón de actualización
+
         Button btnActualizar = new Button("Actualizar");
         btnActualizar.setOnAction(e -> verValoraciones());
         btnActualizar.setStyle("-fx-background-color: #7a4de8; -fx-text-fill: white;");
 
-        // Configurar scroll pane
         ScrollPane scrollPane = new ScrollPane(contenedorValoraciones);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefViewportWidth(400);
 
-        // Layout principal
         VBox root = new VBox(10, scrollPane, btnActualizar);
         root.setPadding(new Insets(10));
         root.setAlignment(Pos.CENTER);
@@ -1067,93 +1175,51 @@ public class ControladorContenido {
         dialog.setScene(scene);
         dialog.show();
 
-        // Configurar actualización automática
         Timeline timeline = new Timeline(
                 new KeyFrame(Duration.seconds(10), e -> verValoraciones())
         );
         timeline.setCycleCount(Timeline.INDEFINITE);
         timeline.play();
-
-        // Detener la actualización al cerrar la ventana
         dialog.setOnHidden(e -> timeline.stop());
     }
 
+    /**
+     * Crea un elemento visual para una valoración.
+     * Utiliza un VBox para organizar los elementos de la valoración.
+     */
+
     private Node crearItemValoracion(JsonObject valoracionJson) {
-        VBox item = new VBox(8);
-        item.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-padding: 10;");
+        VBox cajaValoracion = new VBox(5);
+        cajaValoracion.setPadding(new Insets(10));
+        cajaValoracion.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #ccc; -fx-border-radius: 5px; -fx-background-radius: 5px;");
 
-        // Obtener autor - priorizar el campo "autor" sobre "autorId"
-        String autor = "Usuario anónimo";
-        if (valoracionJson.has("autor") && !valoracionJson.get("autor").isJsonNull()) {
-            autor = valoracionJson.get("autor").getAsString();
+        // Extraer datos
+        String autor = valoracionJson.has("autor") ? valoracionJson.get("autor").getAsString() : "Anónimo";
+        int puntuacion = valoracionJson.has("puntuacion") ? valoracionJson.get("puntuacion").getAsInt() : 0;
+        String comentario = valoracionJson.has("comentario") ? valoracionJson.get("comentario").getAsString() : "";
+        String fecha = valoracionJson.has("fecha") ? valoracionJson.get("fecha").getAsString() : "";
 
-            // Si el autor es solo un ID (comienza con "Usuario "), verificar si hay un nombre mejor
-            if (autor.startsWith("Usuario ") && valoracionJson.has("autorId")) {
-                String autorId = valoracionJson.get("autorId").getAsString();
-                // Intentar obtener el nombre real del usuario
-                JsonObject usuarioData = obtenerDatosUsuario(autorId);
-                if (usuarioData != null && usuarioData.has("nombre")) {
-                    autor = usuarioData.get("nombre").getAsString();
-                }
-            }
-        } else if (valoracionJson.has("autorId") && !valoracionJson.get("autorId").isJsonNull()) {
-            autor = "Usuario " + valoracionJson.get("autorId").getAsString();
-        }
+        // Crear etiquetas
+        Label lblAutor = new Label("👤 " + autor);
+        lblAutor.setStyle("-fx-font-weight: bold;");
 
-        Label lblAutor = new Label(autor);
-        lblAutor.setStyle("-fx-font-weight: bold; -fx-text-fill: #333;");
+        Label lblPuntuacion = new Label("⭐ Puntuación: " + puntuacion + "/5");
+        lblPuntuacion.setStyle("-fx-text-fill: #e67e22;");
 
-        // Resto del método permanece igual...
-        String fechaStr = "Fecha desconocida";
-        try {
-            if (valoracionJson.has("fecha") && !valoracionJson.get("fecha").isJsonNull()) {
-                String fechaOriginal = valoracionJson.get("fecha").getAsString();
-                if (fechaOriginal != null && !fechaOriginal.isEmpty()) {
-                    SimpleDateFormat serverFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    Date fecha = serverFormat.parse(fechaOriginal);
-                    SimpleDateFormat displayFormat = new SimpleDateFormat("dd MMM yyyy 'a las' HH:mm");
-                    fechaStr = displayFormat.format(fecha);
-                }
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Error al formatear fecha", e);
-        }
+        Label lblComentario = new Label(comentario);
+        lblComentario.setWrapText(true);
 
-        Label lblFecha = new Label(fechaStr);
-        lblFecha.setStyle("-fx-text-fill: #666; -fx-font-size: 12px;");
+        Label lblFecha = new Label("🕒 " + fecha);
+        lblFecha.setStyle("-fx-font-size: 10px; -fx-text-fill: #888;");
 
-        // Rating con estrellas
-        HBox ratingBox = new HBox(5);
-        ratingBox.setAlignment(Pos.CENTER_LEFT);
-
-        int puntuacion = 0;
-        if (valoracionJson.has("puntuacion") && !valoracionJson.get("puntuacion").isJsonNull()) {
-            puntuacion = valoracionJson.get("puntuacion").getAsInt();
-        }
-
-        for (int i = 0; i < 5; i++) {
-            Label star = new Label(i < puntuacion ? "★" : "☆");
-            star.setStyle((i < puntuacion ?
-                    "-fx-text-fill: gold; -fx-font-size: 16px;" :
-                    "-fx-text-fill: #ccc; -fx-font-size: 16px;"));
-            ratingBox.getChildren().add(star);
-        }
-
-        // Comentario
-        String textoComentario = "Sin comentario";
-        if (valoracionJson.has("comentario") && !valoracionJson.get("comentario").isJsonNull()) {
-            textoComentario = valoracionJson.get("comentario").getAsString();
-        }
-
-        TextArea comentario = new TextArea(textoComentario);
-        comentario.setEditable(false);
-        comentario.setWrapText(true);
-        comentario.setPrefRowCount(2);
-        comentario.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
-
-        item.getChildren().addAll(lblAutor, lblFecha, ratingBox, comentario);
-        return item;
+        cajaValoracion.getChildren().addAll(lblAutor, lblPuntuacion, lblFecha, lblComentario);
+        return cajaValoracion;
     }
+
+    /**
+     * Obtiene los datos del usuario autenticado.
+     * Si no hay usuario autenticado, retorna null.
+     */
 
     private JsonObject obtenerDatosUsuario(String usuarioId) {
         try {
@@ -1177,7 +1243,10 @@ public class ControladorContenido {
         return null;
     }
 
-    // ==================== UTILIDADES ====================
+    /**
+     * Ejecuta una tarea asíncrona y maneja el éxito y error.
+     * Utiliza un ExecutorService para ejecutar la tarea en un hilo separado.
+     */
 
     private <T> void ejecutarTareaAsync(Supplier<T> tarea, Consumer<T> onSuccess,
                                         Consumer<Throwable> onError, String contexto) {
@@ -1197,6 +1266,10 @@ public class ControladorContenido {
         executor.execute(task);
     }
 
+    /**
+     * Muestra una alerta con el título, mensaje y tipo especificado.
+     */
+
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
@@ -1205,7 +1278,7 @@ public class ControladorContenido {
         alert.showAndWait();
     }
 
-    // ==================== CLASES INTERNAS ====================
+
 
     /**
      * Control personalizado para seleccionar puntuación con estrellas
@@ -1230,12 +1303,21 @@ public class ControladorContenido {
             }
         }
 
+        /**
+         * Resalta las estrellas hasta el índice especificado.
+         * @param upToIndex Índice hasta donde resaltar las estrellas.
+         */
+
         private void highlightStars(int upToIndex) {
             for (int i = 0; i < stars.length; i++) {
                 stars[i].setText(i <= upToIndex ? "★" : "☆");
                 stars[i].setStyle("-fx-font-size: 24px; -fx-text-fill: " + (i <= upToIndex ? "gold" : "#ccc") + ";");
             }
         }
+
+        /**
+         * Actualiza las estrellas según la puntuación actual.
+         */
 
         private void updateStars() {
             for (int i = 0; i < stars.length; i++) {
@@ -1244,15 +1326,30 @@ public class ControladorContenido {
             }
         }
 
+        /**
+         * Obtiene la puntuación actual.
+         * @return Puntuación entre 0 y 5.
+         */
+
         public int getRating() {
             return rating;
         }
+
+        /**
+         * Establece la puntuación y actualiza las estrellas.
+         * @param rating Puntuación entre 0 y 5.
+         */
 
         public void setRating(int rating) {
             this.rating = rating;
             updateStars();
         }
     }
+
+    /**
+     * Adaptador para deserializar LocalDateTime desde JSON.
+     * Permite múltiples formatos de fecha y maneja casos especiales.
+     */
 
     private static class LocalDateTimeAdapter implements JsonDeserializer<LocalDateTime> {
         private final DateTimeFormatter[] formatters = {
@@ -1261,25 +1358,27 @@ public class ControladorContenido {
                 DateTimeFormatter.ISO_LOCAL_DATE_TIME
         };
 
+        /** Deserializa un objeto JSON a LocalDateTime.
+         * Intenta con múltiples formatos y maneja casos especiales.
+         */
+
         @Override
         public LocalDateTime deserialize(JsonElement json, Type typeOfT,
                                          JsonDeserializationContext context) throws JsonParseException {
             try {
                 String dateStr = json.getAsString();
 
-                // Casos especiales
                 if (dateStr == null || dateStr.isEmpty() ||
                         dateStr.equalsIgnoreCase("Fecha no disponible") ||
                         dateStr.equalsIgnoreCase("null")) {
                     return null;
                 }
 
-                // Intentar con múltiples formatos
                 for (DateTimeFormatter formatter : formatters) {
                     try {
                         return LocalDateTime.parse(dateStr, formatter);
                     } catch (DateTimeParseException e) {
-                        // Continuar con el siguiente formato
+
                     }
                 }
 

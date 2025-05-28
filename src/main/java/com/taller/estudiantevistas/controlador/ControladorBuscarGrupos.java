@@ -11,29 +11,44 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Controlador para la vista de búsqueda de grupos de estudio.
+ * Permite a los usuarios buscar y unirse a grupos existentes.
+ */
+
 public class ControladorBuscarGrupos {
 
     private ClienteServicio cliente;
-    private String usuarioId; // Almacena el ID del usuario
+    private String usuarioId;
 
 
     @FXML private ListView<String> listViewGrupos;
     @FXML private Button btnUnirse;
+
+    /**
+     * Inicializa el controlador con el cliente y el ID del usuario.
+     * @param cliente ClienteServicio para la comunicación con el servidor.
+     * @param usuarioId ID del usuario que busca unirse a grupos.
+     */
+
     public void inicializar(ClienteServicio cliente, String usuarioId) {
         this.cliente = cliente;
-        this.usuarioId = usuarioId; // Asignar el ID del usuario
+        this.usuarioId = usuarioId;
         cargarGrupos();
     }
 
+    /**
+     * Carga los grupos de estudio disponibles desde el servidor y los muestra en el ListView.
+     * Se asegura de que no se agreguen grupos duplicados.
+     */
+
     private void cargarGrupos() {
-        // Lógica para cargar grupos desde el servidor
         JsonObject solicitud = new JsonObject();
-        solicitud.addProperty("tipo", "OBTENER_GRUPOS_ESTUDIO"); // Asegúrate de que esto esté presente
+        solicitud.addProperty("tipo", "OBTENER_GRUPOS_ESTUDIO");
         JsonObject datos = new JsonObject();
-        datos.addProperty("userId", usuarioId); // Asegúrate de que el ID del usuario esté presente
-        solicitud.add("datos", datos); // Agregar los datos a la solicitud
+        datos.addProperty("userId", usuarioId);
+        solicitud.add("datos", datos);
         cliente.getSalida().println(solicitud.toString());
-        // Esperar respuesta del servidor
         String respuesta;
         try {
             respuesta = cliente.getEntrada().readLine();
@@ -42,7 +57,6 @@ public class ControladorBuscarGrupos {
                 JsonArray grupos = jsonRespuesta.getAsJsonArray("grupos");
                 for (int i = 0; i < grupos.size(); i++) {
                     String nombreGrupo = grupos.get(i).getAsJsonObject().get("nombre").getAsString();
-                    // Agregar solo si no está ya en el ListView
                     if (!listViewGrupos.getItems().contains(nombreGrupo)) {
                         listViewGrupos.getItems().add(nombreGrupo);
                     }
@@ -55,6 +69,11 @@ public class ControladorBuscarGrupos {
         }
     }
 
+    /**
+     * Maneja el evento de unirse a un grupo seleccionado.
+     * Verifica que se haya seleccionado un grupo y envía la solicitud al servidor.
+     */
+
     @FXML
     private void unirseGrupo() {
         String grupoSeleccionado = listViewGrupos.getSelectionModel().getSelectedItem();
@@ -63,22 +82,20 @@ public class ControladorBuscarGrupos {
             return;
         }
 
-        // Lógica para unirse al grupo
+
         JsonObject solicitud = new JsonObject();
         solicitud.addProperty("tipo", "UNIRSE_GRUPO");
         JsonObject datos = new JsonObject();
-        datos.addProperty("grupoId", grupoSeleccionado); // Asegúrate de que el ID del grupo esté disponible
-        datos.addProperty("usuarioId", usuarioId); // Usar el ID del usuario almacenado
+        datos.addProperty("grupoId", grupoSeleccionado);
+        datos.addProperty("usuarioId", usuarioId);
         solicitud.add("datos", datos);
         cliente.getSalida().println(solicitud.toString());
-        // Esperar respuesta del servidor
         String respuesta;
         try {
             respuesta = cliente.getEntrada().readLine();
             JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
             if (jsonRespuesta.get("exito").getAsBoolean()) {
                 mostrarAlerta("Éxito", "Te has unido al grupo " + grupoSeleccionado + " exitosamente.");
-                // Cerrar la ventana
                 Stage stage = (Stage) btnUnirse.getScene().getWindow();
                 stage.close();
             } else {
@@ -88,6 +105,13 @@ public class ControladorBuscarGrupos {
             mostrarAlerta("Error", "Error de comunicación con el servidor: " + e.getMessage());
         }
     }
+
+    /**
+     * Muestra una alerta con el título y mensaje proporcionados.
+     * @param titulo Título de la alerta.
+     * @param mensaje Mensaje de la alerta.
+     */
+
     private void mostrarAlerta(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(titulo);

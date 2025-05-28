@@ -5,11 +5,11 @@
 }
 
 .button {
-    -fx-background-color: #4CAF50; /* Verde */
+    -fx-background-color: #4CAF50;
     -fx-text-fill: white;
     -fx-font-weight: bold;
 }
 
 .button:hover {
-    -fx-background-color: #45a049; /* Verde más oscuro */
+    -fx-background-color: #45a049;
 }

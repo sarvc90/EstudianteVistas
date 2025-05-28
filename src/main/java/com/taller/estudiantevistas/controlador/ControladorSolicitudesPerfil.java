@@ -227,7 +227,6 @@ public class ControladorSolicitudesPerfil {
         return scrollPane;
     }
 
-    // Métodos utilitarios
     private String formatFecha(long millis) {
         return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date(millis));
     }

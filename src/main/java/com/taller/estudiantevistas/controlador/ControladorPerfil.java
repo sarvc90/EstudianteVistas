@@ -56,7 +56,6 @@ public class ControladorPerfil {
     public void inicializar(JsonObject datosUsuario, ClienteServicio cliente) {
         this.datosUsuario = datosUsuario;
         this.cliente = cliente;
-        // Cargar datos básicos inmediatamente
         if (datosUsuario != null) {
             Platform.runLater(() -> {
                 lblNombres.setText(datosUsuario.get("nombres").getAsString());
@@ -137,7 +136,6 @@ public class ControladorPerfil {
     }
 
     private void actualizarUI(JsonObject datosUsuario) {
-        // Actualizar grupos de estudio si existen
         if (datosUsuario.has("gruposEstudio")) {
             JsonArray gruposJson = datosUsuario.get("gruposEstudio").getAsJsonArray();
             String[] grupos = new String[gruposJson.size()];
@@ -153,7 +151,6 @@ public class ControladorPerfil {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/crear-solicitud.fxml"));
             Parent root = loader.load();
 
-            // Pasar datos al controlador de la solicitud
             ControladorSolicitudAyuda controlador = loader.getController();
             controlador.inicializar(datosUsuario, cliente);
 
@@ -169,7 +166,6 @@ public class ControladorPerfil {
 
     private void abrirVistaCrearPublicacion() {
         try {
-            // Verificar primero que la ruta es correcta
             String fxmlPath = "/com/taller/estudiantevistas/fxml/crear-publicacion.fxml";
             URL resourceUrl = getClass().getResource(fxmlPath);
 
@@ -180,16 +176,12 @@ public class ControladorPerfil {
             FXMLLoader loader = new FXMLLoader(resourceUrl);
             Parent root = loader.load();
 
-            // Obtener el controlador
             ControladorCrearPublicacion controlador = loader.getController();
             if (controlador == null) {
                 throw new IOException("No se pudo obtener el controlador de la publicación");
             }
-
-            // Pasar los datos necesarios
             controlador.inicializar(datosUsuario, cliente);
 
-            // Configurar la ventana
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Crear Nueva Publicación");
@@ -228,7 +220,6 @@ public class ControladorPerfil {
         alert.showAndWait();
     }
 
-    // Reemplazar el método manejarVerContenidos con esto:
     private void manejarVerContenidos() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/contenidos-perfil.fxml"));
@@ -236,10 +227,8 @@ public class ControladorPerfil {
 
             ControladorContenidosPerfil controlador = loader.getController();
 
-            // Obtener el Stage actual
             Stage stageActual = (Stage) btnVerContenidos.getScene().getWindow();
 
-            // Pasar la función de carga al controlador de contenidos
             controlador.inicializar(
                     datosUsuario.get("id").getAsString(),
                     cliente,
@@ -257,7 +246,6 @@ public class ControladorPerfil {
         }
     }
 
-    // Nuevo método para cargar contenidos
     private void cargarContenidosDesdeServidor(String userId, Consumer<JsonArray> callback) {
         ejecutarTareaAsync(
                 () -> {
@@ -352,7 +340,7 @@ public class ControladorPerfil {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/buscar-grupos.fxml"));
             Parent root = loader.load();
             ControladorBuscarGrupos controlador = loader.getController();
-            controlador.inicializar(cliente, datosUsuario.get("id").getAsString()); // Pasar el ID del usuario
+            controlador.inicializar(cliente, datosUsuario.get("id").getAsString());
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Buscar Grupos de Estudio");
@@ -370,10 +358,8 @@ public class ControladorPerfil {
 
             ControladorSolicitudesPerfil controlador = loader.getController();
 
-            // Obtener el Stage actual
             Stage stageActual = (Stage) btnVerSolicitudes.getScene().getWindow();
 
-            // Pasar la función de carga al controlador de solicitudes
             controlador.inicializar(
                     datosUsuario.get("id").getAsString(),
                     cliente,

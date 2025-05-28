@@ -11,7 +11,6 @@
             prefWidth="1000"
             prefHeight="600">
 
-    <!-- Panel izquierdo - Perfil -->
     <left>
         <VBox spacing="15" alignment="TOP_CENTER" styleClass="perfil-vbox">
             <StackPane alignment="TOP_CENTER">
@@ -39,10 +38,8 @@
         </VBox>
     </left>
 
-    <!-- Panel central - Botones principales -->
     <center>
         <HBox spacing="30" alignment="CENTER">
-            <!-- Columna izquierda -->
             <VBox spacing="20" alignment="TOP_CENTER">
                 <Button fx:id="btnVerUsuarios"
                         text="Ver usuarios"
@@ -61,7 +58,6 @@
                 <Pane prefHeight="120" prefWidth="250" styleClass="contenedor-negro"/>
             </VBox>
 
-            <!-- Columna derecha -->
             <VBox spacing="15" alignment="TOP_CENTER">
                 <Label text="Visualización de grafo de afinidad" styleClass="titulo-pequeno"/>
 

@@ -4,7 +4,7 @@
     -fx-font-family: 'Roboto Mono', monospace;
 }
 
-/* Añadir al CSS existente */
+
 .metadata-label.date {
     -fx-text-fill: #95a5a6;
     -fx-font-style: italic;

@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 public class ControladorPrincipal {
     private static final Logger LOGGER = Logger.getLogger(ControladorPrincipal.class.getName());
 
-    // Configuración de ejecución asíncrona
     private final Executor executor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
@@ -56,7 +55,6 @@ public class ControladorPrincipal {
     private static final String[] TIPOS_CONTENIDO = {"Tema", "Autor", "Fecha"};
     private static final String[] FILTROS_SOLICITUD = {"Todas", "Pendientes", "En proceso", "Resueltas"};
 
-    // Listeners para actualizaciones
     private final List<ActualizacionListener> listeners = new ArrayList<>();
 
     // Interfaz para notificaciones de actualización
@@ -93,12 +91,10 @@ public class ControladorPrincipal {
     private boolean esModerador() {
         if (usuarioData == null) return false;
 
-        // Primera forma de verificación: campo "esModerador"
         if (usuarioData.has("esModerador")) {
             return usuarioData.get("esModerador").getAsBoolean();
         }
 
-        // Segunda forma de verificación: campo "rol" con valor "MODERADOR"
         if (usuarioData.has("rol")) {
             return "MODERADOR".equalsIgnoreCase(usuarioData.get("rol").getAsString());
         }
@@ -106,7 +102,6 @@ public class ControladorPrincipal {
         return false;
     }
 
-    // ==================== CONFIGURACIÓN INICIAL ====================
 
     private void cargarImagenes() {
         try {
@@ -132,7 +127,6 @@ public class ControladorPrincipal {
         comboTipo.getItems().addAll(TIPOS_CONTENIDO);
         comboTipo.getSelectionModel().selectFirst();
 
-        // Estilo adicional para el combo box
         comboTipo.setCellFactory(lv -> new ListCell<String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -149,7 +143,6 @@ public class ControladorPrincipal {
     }
 
     private void configurarEventos() {
-        // Limpiar eventos primero para evitar duplicados
         btnBuscar.setOnAction(null);
         btnRecargarContenidos.setOnAction(null);
         btnRecargarSolicitudes.setOnAction(null);
@@ -159,7 +152,6 @@ public class ControladorPrincipal {
         btnPerfil.setOnAction(null);
         btnContacto.setOnAction(null);
 
-        // Ahora asignar los eventos
         btnBuscar.setOnAction(event -> buscarContenido());
         btnRecargarContenidos.setOnAction(event -> recargarContenidos());
         btnRecargarSolicitudes.setOnAction(event -> recargarSolicitudes());
@@ -170,7 +162,7 @@ public class ControladorPrincipal {
         btnContacto.setOnAction(event -> abrirContacto());
     }
 
-    // ==================== MÉTODOS DE CARGA DE DATOS ====================
+
 
     /**
      * Carga los contenidos iniciales al iniciar la vista
@@ -180,10 +172,10 @@ public class ControladorPrincipal {
         recargarSolicitudes();
     }
 
-    // ==================== MÉTODOS DE CARGA IDÉNTICOS A SOLICITUDES ====================
+
 
     /**
-     * Recarga los contenidos educativos - Mismo enfoque que recargarSolicitudes()
+     * Recarga los contenidos educativos
      */
     @FXML
     private void recargarContenidos() {
@@ -200,7 +192,6 @@ public class ControladorPrincipal {
                                         "No hay contenidos",
                                         "No se encontraron contenidos educativos disponibles");
                             }
-                            // Verificar duplicados en el servidor
                             return filtrarDuplicados(contenidos);
                         } catch (IOException e) {
                             throw new RuntimeException("Error al obtener contenidos: " + e.getMessage(), e);
@@ -219,7 +210,6 @@ public class ControladorPrincipal {
         }
     }
 
-    // Método para filtrar duplicados
     private JsonArray filtrarDuplicados(JsonArray array) {
         Set<String> idsVistos = new HashSet<>();
         JsonArray resultado = new JsonArray();
@@ -240,7 +230,7 @@ public class ControladorPrincipal {
     }
 
     /**
-     * Muestra contenidos en el panel - IDÉNTICO a mostrarSolicitudesEnPanel()
+     * Muestra contenidos en el panel
      */
     /**
     private void mostrarContenidosEnPanel(JsonArray contenidos, Pane panel) {
@@ -285,13 +275,11 @@ public class ControladorPrincipal {
         item.getStyleClass().add("contenido-item");
         item.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-radius: 5; -fx-padding: 10;");
 
-        // Título (igual que en solicitudes)
         Label titulo = new Label(contenido.get("titulo").getAsString());
         titulo.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         titulo.setMaxWidth(Double.MAX_VALUE);
         titulo.setWrapText(true);
 
-        // Metadatos en línea (como en solicitudes)
         HBox metadatos = new HBox(8);
         metadatos.setAlignment(Pos.CENTER_LEFT);
 
@@ -300,14 +288,12 @@ public class ControladorPrincipal {
 
         metadatos.getChildren().addAll(autor, tipo);
 
-        // Descripción (idéntico a solicitudes)
         TextArea descripcion = new TextArea(contenido.get("descripcion").getAsString());
         descripcion.setEditable(false);
         descripcion.setWrapText(true);
         descripcion.setPrefRowCount(3);
         descripcion.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
 
-        // Contenido (adaptación mínima)
         String contenidoStr = contenido.get("contenido").getAsString();
         TextArea areaContenido = new TextArea(contenidoStr.length() > 100 ? contenidoStr.substring(0, 100) + "..." : contenidoStr);
         areaContenido.setEditable(false);
@@ -334,7 +320,6 @@ public class ControladorPrincipal {
     @FXML
     private void recargarSolicitudes() {
         if (usuarioData != null && usuarioData.has("id")) {
-            // Limpiar panel antes de cargar
             panelSolicitudes.getChildren().clear();
 
             ejecutarTareaAsync(
@@ -418,7 +403,6 @@ public class ControladorPrincipal {
             return;
         }
 
-        // Validación especial para búsqueda por fecha
         if (tipoBusqueda.equals("Fecha") && !esFechaValida(busqueda)) {
             mostrarAlerta("Formato inválido", "Por favor ingrese una fecha en formato YYYY-MM-DD", Alert.AlertType.WARNING);
             return;
@@ -506,7 +490,6 @@ public class ControladorPrincipal {
         return jsonRespuesta.getAsJsonArray("resultados");
     }
 
-    // ==================== MÉTODOS DE VISUALIZACIÓN ====================
 
     /**
      * Muestra las solicitudes de ayuda en el panel especificado
@@ -553,12 +536,11 @@ public class ControladorPrincipal {
         panel.getChildren().add(scrollPane);
     }
 
-    // ==================== COMPONENTES UI ====================
 
-    /**
+    /*
      * Crea un ítem de contenido educativo para mostrar en la UI (versión mejorada)
      */
-    /**
+    /*
     private Node crearItemContenido(JsonObject contenido) {
         VBox item = new VBox(5); // Espaciado reducido para mejor compactación
         item.getStyleClass().add("contenido-item");
@@ -640,7 +622,7 @@ public class ControladorPrincipal {
             Date fecha = formatoOriginal.parse(fechaStr);
             return new SimpleDateFormat("dd/MM/yyyy HH:mm").format(fecha);
         } catch (Exception e) {
-            return fechaStr; // Si falla el parseo, devolver el original
+            return fechaStr;
         }
     }
 
@@ -652,13 +634,13 @@ public class ControladorPrincipal {
         VBox item = new VBox();
         item.getStyleClass().add("solicitud-item");
 
-        // Extraer datos
+
         String tema = solicitud.has("tema") ? solicitud.get("tema").getAsString() : "Sin tema";
         String descripcion = solicitud.has("descripcion") ? solicitud.get("descripcion").getAsString() : "";
         String urgencia = solicitud.has("urgencia") ? solicitud.get("urgencia").getAsString() : "MEDIA";
         String estado = solicitud.has("estado") ? solicitud.get("estado").getAsString() : "PENDIENTE";
 
-        // Manejo de fecha
+
         String fechaStr = solicitud.has("fecha") ?
                 (solicitud.get("fecha").isJsonPrimitive() && solicitud.get("fecha").getAsJsonPrimitive().isNumber() ?
                         formatFecha(solicitud.get("fecha").getAsLong()) :
@@ -667,14 +649,12 @@ public class ControladorPrincipal {
 
         String solicitante = obtenerNombreSolicitante(solicitud);
 
-        // Título (1 línea)
         Label temaLabel = new Label(tema);
         temaLabel.getStyleClass().add("solicitud-titulo");
         temaLabel.setMaxWidth(Double.MAX_VALUE);
         temaLabel.setWrapText(true);
         temaLabel.setMaxHeight(20);
 
-        // Estados y urgencia en una línea
         HBox estadosBox = new HBox(8);
         estadosBox.getStyleClass().add("solicitud-estados");
 
@@ -686,7 +666,6 @@ public class ControladorPrincipal {
 
         estadosBox.getChildren().addAll(urgenciaLabel, estadoLabel);
 
-        // Descripción compacta (3-4 líneas máximo)
         TextArea descripcionArea = new TextArea(descripcion);
         descripcionArea.getStyleClass().add("descripcion-text");
         descripcionArea.setEditable(false);
@@ -694,7 +673,6 @@ public class ControladorPrincipal {
         descripcionArea.setPrefRowCount(3);
         descripcionArea.setFocusTraversable(false);
 
-        // Footer compacto
         HBox footer = new HBox(8);
         footer.getStyleClass().add("solicitud-footer");
         footer.setAlignment(Pos.CENTER_LEFT);
@@ -734,7 +712,6 @@ public class ControladorPrincipal {
         return scrollPane;
     }*/
 
-    // ==================== UTILIDADES ====================
 
     private String obtenerNombreSolicitante(JsonObject solicitud) {
         if (solicitud.has("solicitanteNombre")) {
@@ -810,7 +787,6 @@ public class ControladorPrincipal {
         alert.showAndWait();
     }
 
-    // ==================== MÉTODOS DE NAVEGACIÓN ====================
 
     private void abrirAjustes() {
         try {
@@ -993,7 +969,6 @@ public class ControladorPrincipal {
         }
     }
 
-    // ==================== MÉTODOS PÚBLICOS ====================
 
     public void addActualizacionListener(ActualizacionListener listener) {
         listeners.add(Objects.requireNonNull(listener));
@@ -1020,7 +995,7 @@ public class ControladorPrincipal {
 
         tituloBox.getChildren().addAll(iconoTipo, titulo);
 
-        // Metadatos
+
         HBox metadatos = new HBox(10);
         metadatos.getStyleClass().add("contenido-metadatos");
 
@@ -1030,7 +1005,6 @@ public class ControladorPrincipal {
 
         metadatos.getChildren().addAll(autor, fecha, tema);
 
-        // Descripción
         Text descripcion = new Text(contenido.get("descripcion").getAsString());
         descripcion.getStyleClass().add("descripcion-text");
         descripcion.setWrappingWidth(panelContenidos.getWidth() - 40);
@@ -1040,7 +1014,7 @@ public class ControladorPrincipal {
 
         item.getChildren().addAll(tituloBox, metadatos, descripcion, contenidoVisual);
 
-        // Efecto de hover
+
         item.setOnMouseEntered(e -> item.setStyle("-fx-border-color: #bdc3c7;"));
         item.setOnMouseExited(e -> item.setStyle("-fx-border-color: #e0e0e0;"));
         item.setOnMouseClicked(e -> abrirVistaContenido(contenido));
@@ -1203,11 +1177,9 @@ private ScrollPane crearScrollPane(Node contenido) {
     scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
     scrollPane.setStyle("-fx-background: transparent; -fx-background-color: transparent;");
 
-    // Ajustar el padding y márgenes para que ocupe menos espacio
     scrollPane.setPadding(new Insets(0));
-    scrollPane.setPrefViewportWidth(panelContenidos.getWidth() - 15); // 15px menos que el panel padre
+    scrollPane.setPrefViewportWidth(panelContenidos.getWidth() - 15);
 
-    // Aplicar estilos CSS
     scrollPane.getStyleClass().add("scroll-pane");
 
     return scrollPane;

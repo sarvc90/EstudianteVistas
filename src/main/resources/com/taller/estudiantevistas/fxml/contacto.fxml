@@ -11,11 +11,9 @@
       spacing="15"
       stylesheets="@../css/contacto.css">
 
-    <!-- Título -->
     <Label text="Grupos de Estudio Disponibles"
            styleClass="contacto-titulo"/>
 
-    <!-- Lista de grupos -->
     <ListView fx:id="listaGrupos"
               styleClass="contacto-listview"
               prefHeight="200"/>

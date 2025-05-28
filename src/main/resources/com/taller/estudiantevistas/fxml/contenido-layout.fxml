@@ -9,10 +9,8 @@
       stylesheets="@../css/contenido-layout.css"
       styleClass="container" spacing="30">
 
-    <!-- Caja izquierda (cuadro vacío) -->
     <Pane fx:id="leftBox" styleClass="left-box" prefWidth="300" prefHeight="300" />
 
-    <!-- Caja derecha -->
     <VBox styleClass="right-box" spacing="20">
         <VBox styleClass="content-wrapper" spacing="20">
             <VBox styleClass="title-container">

@@ -16,6 +16,11 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
+/**
+ * Controlador para la vista de búsqueda de contenidos.
+ * Muestra los resultados de búsqueda y permite ver detalles de cada contenido.
+ */
+
 public class ControladorBuscar {
     @FXML private VBox resultsContainer;
     @FXML private Label titleLabel;
@@ -25,6 +30,16 @@ public class ControladorBuscar {
     private String terminoBusqueda;
     private ClienteServicio cliente;
     private JsonObject usuarioData;
+
+    /**
+     * Inicializa el controlador con los resultados de búsqueda y otros parámetros.
+     *
+     * @param resultados Resultados de búsqueda en formato JSON.
+     * @param tipoBusqueda Tipo de búsqueda (ej. "Contenido", "Usuario").
+     * @param terminoBusqueda Término de búsqueda utilizado.
+     * @param cliente Cliente del servicio para operaciones adicionales.
+     * @param usuarioData Datos del usuario actual.
+     */
 
     public void inicializar(JsonArray resultados, String tipoBusqueda, String terminoBusqueda,
                             ClienteServicio cliente, JsonObject usuarioData) {
@@ -36,6 +51,10 @@ public class ControladorBuscar {
 
         mostrarResultados();
     }
+
+    /**
+     * Metodo llamado al inicializar la vista para cargar fuentes personalizadas.
+     */
 
     @FXML
     private void initialize() {
@@ -61,11 +80,17 @@ public class ControladorBuscar {
         }
     }
 
+    /**
+     * Crea un nodo visual para representar un contenido en la lista de resultados.
+     *
+     * @param contenido Objeto JSON que representa el contenido.
+     * @return Un nodo VBox que contiene los detalles del contenido.
+     */
+
     private Node crearItemContenido(JsonObject contenido) {
         VBox item = new VBox(8);
         item.getStyleClass().add("contenido-item");
 
-        // Título con icono según tipo
         HBox tituloBox = new HBox(5);
         tituloBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -78,17 +103,14 @@ public class ControladorBuscar {
 
         tituloBox.getChildren().addAll(iconoTipo, titulo);
 
-        // Metadatos
         HBox metadatos = new HBox(10);
         metadatos.getStyleClass().add("contenido-metadatos");
 
         Label autor = crearMetadataLabel("👤 " + contenido.get("autor").getAsString());
 
-        // Manejo seguro de la fecha
         String fechaStr = "Fecha no disponible";
         if (contenido.has("fechaCreacion")) {
             try {
-                // Intentar formatear la fecha si es necesario
                 fechaStr = contenido.get("fechaCreacion").getAsString();
             } catch (Exception e) {
                 fechaStr = "Fecha no disponible";
@@ -100,20 +122,24 @@ public class ControladorBuscar {
 
         metadatos.getChildren().addAll(autor, fecha, tema);
 
-        // Descripción
         Text descripcion = new Text(contenido.get("descripcion").getAsString());
         descripcion.getStyleClass().add("descripcion-text");
         descripcion.setWrappingWidth(600);
 
         item.getChildren().addAll(tituloBox, metadatos, descripcion);
 
-        // Efecto de hover
         item.setOnMouseEntered(e -> item.setStyle("-fx-border-color: #bdc3c7;"));
         item.setOnMouseExited(e -> item.setStyle("-fx-border-color: #e0e0e0;"));
         item.setOnMouseClicked(e -> abrirDetalleContenido(contenido));
 
         return item;
     }
+
+    /**
+     * Abre una nueva ventana para mostrar los detalles del contenido seleccionado.
+     *
+     * @param contenido Objeto JSON que contiene los detalles del contenido.
+     */
 
     private void abrirDetalleContenido(JsonObject contenido) {
         try {
@@ -132,11 +158,25 @@ public class ControladorBuscar {
         }
     }
 
+    /**
+     * Crea una etiqueta de metadatos con estilo personalizado.
+     *
+     * @param text Texto a mostrar en la etiqueta.
+     * @return Una etiqueta configurada con el texto y estilo adecuado.
+     */
+
     private Label crearMetadataLabel(String text) {
         Label label = new Label(text);
         label.getStyleClass().add("metadata-label");
         return label;
     }
+
+    /**
+     * Obtiene un icono representativo según el tipo de contenido.
+     *
+     * @param tipo Tipo de contenido (ej. "Video", "Documento", etc.).
+     * @return Un string con el icono correspondiente.
+     */
 
     private String obtenerIconoTipo(String tipo) {
         switch(tipo.toUpperCase()) {

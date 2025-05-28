@@ -58,13 +58,11 @@ public class ControladorRegistro {
         try {
             Estudiante nuevoEstudiante = new Estudiante(nombres, correo, contrasena, intereses);
 
-            // 📌 Corrección: Enviar datos dentro del objeto "datos"
             JsonObject mensaje = new JsonObject();
             mensaje.addProperty("tipo", "REGISTRO");
             JsonObject datos = gson.toJsonTree(nuevoEstudiante).getAsJsonObject();
             mensaje.add("datos", datos);
 
-            // 📤 Verificación antes de enviar la solicitud
             System.out.println("📤 Enviando solicitud de registro...");
             System.out.println("JSON enviado al servidor: " + mensaje.toString());
 

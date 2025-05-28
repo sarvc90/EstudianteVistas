@@ -31,7 +31,6 @@
             <ColumnConstraints hgrow="ALWAYS"/>
         </columnConstraints>
 
-        <!-- Campos del formulario -->
         <Label text="Título *" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
         <TextField fx:id="txtTitulo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 

@@ -10,9 +10,8 @@
       stylesheets="@../css/grupo-estudio.css"
       styleClass="container" spacing="30">
 
-    <!-- Sección izquierda - Contenido principal -->
     <VBox styleClass="left-section" spacing="20" alignment="TOP_CENTER" prefWidth="320">
-        <!-- Encabezado con icono -->
+
         <HBox alignment="CENTER_LEFT" spacing="10">
             <ImageView fitWidth="40" fitHeight="40">
                 <Image url="@../icons/app-icon.png"/>
@@ -20,11 +19,11 @@
             <Text styleClass="group-title" fx:id="nombreGrupo" text="Nombre del grupo" />
         </HBox>
 
-        <!-- Descripción corta -->
+
         <Text styleClass="group-description" fx:id="descripcionGrupo"
               text="Descripción del grupo..." wrappingWidth="300" />
 
-        <!-- Estadísticas -->
+
         <HBox styleClass="stats-container" spacing="15">
             <VBox styleClass="stat-item" alignment="CENTER">
                 <Text styleClass="stat-value" fx:id="miembrosCount" text="0" />
@@ -40,11 +39,9 @@
             </VBox>
         </HBox>
 
-        <!-- Acciones principales -->
         <Button styleClass="primary-button" text="Unirse al grupo" onAction="#unirseAlGrupo" />
         <Button styleClass="secondary-button" text="Ir al chat grupal" onAction="#irAlChat" />
 
-        <!-- Acciones secundarias -->
         <HBox styleClass="actions-container" spacing="10">
             <Button styleClass="small-button" text="Miembros" onAction="#verMiembros" />
             <Button styleClass="small-button" text="Contenido" onAction="#verContenido" />
@@ -52,7 +49,6 @@
         </HBox>
     </VBox>
 
-    <!-- Sección derecha - Detalles del tema -->
     <VBox styleClass="right-section" spacing="15" prefWidth="380">
         <Text styleClass="section-title" text="Detalles del Tema" />
 
@@ -61,7 +57,6 @@
             <Text styleClass="topic-description" fx:id="temaDescripcion"
                   text="Descripción detallada del tema..." wrappingWidth="340" />
 
-            <!-- Contenido reciente -->
             <VBox styleClass="recent-content" spacing="10">
                 <Text styleClass="content-title" text="Contenido Reciente" />
                 <ListView fx:id="listaContenido" styleClass="content-list" />

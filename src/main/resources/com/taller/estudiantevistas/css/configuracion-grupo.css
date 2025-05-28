@@ -1,11 +1,11 @@
-/* Tema principal - Oscuro moderno con toques morados */
+
 .root {
     -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
     -fx-font-family: "Segoe UI", sans-serif;
     -fx-text-fill: #e0e0e0;
 }
 
-/* Barra superior */
+
 .top {
     -fx-background-color: rgba(30, 30, 40, 0.8);
     -fx-background-radius: 0 0 15 15;
@@ -13,7 +13,7 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 3);
 }
 
-/* Títulos */
+
 .titulo-principal {
     -fx-text-fill: #a569ff;
     -fx-font-weight: bold;

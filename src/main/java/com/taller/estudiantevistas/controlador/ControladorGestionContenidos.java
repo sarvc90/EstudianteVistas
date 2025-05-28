@@ -91,15 +91,15 @@ public class ControladorGestionContenidos {
                 () -> {
                     try {
                         JsonObject solicitud = new JsonObject();
-                        solicitud.addProperty("tipo", "OBTENER_CONTENIDOS"); // Tipo correcto
+                        solicitud.addProperty("tipo", "OBTENER_CONTENIDOS");
 
                         JsonObject datos = new JsonObject();
-                        solicitud.add("datos", datos); // Estructura requerida por el servidor
+                        solicitud.add("datos", datos);
 
                         String jsonRequest = solicitud.toString();
                         System.out.println("[DEBUG JSON] Enviando solicitud: " + jsonRequest);
 
-                        // Validación adicional
+
                         if (!jsonRequest.contains("OBTENER_CONTENIDOS")) {
                             throw new RuntimeException("Tipo de solicitud incorrecto generado");
                         }
@@ -153,7 +153,6 @@ public class ControladorGestionContenidos {
                 String idContenido = c.get("id").getAsString();
 
                 if (!idsMostrados.contains(idContenido)) {
-                    // Manejo seguro de la fecha
                     String fechaStr = "";
                     if (c.has("fechaCreacion") && !c.get("fechaCreacion").isJsonNull()) {
                         fechaStr = c.get("fechaCreacion").getAsString();
@@ -386,7 +385,7 @@ public class ControladorGestionContenidos {
                         if (jsonRespuesta.get("exito").getAsBoolean()) {
                             Platform.runLater(() -> {
                                 mostrarAlerta("Éxito", "Contenido eliminado correctamente", Alert.AlertType.INFORMATION);
-                                cargarContenidos(); // Recargar la tabla después de eliminar
+                                cargarContenidos();
                             });
                         } else {
                             String error = jsonRespuesta.get("mensaje").getAsString();

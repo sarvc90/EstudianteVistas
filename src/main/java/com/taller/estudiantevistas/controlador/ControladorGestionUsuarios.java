@@ -89,7 +89,6 @@ public class ControladorGestionUsuarios {
         ejecutarTareaAsync(
                 () -> {
                     try {
-                        // Create properly formatted request
                         JsonObject solicitud = new JsonObject();
                         solicitud.addProperty("tipo", "OBTENER_TODOS_USUARIOS");
 
@@ -147,16 +146,16 @@ public class ControladorGestionUsuarios {
         usuarios.forEach(usuario -> {
             JsonObject user = usuario.getAsJsonObject();
 
-            // Safely extract fields with default values
+
             String id = user.has("id") ? user.get("id").getAsString() : "";
             String nombre = user.has("nombre") ? user.get("nombre").getAsString() : "";
             String correo = user.has("correo") ? user.get("correo").getAsString() : "";
 
-            // Handle suspension status - convert boolean to String
+
             boolean suspendido = user.has("suspendido") && user.get("suspendido").getAsBoolean();
             String estado = suspendido ? "SUSPENDIDO" : "ACTIVO";
 
-            // Handle suspension days
+
             LocalDate fechaSuspension = null;
             if (suspendido && user.has("diasSuspension")) {
                 int dias = user.get("diasSuspension").getAsInt();
@@ -219,7 +218,7 @@ public class ControladorGestionUsuarios {
                         solicitud.addProperty("tipo", "SUSPENDER_USUARIO");
 
                         JsonObject datos = new JsonObject();
-                        datos.addProperty("correoUsuario", correo); // Use ID
+                        datos.addProperty("correoUsuario", correo);
                         datos.addProperty("diasSuspension", dias);
                         datos.addProperty("moderadorId", moderadorId);
                         solicitud.add("datos", datos);
@@ -303,7 +302,7 @@ public class ControladorGestionUsuarios {
                         solicitud.addProperty("tipo", "ELIMINAR_USUARIO");
 
                         JsonObject datos = new JsonObject();
-                        datos.addProperty("usuarioId", usuario.getId()); // Use ID instead of email
+                        datos.addProperty("usuarioId", usuario.getId());
                         datos.addProperty("moderadorId", moderadorId);
                         solicitud.add("datos", datos);
 
@@ -469,14 +468,12 @@ public class ControladorGestionUsuarios {
             this.fechaSuspension = fechaSuspension;
         }
 
-        // Getters
         public String getId() { return id; }
         public String getNombre() { return nombre; }
         public String getCorreo() { return correo; }
         public String getEstado() { return estado; }
         public LocalDate getFechaSuspension() { return fechaSuspension; }
 
-        // Setters
         public void setEstado(String estado) { this.estado = estado; }
         public void setFechaSuspension(LocalDate fechaSuspension) {
             this.fechaSuspension = fechaSuspension;

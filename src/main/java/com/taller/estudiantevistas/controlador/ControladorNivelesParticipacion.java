@@ -21,7 +21,6 @@ public class ControladorNivelesParticipacion {
     }
 
     private void configurarEstilos() {
-        // Estilos aplicados a través del CSS
         contenedorPrincipal.getStyleClass().add("panel-contenedor");
         lblTitulo.getStyleClass().add("contenido-titulo");
     }
@@ -29,7 +28,7 @@ public class ControladorNivelesParticipacion {
     private void cargarDatos(JsonObject datos) {
         lblTitulo.setText("Niveles de Participación de Estudiantes");
 
-        // Configurar ejes del gráfico
+
         CategoryAxis ejeX = new CategoryAxis();
         ejeX.setLabel("Estudiantes");
         NumberAxis ejeY = new NumberAxis();
@@ -38,7 +37,6 @@ public class ControladorNivelesParticipacion {
         graficoParticipacion.setTitle("Participación en el Foro");
         graficoParticipacion.setLegendVisible(false);
 
-        // Crear serie de datos
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Participación");
 
@@ -53,7 +51,6 @@ public class ControladorNivelesParticipacion {
 
         graficoParticipacion.getData().add(series);
 
-        // Aplicar estilos personalizados a las barras
         for (XYChart.Data<String, Number> data : series.getData()) {
             data.getNode().setStyle("-fx-bar-fill: #8e44ff;");
         }

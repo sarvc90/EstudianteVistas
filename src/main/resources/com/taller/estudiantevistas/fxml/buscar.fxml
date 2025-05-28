@@ -10,11 +10,11 @@
       styleClass="root-container" spacing="20" alignment="TOP_CENTER"
       stylesheets="@../css/buscar.css">
 
-    <!-- Panel de resultados -->
+
     <ScrollPane fitToWidth="true" styleClass="scroll-pane">
         <VBox fx:id="resultsContainer" styleClass="results-panel" alignment="TOP_CENTER" spacing="15">
             <Label fx:id="titleLabel" text="Resultados de búsqueda" styleClass="results-title"/>
-            <!-- Contenido dinámico se agrega aquí -->
+
         </VBox>
     </ScrollPane>
 </VBox>

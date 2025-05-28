@@ -8,8 +8,6 @@
 <VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="com.taller.estudiantevistas.controlador.ControladorConfiguracionGrupo"
       styleClass="root" stylesheets="@../css/configuracion-grupo.css" spacing="15">
-
-    <!-- Encabezado -->
     <HBox alignment="CENTER_LEFT" styleClass="top">
         <children>
             <Label fx:id="nombreGrupo" styleClass="titulo-principal" text="Nombre del Grupo" />
@@ -19,7 +17,7 @@
         </padding>
     </HBox>
 
-    <!-- Contenido principal -->
+
     <ScrollPane fitToWidth="true" styleClass="scroll-pane" hbarPolicy="NEVER">
         <content>
             <VBox alignment="TOP_CENTER" spacing="20" styleClass="content-pane">
@@ -50,7 +48,6 @@
                             styleClass="save-button" alignment="CENTER_RIGHT"/>
                 </VBox>
 
-                <!-- Sección de contenido del grupo -->
                 <VBox spacing="15" styleClass="config-section">
                     <HBox alignment="CENTER_LEFT" spacing="15">
                         <Label text="Contenido del Grupo" styleClass="section-title"/>

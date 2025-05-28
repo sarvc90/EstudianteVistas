@@ -360,7 +360,6 @@ public class ControladorModerador {
 
     @FXML
     private void manejarFuncionalidadGrafo() {
-        // Implementación de funcionalidades avanzadas del grafo
         ejecutarTareaAsync(
                 () -> {
                     try {

@@ -185,16 +185,13 @@ public class ControladorSugerenciasPerfil {
         VBox item = new VBox(10);
         item.getStyleClass().add("sugerencia-item");
 
-        // Safe field access with null checks
         String nombre = sugerencia.has("nombre") ? sugerencia.get("nombre").getAsString() : "Compañero";
         String intereses = sugerencia.has("intereses") ? sugerencia.get("intereses").getAsString() : "No especificados";
         String grupo = sugerencia.has("grupo") ? sugerencia.get("grupo").getAsString() : "Sin grupo";
 
-        // Cabecera con nombre
         Label nombreLabel = new Label(nombre);
         nombreLabel.getStyleClass().add("sugerencia-nombre");
 
-        // Intereses
         HBox interesesBox = new HBox(5);
         interesesBox.setAlignment(Pos.CENTER_LEFT);
         Label interesesIcon = new Label("🎯");
@@ -202,7 +199,6 @@ public class ControladorSugerenciasPerfil {
         interesesLabel.getStyleClass().add("sugerencia-detalle");
         interesesBox.getChildren().addAll(interesesIcon, interesesLabel);
 
-        // Grupo
         HBox grupoBox = new HBox(5);
         grupoBox.setAlignment(Pos.CENTER_LEFT);
         Label grupoIcon = new Label("👥");
@@ -210,7 +206,6 @@ public class ControladorSugerenciasPerfil {
         grupoLabel.getStyleClass().add("sugerencia-detalle");
         grupoBox.getChildren().addAll(grupoIcon, grupoLabel);
 
-        // Botón de contacto
         Button btnContactar = new Button("Contactar");
         btnContactar.getStyleClass().add("btn-contactar");
         btnContactar.setOnAction(e -> contactarCompanero(sugerencia));
@@ -224,13 +219,12 @@ public class ControladorSugerenciasPerfil {
             String idCompanero = sugerencia.has("id") ? sugerencia.get("id").getAsString() : "";
             String nombreCompanero = sugerencia.has("nombre") ? sugerencia.get("nombre").getAsString() : "Compañero";
 
-            // Aquí puedes implementar la lógica para abrir una ventana de chat
+
             mostrarAlerta("Contacto iniciado",
                     "Has iniciado contacto con " + nombreCompanero + "\nID: " + idCompanero,
                     Alert.AlertType.INFORMATION);
 
-            // O puedes abrir una nueva ventana de chat:
-            // abrirVentanaChat(idCompanero, nombreCompanero);
+
 
         } catch (Exception e) {
             mostrarAlerta("Error", "No se pudo iniciar el contacto: " + e.getMessage(), Alert.AlertType.ERROR);
@@ -310,15 +304,12 @@ public class ControladorSugerenciasPerfil {
         alert.showAndWait();
     }
 
-    // Método opcional para abrir ventana de chat
     private void abrirVentanaChat(String idCompanero, String nombreCompanero) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/chat.fxml"));
             Parent root = loader.load();
 
-            // Si tu controlador de chat necesita inicialización:
-            // ControladorChat controlador = loader.getController();
-            // controlador.inicializar(userId, idCompanero, nombreCompanero, cliente);
+
 
             Stage stage = new Stage();
             stage.setScene(new Scene(root));

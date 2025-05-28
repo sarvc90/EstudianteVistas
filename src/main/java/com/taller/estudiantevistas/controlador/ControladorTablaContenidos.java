@@ -37,9 +37,7 @@ public class ControladorTablaContenidos implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        configurarTabla(); // Tu método para configurar columnas, etc.
-
-        // Cargar la hoja de estilos con ruta absoluta desde recursos
+        configurarTabla();
         URL cssURL = getClass().getResource("/com/taller/estudiantevistas/css/reporte.css");
         if (cssURL != null && panelPrincipal != null) {
             panelPrincipal.getStylesheets().add(cssURL.toExternalForm());
@@ -73,7 +71,7 @@ public class ControladorTablaContenidos implements Initializable {
                         ? obj.get("titulo").getAsString()
                         : "sin título";
 
-                if (mapaPorTitulo.containsKey(titulo)) continue; // Ya existe uno con el mismo título
+                if (mapaPorTitulo.containsKey(titulo)) continue;
 
                 String id = obj.has("id") && !obj.get("id").isJsonNull()
                         ? obj.get("id").getAsString()
@@ -97,8 +95,6 @@ public class ControladorTablaContenidos implements Initializable {
                     }
                 }
 
-                // Aquí asumimos que tu clase Contenido tiene este constructor:
-                // new Contenido(id, titulo, autor, fecha, totalValoraciones);
                 mapaPorTitulo.put(titulo, new Contenido(id, titulo, autor, fecha, totalValoraciones));
             }
 

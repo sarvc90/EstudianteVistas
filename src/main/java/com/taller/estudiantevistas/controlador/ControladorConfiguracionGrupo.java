@@ -5,8 +5,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,6 +13,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+/**
+ * Controlador para la vista de configuración de un grupo de estudio.
+ * Permite a los usuarios editar el nombre y la descripción del grupo,
+ * así como eliminar contenidos del mismo.
+ */
 
 public class ControladorConfiguracionGrupo {
     @FXML private Label nombreGrupo;
@@ -27,11 +31,22 @@ public class ControladorConfiguracionGrupo {
     private JsonObject grupoData;
     private PrintWriter salida;
     private BufferedReader entrada;
+    /**
+     * Executor para manejar tareas asíncronas.
+     * Utiliza un pool de hilos con hilos daemon para evitar bloquear la aplicación.
+     */
     private final Executor executor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r);
         t.setDaemon(true);
         return t;
     });
+
+    /**
+     * Inicializa el controlador con los datos del grupo, la salida y la entrada.
+     * @param grupoData Datos del grupo en formato JSON.
+     * @param salida PrintWriter para enviar datos al servidor.
+     * @param entrada BufferedReader para recibir datos del servidor.
+     */
 
     public void inicializar(JsonObject grupoData, PrintWriter salida, BufferedReader entrada) {
         this.grupoData = grupoData;
@@ -39,6 +54,11 @@ public class ControladorConfiguracionGrupo {
         this.entrada = entrada;
         cargarDatos();
     }
+
+    /**
+     * Carga los datos del grupo en los campos de la interfaz.
+     * Verifica que los campos no sean nulos antes de asignar valores.
+     */
 
     private void cargarDatos() {
         // Cargar nombre con verificación de nulidad
@@ -48,14 +68,12 @@ public class ControladorConfiguracionGrupo {
             txtNombreGrupo.setText(nombre);
         }
 
-        // Cargar descripción con verificación de nulidad
         if (grupoData.has("descripcion") && !grupoData.get("descripcion").isJsonNull()) {
             txtDescripcionGrupo.setText(grupoData.get("descripcion").getAsString());
         } else {
             txtDescripcionGrupo.setText("");
         }
 
-        // Cargar contenido del grupo
         listaContenido.getItems().clear();
         if (grupoData.has("contenidos") && !grupoData.get("contenidos").isJsonNull()) {
             JsonArray contenidos = grupoData.get("contenidos").getAsJsonArray();
@@ -70,6 +88,11 @@ public class ControladorConfiguracionGrupo {
         }
     }
 
+    /**
+     * Maneja el evento de guardar cambios en el grupo.
+     * Valida los campos y envía una solicitud al servidor para actualizar la información del grupo.
+     */
+
     @FXML
     private void guardarCambios() {
         String nuevoNombre = txtNombreGrupo.getText().trim();
@@ -80,7 +103,6 @@ public class ControladorConfiguracionGrupo {
             return;
         }
 
-        // Verificar que tenemos los IDs necesarios
         if (!grupoData.has("id") || grupoData.get("id").isJsonNull()) {
             mostrarAlerta("Error", "No se pudo identificar el grupo", Alert.AlertType.ERROR);
             return;
@@ -117,7 +139,6 @@ public class ControladorConfiguracionGrupo {
                     if (respuesta.get("exito").getAsBoolean()) {
                         Platform.runLater(() -> {
                             mostrarAlerta("Éxito", "Cambios guardados correctamente", Alert.AlertType.INFORMATION);
-                            // Actualizar los datos locales
                             grupoData.addProperty("nombre", nuevoNombre);
                             grupoData.addProperty("descripcion", nuevaDescripcion);
                             nombreGrupo.setText(nuevoNombre);
@@ -137,6 +158,11 @@ public class ControladorConfiguracionGrupo {
         );
     }
 
+    /**
+     * Maneja el evento de eliminar un contenido del grupo.
+     * Verifica que se haya seleccionado un contenido y envía una solicitud al servidor para eliminarlo.
+     */
+
     @FXML
     private void eliminarContenido() {
         String seleccionado = listaContenido.getSelectionModel().getSelectedItem();
@@ -151,7 +177,6 @@ public class ControladorConfiguracionGrupo {
             return;
         }
 
-        // Verificar que tenemos los IDs necesarios
         if (!grupoData.has("id") || grupoData.get("id").isJsonNull()) {
             mostrarAlerta("Error", "No se pudo identificar el grupo", Alert.AlertType.ERROR);
             return;
@@ -187,7 +212,7 @@ public class ControladorConfiguracionGrupo {
                     if (respuesta.get("exito").getAsBoolean()) {
                         Platform.runLater(() -> {
                             mostrarAlerta("Éxito", "Contenido eliminado del grupo", Alert.AlertType.INFORMATION);
-                            cargarDatos(); // Refrescar lista
+                            cargarDatos();
                         });
                     } else {
                         Platform.runLater(() ->
@@ -203,6 +228,13 @@ public class ControladorConfiguracionGrupo {
                 "eliminar contenido del grupo"
         );
     }
+
+    /**
+     * Obtiene el ID del contenido basado en su título.
+     * Busca en los contenidos del grupo y devuelve el ID correspondiente.
+     * @param titulo Título del contenido a buscar.
+     * @return ID del contenido o null si no se encuentra.
+     */
 
     private String obtenerIdContenido(String titulo) {
         if (grupoData.has("contenidos") && !grupoData.get("contenidos").isJsonNull()) {
@@ -221,6 +253,13 @@ public class ControladorConfiguracionGrupo {
         return null;
     }
 
+    /**
+     * Muestra una alerta con el título y mensaje proporcionados.
+     * @param titulo Título de la alerta.
+     * @param mensaje Mensaje de la alerta.
+     * @param tipo Tipo de alerta (INFORMATION, ERROR, etc.).
+     */
+
     private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
         Alert alert = new Alert(tipo);
         alert.setTitle(titulo);
@@ -228,6 +267,16 @@ public class ControladorConfiguracionGrupo {
         alert.setContentText(mensaje);
         alert.showAndWait();
     }
+
+    /**
+     * Ejecuta una tarea asíncrona y maneja el resultado o error.
+     * Utiliza un Executor para ejecutar la tarea en un hilo separado.
+     * @param tarea Tarea a ejecutar, debe devolver un valor de tipo T.
+     * @param onSuccess Consumidor que maneja el resultado exitoso de la tarea.
+     * @param onError Consumidor que maneja cualquier error ocurrido durante la tarea.
+     * @param contexto Contexto de la tarea, usado para mensajes de error.
+     * @param <T> Tipo del resultado de la tarea.
+     */
 
     private <T> void ejecutarTareaAsync(Supplier<T> tarea, Consumer<T> onSuccess, Consumer<Throwable> onError, String contexto) {
         Task<T> task = new Task<>() {

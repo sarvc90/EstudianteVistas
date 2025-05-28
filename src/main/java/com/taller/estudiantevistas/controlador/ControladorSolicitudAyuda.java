@@ -19,7 +19,7 @@ public class ControladorSolicitudAyuda {
 
     private JsonObject usuarioData;
     private ClienteServicio cliente;
-    private String urgencia = "Media"; // Valor por defecto
+    private String urgencia = "Media";
 
     public void inicializar(JsonObject usuarioData, ClienteServicio cliente) {
         this.usuarioData = usuarioData;
@@ -50,7 +50,6 @@ public class ControladorSolicitudAyuda {
 
         menu.getItems().addAll(alta, media, baja);
 
-        // Mostrar el menú contextual relativo al botón
         menu.show(urgenciaButton, urgenciaButton.localToScreen(0, 0).getX(),
                 urgenciaButton.localToScreen(0, 0).getY() + urgenciaButton.getHeight());
     }
@@ -70,7 +69,7 @@ public class ControladorSolicitudAyuda {
 
             solicitud.add("datos", datos);
 
-            // Enviar al servidor
+
             cliente.getSalida().println(solicitud.toString());
 
             mostrarAlerta("Éxito", "Solicitud creada correctamente", AlertType.INFORMATION);

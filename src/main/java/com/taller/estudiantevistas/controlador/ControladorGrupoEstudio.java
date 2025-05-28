@@ -49,7 +49,6 @@ public class ControladorGrupoEstudio {
         this.entrada = entrada;
         this.primaryStage = primaryStage;
 
-        // Debug: Mostrar JSON recibido
         System.out.println("JSON recibido en ControladorGrupoEstudio: " + grupoData.toString());
 
         cargarDatosGrupo();
@@ -234,7 +233,6 @@ public class ControladorGrupoEstudio {
     @FXML
     private void verConfiguracion() {
         try {
-            // Obtener URL del recurso FXML usando getResource
             URL fxmlUrl = getClass().getResource("/com/taller/estudiantevistas/fxml/configuracion-grupo.fxml");
             if (fxmlUrl == null) {
                 mostrarAlerta("Error", "No se pudo encontrar el archivo configuracion-grupo.fxml en la ruta especificada", Alert.AlertType.ERROR);
