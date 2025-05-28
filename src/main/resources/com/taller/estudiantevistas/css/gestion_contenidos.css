@@ -1,0 +1,111 @@
+.root {
+    -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-text-fill: #e0e0e0;
+}
+
+/* Barra superior (si la usas) */
+.top {
+    -fx-background-color: rgba(30, 30, 40, 0.8);
+    -fx-background-radius: 0 0 15 15;
+    -fx-padding: 12 25;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 3);
+}
+
+/* Título principal mejorado para Gestión de Contenidos */
+.titulo-principal {
+    -fx-text-fill: #f0f0f0;      /* Blanco suave para buen contraste */
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 24px;
+}
+
+/* Panel de contenido (si aplicas uno) */
+.content-pane {
+    -fx-background-color: #252535;
+    -fx-background-radius: 15;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-padding: 20;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 10, 0, 0, 3);
+}
+
+/* Tabla de contenidos: igual que tabla de usuarios */
+.tabla-contenidos, .table-view {
+    -fx-background-color: #2c2c3c;
+    -fx-background-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-text-fill: white;
+}
+
+/* Fondo y borde de encabezado de columna con mejor contraste */
+.tabla-contenidos .column-header-background,
+.table-view .column-header-background {
+    -fx-background-color: #1f1f2f;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 0 0 2 0;  /* Borde inferior más visible */
+}
+
+/* Estilo del texto de encabezados */
+.tabla-contenidos .column-header,
+.tabla-contenidos .filler,
+.table-view .column-header,
+.table-view .filler {
+    -fx-background-color: transparent;
+    -fx-text-fill: #dcdcdc;      /* Gris claro para buen contraste */
+    -fx-font-weight: bold;
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+}
+
+/* Filas y celdas */
+.tabla-contenidos .table-row-cell,
+.table-view .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.tabla-contenidos .table-row-cell:filled:hover,
+.table-view .table-row-cell:filled:hover {
+    -fx-background-color: #343446;
+}
+
+.tabla-contenidos .table-row-cell:filled:selected,
+.table-view .table-row-cell:filled:selected {
+    -fx-background-color: #8e44ff;
+    -fx-text-fill: white;
+}
+
+.tabla-contenidos .table-cell,
+.table-view .table-cell {
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-padding: 6 10;
+}
+
+/* Botones principales (igual que main-button) */
+.action-button, .main-button {
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
+    -fx-text-fill: white;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 3);
+}
+
+.action-button:hover, .main-button:hover {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 4);
+}
+
+.action-button:pressed, .main-button:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.2), 5, 0.3, 0, 2);
+}
+
+/* Transiciones suaves */
+* {
+    -fx-transition: all 0.3s ease;
+}

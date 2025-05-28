@@ -52,7 +52,7 @@ public class ControladorGestionUsuarios {
     private void conectarAlServidor() {
         try {
             String host = "localhost";
-            int puerto = 1234;
+            int puerto = 12345;
 
             System.out.println("[DEBUG] Conectando al servidor en " + host + ":" + puerto);
             this.socket = new Socket(host, puerto);
@@ -89,8 +89,13 @@ public class ControladorGestionUsuarios {
         ejecutarTareaAsync(
                 () -> {
                     try {
+                        // Create properly formatted request
                         JsonObject solicitud = new JsonObject();
                         solicitud.addProperty("tipo", "OBTENER_TODOS_USUARIOS");
+
+                        JsonObject datos = new JsonObject();
+                        datos.addProperty("solicitanteId", moderadorId);
+                        solicitud.add("datos", datos);
 
                         System.out.println("[DEBUG] Enviando solicitud: " + solicitud);
                         salida.println(solicitud.toString());
@@ -141,15 +146,29 @@ public class ControladorGestionUsuarios {
 
         usuarios.forEach(usuario -> {
             JsonObject user = usuario.getAsJsonObject();
-            String nombre = user.get("nombre").getAsString();
-            String correo = user.get("correo").getAsString();
-            String estado = user.get("estado").getAsString();
-            LocalDate fechaSuspension = user.has("fechaSuspension") && !user.get("fechaSuspension").isJsonNull() ?
-                    LocalDate.parse(user.get("fechaSuspension").getAsString()) : null;
+
+            // Safely extract fields with default values
+            String id = user.has("id") ? user.get("id").getAsString() : "";
+            String nombre = user.has("nombre") ? user.get("nombre").getAsString() : "";
+            String correo = user.has("correo") ? user.get("correo").getAsString() : "";
+
+            // Handle suspension status - convert boolean to String
+            boolean suspendido = user.has("suspendido") && user.get("suspendido").getAsBoolean();
+            String estado = suspendido ? "SUSPENDIDO" : "ACTIVO";
+
+            // Handle suspension days
+            LocalDate fechaSuspension = null;
+            if (suspendido && user.has("diasSuspension")) {
+                int dias = user.get("diasSuspension").getAsInt();
+                if (dias > 0) {
+                    fechaSuspension = LocalDate.now().plusDays(dias);
+                }
+            }
 
             System.out.println("[DEBUG] Agregando usuario: " + nombre + " (" + correo + ") - Estado: " + estado);
 
             usuariosList.add(new UsuarioTabla(
+                    id,
                     nombre,
                     correo,
                     estado,
@@ -189,7 +208,10 @@ public class ControladorGestionUsuarios {
     }
 
     private void suspenderUsuario(String correo, int dias) {
-        System.out.println("[DEBUG] Enviando solicitud de suspensión para " + correo + " por " + dias + " días");
+        UsuarioTabla usuario = tablaUsuarios.getSelectionModel().getSelectedItem();
+        if (usuario == null) return;
+
+        System.out.println("[DEBUG] Enviando suspensión para ID: " + usuario.getId());
         ejecutarTareaAsync(
                 () -> {
                     try {
@@ -197,7 +219,7 @@ public class ControladorGestionUsuarios {
                         solicitud.addProperty("tipo", "SUSPENDER_USUARIO");
 
                         JsonObject datos = new JsonObject();
-                        datos.addProperty("correoUsuario", correo);
+                        datos.addProperty("usuarioId", usuario.getId()); // Use ID
                         datos.addProperty("diasSuspension", dias);
                         datos.addProperty("moderadorId", moderadorId);
                         solicitud.add("datos", datos);
@@ -270,7 +292,10 @@ public class ControladorGestionUsuarios {
     }
 
     private void eliminarUsuario(String correo) {
-        System.out.println("[DEBUG] Enviando solicitud de eliminación para " + correo);
+        UsuarioTabla usuario = tablaUsuarios.getSelectionModel().getSelectedItem();
+        if (usuario == null) return;
+
+        System.out.println("[DEBUG] Enviando solicitud de eliminación para ID: " + usuario.getId());
         ejecutarTareaAsync(
                 () -> {
                     try {
@@ -278,7 +303,7 @@ public class ControladorGestionUsuarios {
                         solicitud.addProperty("tipo", "ELIMINAR_USUARIO");
 
                         JsonObject datos = new JsonObject();
-                        datos.addProperty("correoUsuario", correo);
+                        datos.addProperty("usuarioId", usuario.getId()); // Use ID instead of email
                         datos.addProperty("moderadorId", moderadorId);
                         solicitud.add("datos", datos);
 
@@ -430,23 +455,31 @@ public class ControladorGestionUsuarios {
     }
 
     public static class UsuarioTabla {
+        private final String id;
         private final String nombre;
         private final String correo;
         private String estado;
         private LocalDate fechaSuspension;
 
-        public UsuarioTabla(String nombre, String correo, String estado, LocalDate fechaSuspension) {
+        public UsuarioTabla(String id, String nombre, String correo, String estado, LocalDate fechaSuspension) {
+            this.id = id;
             this.nombre = nombre;
             this.correo = correo;
             this.estado = estado;
             this.fechaSuspension = fechaSuspension;
         }
 
+        // Getters
+        public String getId() { return id; }
         public String getNombre() { return nombre; }
         public String getCorreo() { return correo; }
         public String getEstado() { return estado; }
-        public void setEstado(String estado) { this.estado = estado; }
         public LocalDate getFechaSuspension() { return fechaSuspension; }
-        public void setFechaSuspension(LocalDate fechaSuspension) { this.fechaSuspension = fechaSuspension; }
+
+        // Setters
+        public void setEstado(String estado) { this.estado = estado; }
+        public void setFechaSuspension(LocalDate fechaSuspension) {
+            this.fechaSuspension = fechaSuspension;
+        }
     }
 }

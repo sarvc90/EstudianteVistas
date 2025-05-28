@@ -29,6 +29,7 @@ import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -663,27 +664,31 @@ public class ControladorContenido {
 
     private Valoracion parsearValoracionDesdeJson(JsonObject valoracionJson) {
         try {
-            // Validar que el JSON tenga los campos necesarios
+            // Validar campos obligatorios
             if (!valoracionJson.has("id") || !valoracionJson.has("autor") ||
-                    !valoracionJson.has("puntuacion") || !valoracionJson.has("comentario") ||
-                    !valoracionJson.has("fecha")) {
+                    !valoracionJson.has("puntuacion") || !valoracionJson.has("comentario")) {
                 throw new IllegalArgumentException("JSON de valoración incompleto");
             }
 
-            // Parsear la fecha (manejar tanto timestamp como string)
-            Date fecha;
-            if (valoracionJson.get("fecha").isJsonPrimitive() &&
-                    valoracionJson.get("fecha").getAsJsonPrimitive().isNumber()) {
-                // Si es un número (timestamp)
-                fecha = new Date(valoracionJson.get("fecha").getAsLong());
-            } else {
-                // Si es un string con formato de fecha
-                String fechaStr = valoracionJson.get("fecha").getAsString();
-                SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                fecha = formatoFecha.parse(fechaStr);
+            // Parsear la fecha con manejo de valores nulos
+            Date fecha = new Date(); // Fecha actual por defecto
+            if (valoracionJson.has("fecha")) {
+                try {
+                    if (valoracionJson.get("fecha").isJsonPrimitive() &&
+                            valoracionJson.get("fecha").getAsJsonPrimitive().isNumber()) {
+                        fecha = new Date(valoracionJson.get("fecha").getAsLong());
+                    } else {
+                        String fechaStr = valoracionJson.get("fecha").getAsString();
+                        if (fechaStr != null && !fechaStr.isEmpty() && !fechaStr.equalsIgnoreCase("null")) {
+                            SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            fecha = formatoFecha.parse(fechaStr);
+                        }
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Error al parsear fecha, usando fecha actual", e);
+                }
             }
 
-            // Crear y retornar el objeto Valoracion
             return new Valoracion(
                     valoracionJson.get("id").getAsString(),
                     valoracionJson.get("autor").getAsString(),
@@ -754,65 +759,54 @@ public class ControladorContenido {
     }
 
     private void mostrarDialogoValoraciones(JsonObject respuestaJson) {
-        // Crear el diálogo
         Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("Valoraciones - " + contenido.getTitulo());
 
-        // Contenedor principal
         VBox mainContainer = new VBox(10);
         mainContainer.setPadding(new Insets(15));
         mainContainer.setAlignment(Pos.TOP_CENTER);
 
         // Estadísticas
-        double promedio = respuestaJson.get("promedio").getAsDouble();
-        int total = respuestaJson.get("total").getAsInt();
+        double promedio = respuestaJson.has("promedio") ? respuestaJson.get("promedio").getAsDouble() : 0;
+        int total = respuestaJson.has("total") ? respuestaJson.get("total").getAsInt() : 0;
 
-        Label lblStats = new Label(String.format(
-                "★ Promedio: %.1f/5.0 (%d valoraciones)", promedio, total
-        ));
+        Label lblStats = new Label(String.format("★ Promedio: %.1f/5.0 (%d valoraciones)", promedio, total));
         lblStats.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-        // Contenedor para las valoraciones
+        // Contenedor para valoraciones
         VBox valoracionesContainer = new VBox(10);
         valoracionesContainer.setPadding(new Insets(10));
 
-        // Procesar cada valoración
-        JsonArray valoraciones = respuestaJson.getAsJsonArray("valoraciones");
-        if (valoraciones.size() == 0) {
-            Label lblEmpty = new Label("No hay valoraciones aún");
-            lblEmpty.setStyle("-fx-font-style: italic;");
-            valoracionesContainer.getChildren().add(lblEmpty);
-        } else {
-            // Usar un Set para evitar duplicados (por si acaso)
-            Set<String> valoracionesMostradas = new HashSet<>();
-
-            for (JsonElement element : valoraciones) {
-                JsonObject valoracionJson = element.getAsJsonObject();
-                String idValoracion = valoracionJson.get("id").getAsString();
-
-                // Evitar mostrar valoraciones duplicadas
-                if (!valoracionesMostradas.contains(idValoracion)) {
-                    valoracionesContainer.getChildren().add(crearItemValoracion(valoracionJson));
-                    valoracionesMostradas.add(idValoracion);
+        if (respuestaJson.has("valoraciones") && !respuestaJson.get("valoraciones").isJsonNull()) {
+            JsonArray valoraciones = respuestaJson.getAsJsonArray("valoraciones");
+            if (valoraciones.size() == 0) {
+                Label lblEmpty = new Label("No hay valoraciones aún");
+                lblEmpty.setStyle("-fx-font-style: italic;");
+                valoracionesContainer.getChildren().add(lblEmpty);
+            } else {
+                for (JsonElement element : valoraciones) {
+                    if (!element.isJsonNull()) {
+                        JsonObject valoracionJson = element.getAsJsonObject();
+                        valoracionesContainer.getChildren().add(crearItemValoracion(valoracionJson));
+                    }
                 }
             }
+        } else {
+            Label lblError = new Label("No se pudieron cargar las valoraciones");
+            lblError.setStyle("-fx-text-fill: red;");
+            valoracionesContainer.getChildren().add(lblError);
         }
 
-        // ScrollPane para las valoraciones
         ScrollPane scrollPane = new ScrollPane(valoracionesContainer);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefViewportHeight(400);
 
-        // Botón de cerrar
         Button btnCerrar = new Button("Cerrar");
         btnCerrar.setOnAction(e -> dialog.close());
         btnCerrar.setStyle("-fx-background-color: #7a4de8; -fx-text-fill: white;");
 
-        // Agregar componentes al contenedor principal
         mainContainer.getChildren().addAll(lblStats, scrollPane, btnCerrar);
-
-        // Configurar y mostrar el diálogo
         Scene scene = new Scene(mainContainer, 500, 500);
         dialog.setScene(scene);
         dialog.show();
@@ -924,21 +918,81 @@ public class ControladorContenido {
         try {
             JsonObject solicitud = new JsonObject();
             solicitud.addProperty("tipo", "OBTENER_VALORACIONES");
-
             JsonObject datos = new JsonObject();
             datos.addProperty("contenidoId", contenido.getId());
             solicitud.add("datos", datos);
 
-            LOGGER.info("Enviando solicitud al servidor: " + solicitud.toString());
             cliente.getSalida().println(solicitud.toString());
-
             String respuesta = cliente.getEntrada().readLine();
-            LOGGER.info("Respuesta del servidor: " + respuesta);
 
-            return JsonParser.parseString(respuesta).getAsJsonObject();
+            if (respuesta == null || respuesta.isEmpty()) {
+                throw new RuntimeException("No se recibió respuesta del servidor");
+            }
+
+            JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+
+            if (!jsonRespuesta.get("exito").getAsBoolean()) {
+                LOGGER.log(Level.WARNING, "Error del servidor al obtener valoraciones: {0}",
+                        jsonRespuesta.get("mensaje").getAsString());
+                return crearRespuestaFallback();
+            }
+
+            // Validar y normalizar las valoraciones recibidas
+            if (jsonRespuesta.has("valoraciones")) {
+                JsonArray valoraciones = jsonRespuesta.getAsJsonArray("valoraciones");
+                for (JsonElement element : valoraciones) {
+                    JsonObject valoracion = element.getAsJsonObject();
+                    normalizarValoracionJson(valoracion);
+                }
+            }
+
+            return jsonRespuesta;
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener valoraciones: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error al obtener valoraciones", e);
+            return crearRespuestaFallback();
         }
+    }
+
+    private void normalizarValoracionJson(JsonObject valoracion) {
+        // Asegurar que todos los campos requeridos existen
+        if (!valoracion.has("id")) {
+            valoracion.addProperty("id", UUID.randomUUID().toString());
+        }
+        if (!valoracion.has("autor")) {
+            valoracion.addProperty("autor", "Usuario anónimo");
+        }
+        if (!valoracion.has("puntuacion")) {
+            valoracion.addProperty("puntuacion", 0);
+        }
+        if (!valoracion.has("comentario")) {
+            valoracion.addProperty("comentario", "Sin comentario");
+        }
+        if (!valoracion.has("fecha") || valoracion.get("fecha").isJsonNull()) {
+            valoracion.addProperty("fecha", dateFormat.format(new Date()));
+        }
+    }
+
+    private JsonObject crearRespuestaFallback() {
+        JsonObject respuestaFallback = new JsonObject();
+        respuestaFallback.addProperty("exito", true);
+        respuestaFallback.addProperty("promedio", contenido.getPromedioValoraciones());
+        respuestaFallback.addProperty("total", contenido.getValoraciones().size());
+
+        JsonArray valoracionesArray = new JsonArray();
+        for (Valoracion v : contenido.getValoraciones()) {
+            JsonObject valoracionJson = new JsonObject();
+            valoracionJson.addProperty("id", v.getId() != null ? v.getId() : UUID.randomUUID().toString());
+            valoracionJson.addProperty("autor", v.getAutor() != null ? v.getAutor() : "Usuario anónimo");
+            valoracionJson.addProperty("puntuacion", v.getPuntuacion());
+            valoracionJson.addProperty("comentario", v.getComentario() != null ? v.getComentario() : "Sin comentario");
+            valoracionJson.addProperty("fecha", v.getFecha() != null ?
+                    dateFormat.format(v.getFecha()) :
+                    dateFormat.format(new Date()));
+            valoracionesArray.add(valoracionJson);
+        }
+
+        respuestaFallback.add("valoraciones", valoracionesArray);
+        return respuestaFallback;
     }
 
     // ==================== MÉTODOS DE UI ====================
@@ -1022,35 +1076,39 @@ public class ControladorContenido {
         VBox item = new VBox(8);
         item.setStyle("-fx-background-color: #f8f8f8; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-padding: 10;");
 
-        // Cabecera con autor y fecha
-        HBox header = new HBox(10);
-        header.setAlignment(Pos.CENTER_LEFT);
+        // Obtener autor - priorizar el campo "autor" sobre "autorId"
+        String autor = "Usuario anónimo";
+        if (valoracionJson.has("autor") && !valoracionJson.get("autor").isJsonNull()) {
+            autor = valoracionJson.get("autor").getAsString();
 
-        // Obtener nombre real del usuario si es posible
-        String autorId = valoracionJson.get("autor").getAsString().replace("Usuario ", "");
-        String nombreAutor = "Usuario " + autorId;
-
-        try {
-            // Intenta obtener el nombre real del usuario
-            JsonObject usuarioData = obtenerDatosUsuario(autorId);
-            if (usuarioData != null && usuarioData.has("nombre")) {
-                nombreAutor = usuarioData.get("nombre").getAsString();
+            // Si el autor es solo un ID (comienza con "Usuario "), verificar si hay un nombre mejor
+            if (autor.startsWith("Usuario ") && valoracionJson.has("autorId")) {
+                String autorId = valoracionJson.get("autorId").getAsString();
+                // Intentar obtener el nombre real del usuario
+                JsonObject usuarioData = obtenerDatosUsuario(autorId);
+                if (usuarioData != null && usuarioData.has("nombre")) {
+                    autor = usuarioData.get("nombre").getAsString();
+                }
             }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "No se pudo obtener nombre del usuario " + autorId, e);
+        } else if (valoracionJson.has("autorId") && !valoracionJson.get("autorId").isJsonNull()) {
+            autor = "Usuario " + valoracionJson.get("autorId").getAsString();
         }
 
-        Label lblAutor = new Label(nombreAutor);
+        Label lblAutor = new Label(autor);
         lblAutor.setStyle("-fx-font-weight: bold; -fx-text-fill: #333;");
 
-        // Formatear fecha
+        // Resto del método permanece igual...
         String fechaStr = "Fecha desconocida";
         try {
-            SimpleDateFormat serverFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            Date fecha = serverFormat.parse(valoracionJson.get("fecha").getAsString());
-
-            SimpleDateFormat displayFormat = new SimpleDateFormat("dd MMM yyyy 'a las' HH:mm");
-            fechaStr = displayFormat.format(fecha);
+            if (valoracionJson.has("fecha") && !valoracionJson.get("fecha").isJsonNull()) {
+                String fechaOriginal = valoracionJson.get("fecha").getAsString();
+                if (fechaOriginal != null && !fechaOriginal.isEmpty()) {
+                    SimpleDateFormat serverFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date fecha = serverFormat.parse(fechaOriginal);
+                    SimpleDateFormat displayFormat = new SimpleDateFormat("dd MMM yyyy 'a las' HH:mm");
+                    fechaStr = displayFormat.format(fecha);
+                }
+            }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error al formatear fecha", e);
         }
@@ -1058,13 +1116,15 @@ public class ControladorContenido {
         Label lblFecha = new Label(fechaStr);
         lblFecha.setStyle("-fx-text-fill: #666; -fx-font-size: 12px;");
 
-        header.getChildren().addAll(lblAutor, lblFecha);
-
         // Rating con estrellas
         HBox ratingBox = new HBox(5);
         ratingBox.setAlignment(Pos.CENTER_LEFT);
 
-        int puntuacion = valoracionJson.get("puntuacion").getAsInt();
+        int puntuacion = 0;
+        if (valoracionJson.has("puntuacion") && !valoracionJson.get("puntuacion").isJsonNull()) {
+            puntuacion = valoracionJson.get("puntuacion").getAsInt();
+        }
+
         for (int i = 0; i < 5; i++) {
             Label star = new Label(i < puntuacion ? "★" : "☆");
             star.setStyle((i < puntuacion ?
@@ -1074,13 +1134,18 @@ public class ControladorContenido {
         }
 
         // Comentario
-        TextArea comentario = new TextArea(valoracionJson.get("comentario").getAsString());
+        String textoComentario = "Sin comentario";
+        if (valoracionJson.has("comentario") && !valoracionJson.get("comentario").isJsonNull()) {
+            textoComentario = valoracionJson.get("comentario").getAsString();
+        }
+
+        TextArea comentario = new TextArea(textoComentario);
         comentario.setEditable(false);
         comentario.setWrapText(true);
         comentario.setPrefRowCount(2);
         comentario.setStyle("-fx-background-color: transparent; -fx-border-color: transparent;");
-        item.getStyleClass().add("valoracion-item");
-        item.getChildren().addAll(header, ratingBox, comentario);
+
+        item.getChildren().addAll(lblAutor, lblFecha, ratingBox, comentario);
         return item;
     }
 
@@ -1184,12 +1249,41 @@ public class ControladorContenido {
     }
 
     private static class LocalDateTimeAdapter implements JsonDeserializer<LocalDateTime> {
-        private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        private final DateTimeFormatter[] formatters = {
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                DateTimeFormatter.ISO_LOCAL_DATE_TIME
+        };
 
         @Override
         public LocalDateTime deserialize(JsonElement json, Type typeOfT,
                                          JsonDeserializationContext context) throws JsonParseException {
-            return LocalDateTime.parse(json.getAsString(), formatter);
+            try {
+                String dateStr = json.getAsString();
+
+                // Casos especiales
+                if (dateStr == null || dateStr.isEmpty() ||
+                        dateStr.equalsIgnoreCase("Fecha no disponible") ||
+                        dateStr.equalsIgnoreCase("null")) {
+                    return null;
+                }
+
+                // Intentar con múltiples formatos
+                for (DateTimeFormatter formatter : formatters) {
+                    try {
+                        return LocalDateTime.parse(dateStr, formatter);
+                    } catch (DateTimeParseException e) {
+                        // Continuar con el siguiente formato
+                    }
+                }
+
+                LOGGER.warning("No se pudo parsear la fecha: " + dateStr);
+                return null;
+
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error al parsear fecha: " + json.getAsString(), e);
+                return null;
+            }
         }
     }
 }

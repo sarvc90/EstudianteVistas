@@ -1,0 +1,79 @@
+/* Estilos base */
+.contenedor-principal {
+    -fx-background-color: #f8f9fa;
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+.titulo-ventana {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* Estilos para campos */
+.text-field, .text-area, .combo-box {
+    -fx-background-color: white;
+    -fx-border-color: #ced4da;
+    -fx-border-radius: 4px;
+    -fx-padding: 5px;
+}
+
+.text-area .content {
+    -fx-background-color: white;
+}
+
+.campo-invalido {
+    -fx-border-color: #dc3545 !important;
+    -fx-border-width: 2px !important;
+}
+
+/* Estilos para botones */
+.boton-guardar {
+    -fx-background-color: #28a745;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+}
+
+.boton-guardar:hover {
+    -fx-background-color: #218838;
+}
+
+.boton-cancelar {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 4px;
+}
+
+.boton-cancelar:hover {
+    -fx-background-color: #5a6268;
+}
+
+/* Estilos para mensajes de error */
+.texto-error {
+    -fx-text-fill: #dc3545;
+    -fx-font-size: 14px;
+    -fx-padding: 10px;
+    -fx-background-color: #f8d7da;
+    -fx-background-radius: 4px;
+    -fx-border-color: #f5c6cb;
+    -fx-border-radius: 4px;
+}
+
+/* Estilos para etiquetas */
+.label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #495057;
+}
+
+/* Estilos para grid */
+.grid-pane {
+    -fx-padding: 10px;
+    -fx-background-color: #e9ecef;
+    -fx-border-color: #dee2e6;
+    -fx-border-radius: 5px;
+}

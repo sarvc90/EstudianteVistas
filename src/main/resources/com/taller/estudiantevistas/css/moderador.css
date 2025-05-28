@@ -1,91 +1,82 @@
-/* Tema principal - Oscuro moderno con toques morados */
+/* Fondo general del BorderPane */
 .root {
     -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
     -fx-font-family: "Segoe UI", sans-serif;
+    -fx-text-fill: #e0e0e0;
 }
 
-/* Panel lateral izquierdo (perfil) */
+/* Panel del perfil a la izquierda */
 .perfil-vbox {
-    -fx-padding: 25 20;
-    -fx-spacing: 20;
-    -fx-alignment: top-center;
-    -fx-background-color: rgba(30, 30, 40, 0.8);
-    -fx-border-color: #3a3a4a;
-    -fx-border-width: 0 1 0 0;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 5, 0, 0, 0);
+    -fx-background-color: #1e1e2e;
+    -fx-padding: 25;
+    -fx-spacing: 15;
+    -fx-background-radius: 0 15 15 0;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 10, 0, 0, 3);
 }
 
+/* Imagen del perfil */
 .imagen-perfil {
-    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 15, 0.5, 0, 0);
-    -fx-border-radius: 50%;
     -fx-border-color: #8e44ff;
-    -fx-border-width: 2;
+    -fx-border-width: 3;
+    -fx-border-radius: 90;
+    -fx-background-radius: 90;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 15, 0.3, 0, 2);
 }
 
-/* Etiquetas de datos */
+/* Etiquetas de datos del perfil */
+.info-labels {
+    -fx-padding: 15;
+}
+
 .etiqueta-dato {
+    -fx-text-fill: #bbbbbb;
+    -fx-font-size: 12px;
     -fx-font-weight: bold;
-    -fx-text-fill: #a569ff;
-    -fx-font-size: 13px;
-    -fx-padding: 5 0 0 0;
 }
 
 .valor-dato {
-    -fx-text-fill: #e0e0e0;
+    -fx-text-fill: white;
     -fx-font-size: 13px;
-    -fx-padding: 0 0 10 15;
-    -fx-wrap-text: true;
 }
 
 /* Botones principales */
 .boton-morado {
     -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
     -fx-text-fill: white;
+    -fx-background-radius: 25;
     -fx-font-weight: bold;
-    -fx-font-size: 13px;
-    -fx-background-radius: 20;
-    -fx-padding: 10 25;
+    -fx-font-size: 14px;
+    -fx-padding: 10 20;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 2);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 8, 0.5, 0, 3);
 }
 
 .boton-morado:hover {
     -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
-    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 3);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 10, 0.6, 0, 4);
 }
 
 .boton-morado:pressed {
-    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.2), 5, 0.3, 0, 1);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.2), 5, 0.3, 0, 2);
 }
 
-/* Contenedores de información */
+/* Paneles negros usados como espaciadores/contenedores */
 .contenedor-negro {
-    -fx-background-color: #252535;
-    -fx-background-radius: 15;
+    -fx-background-color: #2c2c3c;
+    -fx-background-radius: 10;
     -fx-border-color: #3a3a4a;
     -fx-border-width: 1;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
 }
 
-.contenedor-negro:hover {
-    -fx-border-color: #8e44ff;
-}
-
-/* Títulos */
+/* Títulos pequeños */
 .titulo-pequeno {
-    -fx-text-fill: #a569ff;
+    -fx-text-fill: #cccccc;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
-    -fx-padding: 5 0 15 0;
+    -fx-padding: 10 0;
 }
 
-/* Estilo para el panel central */
-.center {
-    -fx-padding: 30;
-    -fx-background-color: transparent;
-}
-
-/* Estilo para las cajas de botones */
-.info-labels {
-    -fx-padding: 0 15;
+/* Transiciones suaves */
+* {
+    -fx-transition: all 0.3s ease;
 }

@@ -3,36 +3,68 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
 
 <HBox xmlns="http://javafx.com/fxml/1" xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.taller.estudiantevistas.controlador.ControladorGrupoEstudio"
       stylesheets="@../css/grupo-estudio.css"
       styleClass="container" spacing="30">
 
-    <!-- Sección izquierda -->
-    <VBox styleClass="left-section" spacing="15" alignment="CENTER" prefWidth="320">
-        <Text styleClass="group-title" text="Nombre del grupo de estudio..." />
+    <!-- Sección izquierda - Contenido principal -->
+    <VBox styleClass="left-section" spacing="20" alignment="TOP_CENTER" prefWidth="320">
+        <!-- Encabezado con icono -->
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <ImageView fitWidth="40" fitHeight="40">
+                <Image url="@../icons/app-icon.png"/>
+            </ImageView>
+            <Text styleClass="group-title" fx:id="nombreGrupo" text="Nombre del grupo" />
+        </HBox>
 
-        <Button styleClass="dark-button" text="Ir a chat grupal" onAction="#irAlChat"
-                prefWidth="300" />
-        <Button styleClass="dark-button" text="Unirse al grupo" onAction="#unirseAlGrupo"
-                prefWidth="300" />
+        <!-- Descripción corta -->
+        <Text styleClass="group-description" fx:id="descripcionGrupo"
+              text="Descripción del grupo..." wrappingWidth="300" />
 
-        <Label styleClass="members-count" text="# de miembros en el grupo de estudio" />
+        <!-- Estadísticas -->
+        <HBox styleClass="stats-container" spacing="15">
+            <VBox styleClass="stat-item" alignment="CENTER">
+                <Text styleClass="stat-value" fx:id="miembrosCount" text="0" />
+                <Text styleClass="stat-label" text="Miembros" />
+            </VBox>
+            <VBox styleClass="stat-item" alignment="CENTER">
+                <Text styleClass="stat-value" fx:id="contenidoCount" text="0" />
+                <Text styleClass="stat-label" text="Contenidos" />
+            </VBox>
+            <VBox styleClass="stat-item" alignment="CENTER">
+                <Text styleClass="stat-value" fx:id="actividadCount" text="0" />
+                <Text styleClass="stat-label" text="Activos" />
+            </VBox>
+        </HBox>
 
-        <Button styleClass="purple-button" text="Ver miembros" onAction="#verMiembros"
-                prefWidth="180" />
-        <Button styleClass="purple-button" text="Contenido" onAction="#verContenido"
-                prefWidth="180" />
+        <!-- Acciones principales -->
+        <Button styleClass="primary-button" text="Unirse al grupo" onAction="#unirseAlGrupo" />
+        <Button styleClass="secondary-button" text="Ir al chat grupal" onAction="#irAlChat" />
+
+        <!-- Acciones secundarias -->
+        <HBox styleClass="actions-container" spacing="10">
+            <Button styleClass="small-button" text="Miembros" onAction="#verMiembros" />
+            <Button styleClass="small-button" text="Contenido" onAction="#verContenido" />
+            <Button styleClass="small-button" text="Configuración" onAction="#verConfiguracion" />
+        </HBox>
     </VBox>
 
-    <!-- Sección derecha con panel más alto y texto en la parte superior -->
-    <VBox styleClass="right-section" prefWidth="380">
-        <VBox styleClass="topic-panel" spacing="15" prefHeight="300">
-            <VBox styleClass="topic-content" spacing="15" alignment="TOP_LEFT">
-                <Text styleClass="topic-title" text="Tema" />
-                <Text styleClass="topic-description" text="Introducción corta del grupo..."
-                      wrappingWidth="340" />
+    <!-- Sección derecha - Detalles del tema -->
+    <VBox styleClass="right-section" spacing="15" prefWidth="380">
+        <Text styleClass="section-title" text="Detalles del Tema" />
+
+        <VBox styleClass="topic-panel" spacing="15">
+            <Text styleClass="topic-title" fx:id="temaTitulo" text="Título del tema" />
+            <Text styleClass="topic-description" fx:id="temaDescripcion"
+                  text="Descripción detallada del tema..." wrappingWidth="340" />
+
+            <!-- Contenido reciente -->
+            <VBox styleClass="recent-content" spacing="10">
+                <Text styleClass="content-title" text="Contenido Reciente" />
+                <ListView fx:id="listaContenido" styleClass="content-list" />
             </VBox>
         </VBox>
     </VBox>

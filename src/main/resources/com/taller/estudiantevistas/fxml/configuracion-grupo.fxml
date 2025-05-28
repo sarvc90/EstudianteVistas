@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorConfiguracionGrupo"
+      styleClass="root" stylesheets="@../css/configuracion-grupo.css" spacing="15">
+
+    <!-- Encabezado -->
+    <HBox alignment="CENTER_LEFT" styleClass="top">
+        <children>
+            <Label fx:id="nombreGrupo" styleClass="titulo-principal" text="Nombre del Grupo" />
+        </children>
+        <padding>
+            <Insets bottom="15.0" left="25.0" right="25.0" top="15.0" />
+        </padding>
+    </HBox>
+
+    <!-- Contenido principal -->
+    <ScrollPane fitToWidth="true" styleClass="scroll-pane" hbarPolicy="NEVER">
+        <content>
+            <VBox alignment="TOP_CENTER" spacing="20" styleClass="content-pane">
+                <!-- Sección de configuración del grupo -->
+                <VBox spacing="15" styleClass="config-section">
+                    <Label text="Configuración del Grupo" styleClass="section-title"/>
+
+                    <GridPane hgap="10" vgap="10">
+                        <columnConstraints>
+                            <ColumnConstraints hgrow="NEVER" minWidth="100" prefWidth="120"/>
+                            <ColumnConstraints hgrow="ALWAYS"/>
+                        </columnConstraints>
+
+                        <rowConstraints>
+                            <RowConstraints minHeight="35" prefHeight="35" vgrow="NEVER"/>
+                            <RowConstraints minHeight="100" prefHeight="100" vgrow="NEVER"/>
+                        </rowConstraints>
+
+                        <Label text="Nombre:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                        <TextField fx:id="txtNombreGrupo" GridPane.rowIndex="0" GridPane.columnIndex="1" styleClass="input-field"/>
+
+                        <Label text="Descripción:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                        <TextArea fx:id="txtDescripcionGrupo" wrapText="true" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                                  styleClass="input-area"/>
+                    </GridPane>
+
+                    <Button fx:id="btnGuardarCambios" text="Guardar Cambios" onAction="#guardarCambios"
+                            styleClass="save-button" alignment="CENTER_RIGHT"/>
+                </VBox>
+
+                <!-- Sección de contenido del grupo -->
+                <VBox spacing="15" styleClass="config-section">
+                    <HBox alignment="CENTER_LEFT" spacing="15">
+                        <Label text="Contenido del Grupo" styleClass="section-title"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Button fx:id="btnEliminar" text="Eliminar Seleccionado" onAction="#eliminarContenido"
+                                styleClass="delete-button"/>
+                    </HBox>
+
+                    <ListView fx:id="listaContenido" styleClass="content-list" minHeight="200"/>
+                </VBox>
+            </VBox>
+        </content>
+        <padding>
+            <Insets bottom="20" left="20" right="20" top="10"/>
+        </padding>
+    </ScrollPane>
+</VBox>

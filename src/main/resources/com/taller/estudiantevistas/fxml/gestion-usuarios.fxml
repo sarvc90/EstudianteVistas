@@ -12,7 +12,7 @@
       styleClass="root" spacing="20" prefWidth="800" prefHeight="600">
 
     <stylesheets>
-        <URL value="@/com/taller/estudiantevistas/css/estilos.css" />
+        <URL value="@../css/gestion-usuarios.css" />
     </stylesheets>
 
     <!-- Barra superior -->

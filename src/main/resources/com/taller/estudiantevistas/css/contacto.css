@@ -1,0 +1,119 @@
+/* Estilo base del contenedor principal */
+.contacto-vbox {
+    -fx-background-color: linear-gradient(to bottom right, #121218, #1a1a25);
+    -fx-padding: 20;
+    -fx-spacing: 15;
+}
+
+/* Estilo para el título */
+.contacto-titulo {
+    -fx-text-fill: #a569ff;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 0, 0, 0, 1);
+    -fx-padding: 0 0 5 0;
+}
+
+/* Estilo para las etiquetas */
+.contacto-label {
+    -fx-text-fill: #cccccc;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 0;
+}
+
+/* Estilo para la ListView */
+.contacto-listview {
+    -fx-background-color: #252535;
+    -fx-background-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+    -fx-padding: 5;
+}
+
+.contacto-listview .list-cell {
+    -fx-background-color: #2c2c3c;
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 14px;
+    -fx-padding: 10 15;
+    -fx-border-color: transparent;
+}
+
+.contacto-listview .list-cell:filled:hover {
+    -fx-background-color: #343446;
+    -fx-text-fill: #ffffff;
+    -fx-cursor: hand;
+}
+
+.contacto-listview .list-cell:filled:selected {
+    -fx-background-color: #8e44ff;
+    -fx-text-fill: white;
+}
+
+/* Estilo para el TextArea */
+.contacto-textarea {
+    -fx-background-color: #252535;
+    -fx-background-radius: 10;
+    -fx-border-color: #3a3a4a;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 14px;
+    -fx-prompt-text-fill: #999999;
+    -fx-padding: 10;
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+.contacto-textarea:focused {
+    -fx-border-color: #8e44ff;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 2);
+}
+
+/* Estilo para el botón */
+.contacto-button {
+    -fx-background-color: linear-gradient(to right, #8e44ff, #a569ff);
+    -fx-text-fill: white;
+    -fx-background-radius: 25;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 12 24;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.3), 10, 0.5, 0, 3);
+    -fx-alignment: CENTER;
+    -fx-content-display: CENTER;
+}
+
+.contacto-button:hover {
+    -fx-background-color: linear-gradient(to right, #a569ff, #8e44ff);
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 12, 0.6, 0, 4);
+}
+
+.contacto-button:pressed {
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.2), 5, 0.3, 0, 2);
+}
+
+/* Scrollbar personalizada */
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #3a3a4a;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+}
+
+.scroll-bar:vertical .thumb:hover {
+    -fx-background-color: #4a4a5a;
+}
+
+.scroll-bar:vertical .thumb:pressed {
+    -fx-background-color: #8e44ff;
+}

@@ -139,7 +139,7 @@ public class ControladorModerador {
 
     private void mostrarVistaUsuarios() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/gestion_usuarios.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/gestion-usuarios.fxml"));
             Parent root = loader.load();
 
             ControladorGestionUsuarios controlador = loader.getController();
@@ -161,13 +161,25 @@ public class ControladorModerador {
         ejecutarTareaAsync(
                 () -> {
                     try {
+                        // 1. Construir la solicitud con el formato correcto
                         JsonObject solicitud = new JsonObject();
-                        solicitud.addProperty("tipo", "OBTENER_TODOS_CONTENIDOS");
+                        solicitud.addProperty("tipo", "OBTENER_CONTENIDOS");
+
+                        // 2. Agregar objeto 'datos' como espera el servidor
+                        JsonObject datos = new JsonObject();
+                        if (datosUsuario != null && datosUsuario.has("id")) {
+                            datos.addProperty("solicitanteId", datosUsuario.get("id").getAsString());
+                        }
+                        solicitud.add("datos", datos);
+
                         String solicitudStr = solicitud.toString();
-                        System.out.println("DEBUG: Enviando solicitud al servidor: " + solicitudStr);
+                        System.out.println("DEBUG: Enviando solicitud completa al servidor: " + solicitudStr);
+
+                        // 3. Enviar la solicitud
                         cliente.getSalida().println(solicitudStr);
                         cliente.getSalida().flush();
 
+                        // 4. Recibir respuesta
                         String respuesta = cliente.getEntrada().readLine();
                         System.out.println("RESPUESTA DEL SERVIDOR (CONTENIDOS): " + respuesta);
                         return respuesta;
@@ -182,7 +194,9 @@ public class ControladorModerador {
                         if (jsonRespuesta.get("exito").getAsBoolean()) {
                             Platform.runLater(() -> mostrarVistaContenidos());
                         } else {
-                            Platform.runLater(() -> mostrarAlerta("Error", jsonRespuesta.get("mensaje").getAsString(), Alert.AlertType.ERROR));
+                            String mensajeError = jsonRespuesta.has("mensaje") ?
+                                    jsonRespuesta.get("mensaje").getAsString() : "Error desconocido";
+                            Platform.runLater(() -> mostrarAlerta("Error", mensajeError, Alert.AlertType.ERROR));
                         }
                     } catch (Exception e) {
                         System.err.println("ERROR procesando respuesta: " + e.getMessage());
@@ -269,5 +283,76 @@ public class ControladorModerador {
                 respuesta -> System.out.println("Respuesta de prueba: " + respuesta),
                 "prueba de conexión"
         );
+    }
+
+    @FXML
+    private void manejarVerGrafo() {
+        System.out.println("DEBUG: Botón Ver Grafo presionado");
+        ejecutarTareaAsync(
+                () -> {
+                    try {
+                        JsonObject solicitud = new JsonObject();
+                        solicitud.addProperty("tipo", "OBTENER_GRAFO_AFINIDAD");
+                        JsonObject datos = new JsonObject();
+                        if (datosUsuario != null && datosUsuario.has("id")) {
+                            datos.addProperty("solicitanteId", datosUsuario.get("id").getAsString());
+                        }
+                        solicitud.add("datos", datos);
+
+                        String solicitudStr = solicitud.toString();
+                        System.out.println("DEBUG: Enviando solicitud completa al servidor: " + solicitudStr);
+                        cliente.getSalida().println(solicitudStr);
+                        cliente.getSalida().flush();
+
+                        String respuesta = cliente.getEntrada().readLine();
+                        System.out.println("RESPUESTA DEL SERVIDOR (GRAFO): " + respuesta);
+                        return respuesta;
+                    } catch (IOException e) {
+                        System.err.println("ERROR en manejarVerGrafo(): " + e.getMessage());
+                        throw new RuntimeException("Error de comunicación con el servidor", e);
+                    }
+                },
+                respuesta -> {
+                    try {
+                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+                        if (jsonRespuesta.get("exito").getAsBoolean()) {
+                            Platform.runLater(() -> mostrarVistaGrafo(jsonRespuesta));
+                        } else {
+                            String mensajeError = jsonRespuesta.has("mensaje") ?
+                                    jsonRespuesta.get("mensaje").getAsString() : "Error desconocido";
+                            Platform.runLater(() -> mostrarAlerta("Error", mensajeError, Alert.AlertType.ERROR));
+                        }
+                    } catch (Exception e) {
+                        System.err.println("ERROR procesando respuesta: " + e.getMessage());
+                        Platform.runLater(() -> mostrarAlerta("Error", "Respuesta inválida del servidor", Alert.AlertType.ERROR));
+                    }
+                },
+                "obtención de grafo"
+        );
+    }
+
+    private void mostrarVistaGrafo(JsonObject grafoData) {
+        // Implementar la lógica para mostrar el grafo en una nueva ventana
+        // Puedes usar una biblioteca de visualización de grafos como JGraphT o similar
+    }
+
+    @FXML
+    private void manejarFuncionalidadGrafo() {
+        // Implementar la lógica para manejar la funcionalidad del grafo
+    }
+
+    @FXML
+    private void manejarTablaContenidos() {
+        // Implementar la lógica para manejar la tabla de contenidos
+    }
+
+    @FXML
+    private void manejarEstudiantesConexiones() {
+        // Implementar la lógica para manejar las conexiones de estudiantes
+    }
+
+    @FXML
+    private void manejarNivelesParticipacion() {
+        // Implementar la lógica para manejar los niveles de participación
     }
 }

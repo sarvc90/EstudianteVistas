@@ -53,7 +53,7 @@ public class ControladorPrincipal {
     @FXML private Button btnRecargarContenidos, btnRecargarSolicitudes, btnNuevaSolicitud;
     @FXML private Pane panelContenidos, panelSolicitudes;
 
-    private static final String[] TIPOS_CONTENIDO = {"Tema", "Autor", "Tipo", "Fecha"};
+    private static final String[] TIPOS_CONTENIDO = {"Tema", "Autor", "Fecha"};
     private static final String[] FILTROS_SOLICITUD = {"Todas", "Pendientes", "En proceso", "Resueltas"};
 
     // Listeners para actualizaciones
@@ -81,9 +81,29 @@ public class ControladorPrincipal {
             configurarEventos();
             cargarImagenes();
             configurarComboBox();
+            if (esModerador()) {
+                btnContacto.setVisible(false);
+                imgContacto.setVisible(false);
+                btnNuevaSolicitud.setVisible(false);
+            }
         });
         panelContenidos.getStyleClass().add("panel-contenedor");
         panelSolicitudes.getStyleClass().add("panel-contenedor");
+    }
+    private boolean esModerador() {
+        if (usuarioData == null) return false;
+
+        // Primera forma de verificación: campo "esModerador"
+        if (usuarioData.has("esModerador")) {
+            return usuarioData.get("esModerador").getAsBoolean();
+        }
+
+        // Segunda forma de verificación: campo "rol" con valor "MODERADOR"
+        if (usuarioData.has("rol")) {
+            return "MODERADOR".equalsIgnoreCase(usuarioData.get("rol").getAsString());
+        }
+
+        return false;
     }
 
     // ==================== CONFIGURACIÓN INICIAL ====================
@@ -920,7 +940,60 @@ public class ControladorPrincipal {
     }
 
     private void abrirContacto() {
-        mostrarAlerta("En desarrollo", "Funcionalidad de contacto en desarrollo", Alert.AlertType.INFORMATION);
+        if (usuarioData == null || !usuarioData.has("id")) {
+            mostrarAlerta("Error", "Datos del usuario no disponibles", Alert.AlertType.ERROR);
+            return;
+        }
+
+        ejecutarTareaAsync(
+                () -> {
+                    JsonObject solicitud = new JsonObject();
+                    solicitud.addProperty("tipo", "OBTENER_GRUPOS_ESTUDIO");
+
+                    JsonObject datos = new JsonObject();
+                    datos.addProperty("userId", usuarioData.get("id").getAsString());
+                    solicitud.add("datos", datos);
+
+                    cliente.getSalida().println(solicitud.toString());
+                    String respuesta = null;
+                    try {
+                        respuesta = cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return JsonParser.parseString(respuesta).getAsJsonObject();
+                },
+                respuesta -> {
+                    if (respuesta.get("exito").getAsBoolean()) {
+                        JsonArray grupos = respuesta.getAsJsonArray("grupos");
+                        Platform.runLater(() -> mostrarVistaContacto(grupos));
+                    } else {
+                        throw new RuntimeException(respuesta.get("mensaje").getAsString());
+                    }
+                },
+                error -> Platform.runLater(() ->
+                        mostrarAlerta("Error", "Error al obtener grupos: " + error.getMessage(), Alert.AlertType.ERROR)
+                ),
+                "obtención de grupos de estudio"
+        );
+    }
+
+    private void mostrarVistaContacto(JsonArray grupos) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/contacto.fxml"));
+            Parent root = loader.load();
+
+            ControladorContacto controlador = loader.getController();
+            controlador.inicializar(grupos, usuarioData, cliente);
+
+            Stage stage = new Stage();
+            stage.setTitle("Contactar Grupos de Estudio");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+        } catch (IOException e) {
+            manejarError("mostrar vista de contacto", e);
+        }
     }
 
     // ==================== MÉTODOS PÚBLICOS ====================

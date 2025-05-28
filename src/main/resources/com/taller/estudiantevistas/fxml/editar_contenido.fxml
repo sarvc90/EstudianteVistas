@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+
+<?import java.net.URL?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorEditarContenido"
+      fx:id="contenedorPrincipal"
+      spacing="15"
+      styleClass="contenedor-principal">
+
+    <stylesheets>
+        <URL value="@../css/editar_contenido.css"/>
+    </stylesheets>
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Editar Contenido" styleClass="titulo-ventana"/>
+
+    <Label fx:id="lblErrores" styleClass="texto-error" wrapText="true" visible="false"/>
+
+    <GridPane hgap="10" vgap="15">
+        <columnConstraints>
+            <ColumnConstraints hgrow="NEVER" minWidth="100"/>
+            <ColumnConstraints hgrow="ALWAYS"/>
+        </columnConstraints>
+
+        <!-- Campos del formulario -->
+        <Label text="Título *" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtTitulo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Autor *" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtAutor" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Tema" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="txtTema" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Tipo *" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbTipo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Descripción" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextArea fx:id="txtDescripcion" GridPane.rowIndex="4" GridPane.columnIndex="1"
+                  wrapText="true" prefRowCount="3"/>
+
+        <Label text="Contenido *" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <TextArea fx:id="txtContenido" GridPane.rowIndex="5" GridPane.columnIndex="1"
+                  wrapText="true" prefRowCount="5"/>
+    </GridPane>
+
+    <HBox spacing="15" alignment="CENTER_RIGHT">
+        <Button fx:id="btnCancelar" text="Cancelar" styleClass="boton-cancelar"/>
+        <Button fx:id="btnGuardar" text="Guardar Cambios" styleClass="boton-guardar"/>
+    </HBox>
+</VBox>

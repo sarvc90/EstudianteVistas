@@ -62,9 +62,46 @@ public class ControladorPerfil {
                 lblNombres.setText(datosUsuario.get("nombres").getAsString());
                 lblCorreo.setText(datosUsuario.get("correo").getAsString());
                 lblIntereses.setText(datosUsuario.get("intereses").getAsString());
+                cargarGruposEstudio(datosUsuario.get("id").getAsString());
             });
         }
     }
+
+    private void cargarGruposEstudio(String userId) {
+        ejecutarTareaAsync(
+                () -> {
+                    JsonObject solicitud = new JsonObject();
+                    solicitud.addProperty("tipo", "OBTENER_GRUPOS_ESTUDIO");
+                    JsonObject datos = new JsonObject();
+                    datos.addProperty("userId", userId);
+                    solicitud.add("datos", datos);
+                    cliente.getSalida().println(solicitud.toString());
+                    String respuesta = null;
+                    try {
+                        respuesta = cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return JsonParser.parseString(respuesta).getAsJsonObject();
+                },
+                respuesta -> {
+                    if (respuesta.get("exito").getAsBoolean()) {
+                        JsonArray gruposJson = respuesta.getAsJsonArray("grupos");
+                        for (JsonElement grupo : gruposJson) {
+                            String nombreGrupo = grupo.getAsJsonObject().get("nombre").getAsString();
+                            // Agregar solo si no está ya en el ComboBox
+                            if (!comboGruposEstudio.getItems().contains(nombreGrupo)) {
+                                comboGruposEstudio.getItems().add(nombreGrupo);
+                            }
+                        }
+                    } else {
+                        mostrarAlerta("Error", respuesta.get("mensaje").getAsString(), Alert.AlertType.ERROR);
+                    }
+                },
+                "carga de grupos de estudio"
+        );
+    }
+
 
     private void obtenerDatosUsuarioCompletos(String userId) {
         ejecutarTareaAsync(
@@ -311,8 +348,19 @@ public class ControladorPerfil {
     }
 
     private void manejarBuscarGrupos() {
-        LOGGER.info("Buscando grupos de estudio...");
-        // Implementar lógica para buscar grupos
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/buscar-grupos.fxml"));
+            Parent root = loader.load();
+            ControladorBuscarGrupos controlador = loader.getController();
+            controlador.inicializar(cliente, datosUsuario.get("id").getAsString()); // Pasar el ID del usuario
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Buscar Grupos de Estudio");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo cargar la vista de búsqueda de grupos", Alert.AlertType.ERROR);
+        }
     }
 
     private void manejarVerSolicitudes() {
