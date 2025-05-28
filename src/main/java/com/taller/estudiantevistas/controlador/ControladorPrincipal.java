@@ -48,8 +48,8 @@ public class ControladorPrincipal {
     // Componentes de la UI
     @FXML private TextField campoBusqueda;
     @FXML private ComboBox<String> comboTipo;
-    @FXML private Button btnBuscar, btnAjustes, btnNotificaciones, btnChat, btnPerfil, btnContacto;
-    @FXML private ImageView imgLupa, imgAjustes, imgCampana, imgChat, imgPerfil, imgContacto, imgRecargar;
+    @FXML private Button btnBuscar, btnAjustes, btnChat, btnPerfil, btnContacto;
+    @FXML private ImageView imgLupa, imgAjustes, imgChat, imgPerfil, imgContacto, imgRecargar;
     @FXML private Button btnRecargarContenidos, btnRecargarSolicitudes, btnNuevaSolicitud;
     @FXML private Pane panelContenidos, panelSolicitudes;
 
@@ -112,7 +112,6 @@ public class ControladorPrincipal {
         try {
             imgLupa.setImage(cargarImagen("/com/taller/estudiantevistas/icons/lupa.png"));
             imgAjustes.setImage(cargarImagen("/com/taller/estudiantevistas/icons/ajustes.png"));
-            imgCampana.setImage(cargarImagen("/com/taller/estudiantevistas/icons/campana.png"));
             imgChat.setImage(cargarImagen("/com/taller/estudiantevistas/icons/chat.png"));
             imgPerfil.setImage(cargarImagen("/com/taller/estudiantevistas/icons/perfil.png"));
             imgContacto.setImage(cargarImagen("/com/taller/estudiantevistas/icons/contacto.png"));
@@ -156,7 +155,6 @@ public class ControladorPrincipal {
         btnRecargarSolicitudes.setOnAction(null);
         btnNuevaSolicitud.setOnAction(null);
         btnAjustes.setOnAction(null);
-        btnNotificaciones.setOnAction(null);
         btnChat.setOnAction(null);
         btnPerfil.setOnAction(null);
         btnContacto.setOnAction(null);
@@ -167,7 +165,6 @@ public class ControladorPrincipal {
         btnRecargarSolicitudes.setOnAction(event -> recargarSolicitudes());
         btnNuevaSolicitud.setOnAction(event -> mostrarVistaSolicitudAyuda());
         btnAjustes.setOnAction(event -> abrirAjustes());
-        btnNotificaciones.setOnAction(event -> mostrarNotificaciones());
         btnChat.setOnAction(event -> abrirChat());
         btnPerfil.setOnAction(event -> abrirPerfil());
         btnContacto.setOnAction(event -> abrirContacto());

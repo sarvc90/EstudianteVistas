@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+
+<?import java.net.URL?>
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.taller.estudiantevistas.controlador.ControladorEstudiantesConexiones"
+      styleClass="content-pane" spacing="15" prefWidth="800" prefHeight="600">
+
+    <Label text="Estudiantes y sus Conexiones" styleClass="contenido-titulo" />
+
+    <HBox spacing="15" alignment="CENTER_LEFT">
+        <TextField fx:id="campoBusqueda" promptText="Buscar estudiantes..." styleClass="search-field" HBox.hgrow="ALWAYS" />
+    </HBox>
+
+    <TableView fx:id="tablaEstudiantes" styleClass="transparent-table" fixedCellSize="40" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colNombre" text="Nombre" prefWidth="300" />
+            <TableColumn fx:id="colConexiones" text="Conexiones" prefWidth="100" />
+            <TableColumn fx:id="colEstado" text="Estado" prefWidth="150" />
+            <TableColumn fx:id="colUltimaActividad" text="Última Actividad" prefWidth="200" />
+        </columns>
+    </TableView>
+
+    <stylesheets>
+        <URL value="@../css/estilos1.css" />
+    </stylesheets>
+</VBox>

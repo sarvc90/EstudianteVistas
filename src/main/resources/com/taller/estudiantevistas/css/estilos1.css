@@ -1,0 +1,54 @@
+/* Estilos para tablas */
+.transparent-table {
+    -fx-background-color: transparent;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+}
+
+.transparent-table .column-header-background {
+    -fx-background-color: #2c2c3c;
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-radius: 10 10 0 0;
+    -fx-padding: 5 0;
+}
+
+.transparent-table .column-header {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a569ff;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.transparent-table .table-row-cell {
+    -fx-background-color: #2c2c3c;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 0 0 1 0;
+    -fx-text-fill: #e0e0e0;
+    -fx-font-size: 13px;
+}
+
+.transparent-table .table-row-cell:odd {
+    -fx-background-color: #252535;
+}
+
+.transparent-table .table-row-cell:selected {
+    -fx-background-color: #3a3a4a;
+    -fx-text-fill: white;
+}
+
+.transparent-table .table-row-cell:hover {
+    -fx-background-color: #343446;
+    -fx-cursor: hand;
+}
+
+.transparent-table .table-cell {
+    -fx-text-fill: white;
+    -fx-padding: 8 10;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* Estilos específicos para columnas numéricas */
+.numeric-column {
+    -fx-alignment: CENTER_RIGHT;
+}

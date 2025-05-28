@@ -1,0 +1,78 @@
+/* Add these styles to your existing CSS file */
+
+/* Chart styles */
+.chart {
+    -fx-background-color: #252535;
+    -fx-legend-visible: false;
+    -fx-padding: 20;
+}
+
+.chart-title {
+    -fx-text-fill: #a569ff;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+
+.axis {
+    -fx-tick-label-fill: #cccccc;
+    -fx-tick-length: 5;
+    -fx-minor-tick-length: 3;
+}
+
+.axis-label {
+    -fx-text-fill: #a569ff;
+    -fx-font-weight: bold;
+}
+
+.chart-plot-background {
+    -fx-background-color: #2c2c3c;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: #3a3a4a;
+    -fx-stroke-dash-array: 5 5;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: #3a3a4a;
+    -fx-stroke-dash-array: 5 5;
+}
+
+.chart-series-line {
+    -fx-stroke: #8e44ff;
+    -fx-stroke-width: 2px;
+}
+
+.default-color0.chart-bar {
+    -fx-bar-fill: #8e44ff;
+}
+
+.default-color0.chart-bar:hover {
+    -fx-bar-fill: #a569ff;
+    -fx-effect: dropshadow(gaussian, rgba(142, 68, 255, 0.5), 10, 0.5, 0, 2);
+}
+
+.chart-legend {
+    -fx-background-color: #252535;
+    -fx-border-color: #3a3a4a;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 10;
+}
+
+.chart-legend-item {
+    -fx-text-fill: #cccccc;
+}
+
+/* Tooltip styling */
+.chart-tooltip-label {
+    -fx-background-color: #252535;
+    -fx-text-fill: white;
+    -fx-border-color: #8e44ff;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 5 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 5, 0, 0, 2);
+}

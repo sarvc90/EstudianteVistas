@@ -111,15 +111,6 @@
                 </graphic>
             </Button>
 
-            <Button fx:id="btnNotificaciones" styleClass="icon-button">
-                <tooltip>
-                    <Tooltip text="Notificaciones"/>
-                </tooltip>
-                <graphic>
-                    <ImageView fx:id="imgCampana" fitWidth="24" fitHeight="24" preserveRatio="true"/>
-                </graphic>
-            </Button>
-
             <Button fx:id="btnChat" styleClass="icon-button">
                 <tooltip>
                     <Tooltip text="Chat"/>

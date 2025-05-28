@@ -219,7 +219,7 @@ public class ControladorGestionUsuarios {
                         solicitud.addProperty("tipo", "SUSPENDER_USUARIO");
 
                         JsonObject datos = new JsonObject();
-                        datos.addProperty("usuarioId", usuario.getId()); // Use ID
+                        datos.addProperty("correoUsuario", correo); // Use ID
                         datos.addProperty("diasSuspension", dias);
                         datos.addProperty("moderadorId", moderadorId);
                         solicitud.add("datos", datos);

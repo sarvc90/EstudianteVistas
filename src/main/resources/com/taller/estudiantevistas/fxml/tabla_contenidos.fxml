@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="panelPrincipal" spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="com.taller.estudiantevistas.controlador.ControladorTablaContenidos">
+
+    <Label text="📊 Reporte: Top 5 Contenidos Más Valorados" styleClass="titulo-reporte" />
+
+    <TableView fx:id="tablaContenidos" prefHeight="400" prefWidth="800">
+        <columns>
+            <TableColumn fx:id="colTitulo" text="Título" />
+            <TableColumn fx:id="colAutor" text="Autor" />
+            <TableColumn fx:id="colFecha" text="Fecha" />
+            <TableColumn fx:id="colComentarios" text="Comentarios" />
+        </columns>
+    </TableView>
+
+</VBox>

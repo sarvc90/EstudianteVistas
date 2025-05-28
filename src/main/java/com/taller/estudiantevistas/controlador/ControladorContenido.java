@@ -937,13 +937,18 @@ public class ControladorContenido {
                 return crearRespuestaFallback();
             }
 
-            // Validar y normalizar las valoraciones recibidas
             if (jsonRespuesta.has("valoraciones")) {
                 JsonArray valoraciones = jsonRespuesta.getAsJsonArray("valoraciones");
+                JsonArray valoracionesNormalizadas = new JsonArray();
+
                 for (JsonElement element : valoraciones) {
                     JsonObject valoracion = element.getAsJsonObject();
                     normalizarValoracionJson(valoracion);
+                    valoracionesNormalizadas.add(valoracion);
                 }
+
+                // Reemplazar el array por el normalizado
+                jsonRespuesta.add("valoraciones", valoracionesNormalizadas);
             }
 
             return jsonRespuesta;
@@ -953,24 +958,25 @@ public class ControladorContenido {
         }
     }
 
+
     private void normalizarValoracionJson(JsonObject valoracion) {
-        // Asegurar que todos los campos requeridos existen
         if (!valoracion.has("id")) {
             valoracion.addProperty("id", UUID.randomUUID().toString());
         }
-        if (!valoracion.has("autor")) {
+        if (!valoracion.has("autor") || valoracion.get("autor").getAsString().isEmpty()) {
             valoracion.addProperty("autor", "Usuario anónimo");
         }
         if (!valoracion.has("puntuacion")) {
             valoracion.addProperty("puntuacion", 0);
         }
-        if (!valoracion.has("comentario")) {
+        if (!valoracion.has("comentario") || valoracion.get("comentario").getAsString().isEmpty()) {
             valoracion.addProperty("comentario", "Sin comentario");
         }
         if (!valoracion.has("fecha") || valoracion.get("fecha").isJsonNull()) {
             valoracion.addProperty("fecha", dateFormat.format(new Date()));
         }
     }
+
 
     private JsonObject crearRespuestaFallback() {
         JsonObject respuestaFallback = new JsonObject();

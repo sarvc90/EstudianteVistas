@@ -12,8 +12,18 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+
+import org.graphstream.graph.Graph;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.view.Viewer;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
@@ -91,11 +101,8 @@ public class ControladorModerador {
         ejecutarTareaAsync(
                 () -> {
                     try {
-                        // 1. Construir la solicitud con el formato que espera el servidor
                         JsonObject solicitud = new JsonObject();
                         solicitud.addProperty("tipo", "OBTENER_TODOS_USUARIOS");
-
-                        // Agregar objeto 'datos' (requerido por el servidor)
                         JsonObject datos = new JsonObject();
                         if (datosUsuario != null && datosUsuario.has("id")) {
                             datos.addProperty("solicitanteId", datosUsuario.get("id").getAsString());
@@ -104,12 +111,9 @@ public class ControladorModerador {
 
                         String solicitudStr = solicitud.toString();
                         System.out.println("DEBUG: Enviando solicitud completa al servidor: " + solicitudStr);
-
-                        // 2. Enviar la solicitud
                         cliente.getSalida().println(solicitudStr);
                         cliente.getSalida().flush();
 
-                        // 3. Recibir y mostrar respuesta
                         String respuesta = cliente.getEntrada().readLine();
                         System.out.println("RESPUESTA DEL SERVIDOR (USUARIOS): " + respuesta);
                         return respuesta;
@@ -161,11 +165,8 @@ public class ControladorModerador {
         ejecutarTareaAsync(
                 () -> {
                     try {
-                        // 1. Construir la solicitud con el formato correcto
                         JsonObject solicitud = new JsonObject();
                         solicitud.addProperty("tipo", "OBTENER_CONTENIDOS");
-
-                        // 2. Agregar objeto 'datos' como espera el servidor
                         JsonObject datos = new JsonObject();
                         if (datosUsuario != null && datosUsuario.has("id")) {
                             datos.addProperty("solicitanteId", datosUsuario.get("id").getAsString());
@@ -174,12 +175,9 @@ public class ControladorModerador {
 
                         String solicitudStr = solicitud.toString();
                         System.out.println("DEBUG: Enviando solicitud completa al servidor: " + solicitudStr);
-
-                        // 3. Enviar la solicitud
                         cliente.getSalida().println(solicitudStr);
                         cliente.getSalida().flush();
 
-                        // 4. Recibir respuesta
                         String respuesta = cliente.getEntrada().readLine();
                         System.out.println("RESPUESTA DEL SERVIDOR (CONTENIDOS): " + respuesta);
                         return respuesta;
@@ -223,66 +221,6 @@ public class ControladorModerador {
         } catch (IOException e) {
             manejarError("mostrar vista de contenidos", e);
         }
-    }
-
-    private <T> void ejecutarTareaAsync(Supplier<T> tarea, Consumer<T> onSuccess, String contexto) {
-        Task<T> task = new Task<>() {
-            @Override
-            protected T call() throws Exception {
-                try {
-                    return tarea.get();
-                } catch (Exception e) {
-                    System.err.println("ERROR en tarea asíncrona (" + contexto + "): " + e.getMessage());
-                    throw e;
-                }
-            }
-        };
-
-        task.setOnSucceeded(e -> onSuccess.accept(task.getValue()));
-        task.setOnFailed(e -> {
-            String errorMsg = "Error en " + contexto + ": " + task.getException().getMessage();
-            LOGGER.severe(errorMsg);
-            System.err.println(errorMsg);
-            Platform.runLater(() -> mostrarAlerta("Error", "Error al " + contexto, Alert.AlertType.ERROR));
-        });
-
-        executor.execute(task);
-    }
-
-    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
-        Alert alert = new Alert(tipo);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
-    }
-
-    private void manejarError(String contexto, Exception e) {
-        String errorMsg = "Error en " + contexto + ": " + e.getMessage();
-        LOGGER.severe(errorMsg);
-        System.err.println(errorMsg);
-        Platform.runLater(() -> mostrarAlerta("Error", "Error en " + contexto, Alert.AlertType.ERROR));
-    }
-
-    // Método temporal para pruebas
-    public void probarConexion() {
-        ejecutarTareaAsync(
-                () -> {
-                    JsonObject test = new JsonObject();
-                    test.addProperty("tipo", "TEST");
-                    String testStr = test.toString();
-                    System.out.println("DEBUG: Enviando prueba al servidor: " + testStr);
-                    cliente.getSalida().println(testStr);
-                    cliente.getSalida().flush();
-                    try {
-                        return cliente.getEntrada().readLine();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                },
-                respuesta -> System.out.println("Respuesta de prueba: " + respuesta),
-                "prueba de conexión"
-        );
     }
 
     @FXML
@@ -332,27 +270,388 @@ public class ControladorModerador {
     }
 
     private void mostrarVistaGrafo(JsonObject grafoData) {
-        // Implementar la lógica para mostrar el grafo en una nueva ventana
-        // Puedes usar una biblioteca de visualización de grafos como JGraphT o similar
+        try {
+            JsonArray nodos = grafoData.getAsJsonObject("grafo").getAsJsonArray("nodos");
+            JsonArray aristas = grafoData.getAsJsonObject("grafo").getAsJsonArray("aristas");
+
+            int width = 800;
+            int height = 600;
+
+            Canvas canvas = new Canvas(width, height);
+            GraphicsContext gc = canvas.getGraphicsContext2D();
+
+            // 🎨 Fondo oscuro
+            gc.setFill(Color.web("#1e1e1e"));  // gris oscuro tipo editor
+            gc.fillRect(0, 0, width, height);
+
+            Map<String, Double[]> posiciones = new HashMap<>();
+
+            // Distribuir nodos en círculo
+            int radio = 200;
+            double centerX = width / 2.0;
+            double centerY = height / 2.0;
+            int totalNodos = nodos.size();
+
+            for (int i = 0; i < totalNodos; i++) {
+                JsonObject nodo = nodos.get(i).getAsJsonObject();
+                String id = nodo.get("id").getAsString();
+
+                double angle = 2 * Math.PI * i / totalNodos;
+                double x = centerX + radio * Math.cos(angle);
+                double y = centerY + radio * Math.sin(angle);
+
+                posiciones.put(id, new Double[]{x, y});
+            }
+
+            // Dibujar aristas
+            gc.setStroke(Color.LIGHTGRAY);
+            gc.setLineWidth(2);
+            for (JsonElement aristaElem : aristas) {
+                JsonObject arista = aristaElem.getAsJsonObject();
+                String origen = arista.get("origen").getAsString();
+                String destino = arista.get("destino").getAsString();
+                int peso = arista.get("peso").getAsInt();
+
+                Double[] posOrigen = posiciones.get(origen);
+                Double[] posDestino = posiciones.get(destino);
+
+                gc.strokeLine(posOrigen[0], posOrigen[1], posDestino[0], posDestino[1]);
+
+                double midX = (posOrigen[0] + posDestino[0]) / 2;
+                double midY = (posOrigen[1] + posDestino[1]) / 2;
+                gc.setFill(Color.ORANGE);
+                gc.fillText(String.valueOf(peso), midX, midY);
+            }
+
+            // Dibujar nodos
+            for (JsonElement nodoElem : nodos) {
+                JsonObject nodo = nodoElem.getAsJsonObject();
+                String id = nodo.get("id").getAsString();
+                String nombre = nodo.get("nombre").getAsString();
+
+                Double[] pos = posiciones.get(id);
+                double x = pos[0];
+                double y = pos[1];
+
+                gc.setFill(Color.web("#7b5dd9")); // morado suave
+                gc.fillOval(x - 15, y - 15, 30, 30);
+
+                gc.setFill(Color.WHITE);
+                gc.fillText(nombre, x - 25, y - 25);
+            }
+
+            // Mostrar en ventana
+            Stage stage = new Stage();
+            stage.setTitle("Grafo de Afinidad - Visualización");
+            StackPane root = new StackPane(canvas);
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
+            stage.show();
+
+        } catch (Exception e) {
+            manejarError("mostrar grafo de afinidad (Canvas)", e);
+        }
     }
+
+
+
+
+
 
     @FXML
     private void manejarFuncionalidadGrafo() {
-        // Implementar la lógica para manejar la funcionalidad del grafo
+        // Implementación de funcionalidades avanzadas del grafo
+        ejecutarTareaAsync(
+                () -> {
+                    try {
+                        JsonObject solicitud = new JsonObject();
+                        solicitud.addProperty("tipo", "OBTENER_GRAFO_AFINIDAD");
+                        JsonObject datos = new JsonObject();
+                        if (datosUsuario != null && datosUsuario.has("id")) {
+                            datos.addProperty("solicitanteId", datosUsuario.get("id").getAsString());
+                            datos.addProperty("analisis", "completo");
+                        }
+                        solicitud.add("datos", datos);
+
+                        String solicitudStr = solicitud.toString();
+                        cliente.getSalida().println(solicitudStr);
+                        cliente.getSalida().flush();
+
+                        return cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error de comunicación con el servidor", e);
+                    }
+                },
+                respuesta -> {
+                    try {
+                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+                        if (jsonRespuesta.get("exito").getAsBoolean()) {
+                            JsonObject grafoData = jsonRespuesta.getAsJsonObject("grafo");
+
+                            // Mostrar análisis en una ventana emergente
+                            Platform.runLater(() -> {
+                                TextArea textArea = new TextArea();
+                                textArea.setEditable(false);
+                                textArea.setWrapText(true);
+
+                                // Construir texto de análisis
+                                StringBuilder sb = new StringBuilder();
+                                sb.append("ANÁLISIS DEL GRAFO DE AFINIDAD\n\n");
+                                sb.append("Total estudiantes: ").append(grafoData.get("totalEstudiantes").getAsInt()).append("\n");
+                                sb.append("Total conexiones: ").append(grafoData.get("totalConexiones").getAsInt()).append("\n");
+                                sb.append("Afinidad promedio: ").append(grafoData.get("afinidadPromedio").getAsDouble()).append("\n\n");
+
+                                if (grafoData.has("comunidades")) {
+                                    sb.append("COMUNIDADES DETECTADAS:\n");
+                                    JsonArray comunidades = grafoData.getAsJsonArray("comunidades");
+                                    for (JsonElement comunidad : comunidades) {
+                                        JsonObject com = comunidad.getAsJsonObject();
+                                        sb.append("- Comunidad ").append(com.get("id").getAsString())
+                                                .append(": ").append(com.get("miembros").getAsInt())
+                                                .append(" miembros, afinidad interna: ")
+                                                .append(com.get("afinidad").getAsDouble()).append("\n");
+                                    }
+                                }
+
+                                if (grafoData.has("estudiantesAislados")) {
+                                    sb.append("\nESTUDIANTES AISLADOS:\n");
+                                    JsonArray aislados = grafoData.getAsJsonArray("estudiantesAislados");
+                                    for (JsonElement aislado : aislados) {
+                                        sb.append("- ").append(aislado.getAsString()).append("\n");
+                                    }
+                                }
+
+                                textArea.setText(sb.toString());
+
+                                Stage stage = new Stage();
+                                stage.setTitle("Análisis del Grafo de Afinidad");
+                                stage.setScene(new Scene(textArea, 500, 400));
+                                stage.show();
+                            });
+                        } else {
+                            String mensajeError = jsonRespuesta.has("mensaje") ?
+                                    jsonRespuesta.get("mensaje").getAsString() : "Error desconocido";
+                            Platform.runLater(() -> mostrarAlerta("Error", mensajeError, Alert.AlertType.ERROR));
+                        }
+                    } catch (Exception e) {
+                        Platform.runLater(() -> mostrarAlerta("Error", "Error procesando análisis del grafo", Alert.AlertType.ERROR));
+                    }
+                },
+                "análisis del grafo"
+        );
     }
 
     @FXML
     private void manejarTablaContenidos() {
-        // Implementar la lógica para manejar la tabla de contenidos
+        ejecutarTareaAsync(
+                () -> {
+                    try {
+                        JsonObject solicitud = new JsonObject();
+                        solicitud.addProperty("tipo", "OBTENER_CONTENIDOS_COMPLETOS");
+                        JsonObject datos = new JsonObject();
+                        if (datosUsuario != null && datosUsuario.has("id")) {
+                            datos.addProperty("userId", datosUsuario.get("id").getAsString()); // <--- CAMBIO AQUÍ
+
+                        }
+                        solicitud.add("datos", datos);
+
+                        String solicitudStr = solicitud.toString();
+                        cliente.getSalida().println(solicitudStr);
+                        cliente.getSalida().flush();
+
+                        return cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error de comunicación con el servidor", e);
+                    }
+                },
+                respuesta -> {
+                    try {
+                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+                        if (jsonRespuesta.get("exito").getAsBoolean()) {
+                            Platform.runLater(() -> mostrarTablaContenidos(jsonRespuesta));
+                        } else {
+                            String mensajeError = jsonRespuesta.has("mensaje") ?
+                                    jsonRespuesta.get("mensaje").getAsString() : "Error desconocido";
+                            Platform.runLater(() -> mostrarAlerta("Error", mensajeError, Alert.AlertType.ERROR));
+                        }
+                    } catch (Exception e) {
+                        Platform.runLater(() -> mostrarAlerta("Error", "Error procesando tabla de contenidos", Alert.AlertType.ERROR));
+                    }
+                },
+                "obtención de tabla de contenidos"
+        );
+    }
+
+    private void mostrarTablaContenidos(JsonObject datosContenidos) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/tabla_contenidos.fxml"));
+            Parent root = loader.load();
+
+            ControladorTablaContenidos controlador = loader.getController();
+            controlador.inicializar(datosContenidos);
+
+            Stage stage = new Stage();
+            stage.setTitle("Tabla de Contenidos");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+        } catch (IOException e) {
+            manejarError("mostrar tabla de contenidos", e);
+        }
     }
 
     @FXML
     private void manejarEstudiantesConexiones() {
-        // Implementar la lógica para manejar las conexiones de estudiantes
+        ejecutarTareaAsync(
+                () -> {
+                    try {
+                        JsonObject solicitud = new JsonObject();
+                        solicitud.addProperty("tipo", "OBTENER_ESTUDIANTES_CONEXIONES");
+                        JsonObject datos = new JsonObject();
+                        if (datosUsuario != null && datosUsuario.has("id")) {
+                            datos.addProperty("moderadorId", datosUsuario.get("id").getAsString());
+                        }
+                        solicitud.add("datos", datos);
+
+                        String solicitudStr = solicitud.toString();
+                        cliente.getSalida().println(solicitudStr);
+                        cliente.getSalida().flush();
+
+                        return cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error de comunicación con el servidor", e);
+                    }
+                },
+                respuesta -> {
+                    try {
+                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+                        if (jsonRespuesta.get("exito").getAsBoolean()) {
+                            Platform.runLater(() -> mostrarEstudiantesConexiones(jsonRespuesta));
+                        } else {
+                            String mensajeError = jsonRespuesta.has("mensaje") ?
+                                    jsonRespuesta.get("mensaje").getAsString() : "Error desconocido";
+                            Platform.runLater(() -> mostrarAlerta("Error", mensajeError, Alert.AlertType.ERROR));
+                        }
+                    } catch (Exception e) {
+                        Platform.runLater(() -> mostrarAlerta("Error", "Error procesando conexiones", Alert.AlertType.ERROR));
+                    }
+                },
+                "obtención de conexiones entre estudiantes"
+        );
+    }
+
+    private void mostrarEstudiantesConexiones(JsonObject datosConexiones) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/estudiantes_conexiones.fxml"));
+            Parent root = loader.load();
+
+            ControladorEstudiantesConexiones controlador = loader.getController();
+            controlador.inicializar(datosConexiones);
+
+            Stage stage = new Stage();
+            stage.setTitle("Estudiantes y sus Conexiones");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+        } catch (IOException e) {
+            manejarError("mostrar conexiones entre estudiantes", e);
+        }
     }
 
     @FXML
     private void manejarNivelesParticipacion() {
-        // Implementar la lógica para manejar los niveles de participación
+        ejecutarTareaAsync(
+                () -> {
+                    try {
+                        JsonObject solicitud = new JsonObject();
+                        solicitud.addProperty("tipo", "OBTENER_NIVELES_PARTICIPACION");
+                        JsonObject datos = new JsonObject();
+                        if (datosUsuario != null && datosUsuario.has("id")) {
+                            datos.addProperty("moderadorId", datosUsuario.get("id").getAsString());
+                        }
+                        solicitud.add("datos", datos);
+
+                        String solicitudStr = solicitud.toString();
+                        cliente.getSalida().println(solicitudStr);
+                        cliente.getSalida().flush();
+
+                        return cliente.getEntrada().readLine();
+                    } catch (IOException e) {
+                        throw new RuntimeException("Error de comunicación con el servidor", e);
+                    }
+                },
+                respuesta -> {
+                    try {
+                        JsonObject jsonRespuesta = JsonParser.parseString(respuesta).getAsJsonObject();
+                        if (jsonRespuesta.get("exito").getAsBoolean()) {
+                            Platform.runLater(() -> mostrarNivelesParticipacion(jsonRespuesta));
+                        } else {
+                            String mensajeError = jsonRespuesta.has("mensaje") ?
+                                    jsonRespuesta.get("mensaje").getAsString() : "Error desconocido";
+                            Platform.runLater(() -> mostrarAlerta("Error", mensajeError, Alert.AlertType.ERROR));
+                        }
+                    } catch (Exception e) {
+                        Platform.runLater(() -> mostrarAlerta("Error", "Error procesando niveles de participación", Alert.AlertType.ERROR));
+                    }
+                },
+                "obtención de niveles de participación"
+        );
+    }
+
+    private void mostrarNivelesParticipacion(JsonObject datosParticipacion) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/taller/estudiantevistas/fxml/niveles_participacion.fxml"));
+            Parent root = loader.load();
+
+            ControladorNivelesParticipacion controlador = loader.getController();
+            controlador.inicializar(datosParticipacion);
+
+            Stage stage = new Stage();
+            stage.setTitle("Niveles de Participación");
+            stage.setScene(new Scene(root));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.show();
+        } catch (IOException e) {
+            manejarError("mostrar niveles de participación", e);
+        }
+    }
+
+    private <T> void ejecutarTareaAsync(Supplier<T> tarea, Consumer<T> onSuccess, String contexto) {
+        Task<T> task = new Task<>() {
+            @Override
+            protected T call() throws Exception {
+                try {
+                    return tarea.get();
+                } catch (Exception e) {
+                    System.err.println("ERROR en tarea asíncrona (" + contexto + "): " + e.getMessage());
+                    throw e;
+                }
+            }
+        };
+
+        task.setOnSucceeded(e -> onSuccess.accept(task.getValue()));
+        task.setOnFailed(e -> {
+            String errorMsg = "Error en " + contexto + ": " + task.getException().getMessage();
+            LOGGER.severe(errorMsg);
+            System.err.println(errorMsg);
+            Platform.runLater(() -> mostrarAlerta("Error", "Error al " + contexto, Alert.AlertType.ERROR));
+        });
+
+        executor.execute(task);
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje, Alert.AlertType tipo) {
+        Alert alert = new Alert(tipo);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
+    }
+
+    private void manejarError(String contexto, Exception e) {
+        String errorMsg = "Error en " + contexto + ": " + e.getMessage();
+        LOGGER.severe(errorMsg);
+        System.err.println(errorMsg);
+        Platform.runLater(() -> mostrarAlerta("Error", "Error en " + contexto, Alert.AlertType.ERROR));
     }
 }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="contenedorPrincipal"
+      xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.taller.estudiantevistas.controlador.ControladorNivelesParticipacion"
+      spacing="20" styleClass="panel-contenedor" stylesheets="@../css/niveles-participacion.css">
+
+
+    <Label fx:id="lblTitulo" styleClass="contenido-titulo" />
+
+    <BarChart fx:id="graficoParticipacion" animated="true" categoryGap="25" prefHeight="500" prefWidth="800">
+        <xAxis>
+            <CategoryAxis label="Estudiantes" />
+        </xAxis>
+        <yAxis>
+            <NumberAxis label="Nivel de Participación" />
+        </yAxis>
+    </BarChart>
+
+    <Label text="* Los niveles se calculan en base a publicaciones, comentarios e interacciones"
+           styleClass="descripcion-text" />
+
+</VBox>

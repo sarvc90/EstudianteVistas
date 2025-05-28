@@ -68,6 +68,7 @@
                 <Button fx:id="btnVerGrafo"
                         text="Ver grafo"
                         styleClass="boton-morado"
+                        onAction="#manejarVerGrafo"
                         prefWidth="250"/>
 
                 <Pane prefHeight="120" prefWidth="250" styleClass="contenedor-negro"/>
@@ -75,21 +76,25 @@
                 <Button fx:id="btnFuncionalidadGrafo"
                         text="Funcionalidad de grafo..."
                         styleClass="boton-morado"
+                        onAction="#manejarFuncionalidadGrafo"
                         prefWidth="250"/>
 
                 <Button fx:id="btnTablaContenidos"
                         text="Tabla de contenidos más..."
                         styleClass="boton-morado"
+                        onAction="#manejarTablaContenidos"
                         prefWidth="250"/>
 
                 <Button fx:id="btnEstudiantesConexiones"
                         text="Estudiantes con más conexiones"
                         styleClass="boton-morado"
+                        onAction="#manejarEstudiantesConexiones"
                         prefWidth="250"/>
 
                 <Button fx:id="btnNivelesParticipacion"
                         text="Niveles de participación"
                         styleClass="boton-morado"
+                        onAction="#manejarNivelesParticipacion"
                         prefWidth="250"/>
             </VBox>
         </HBox>
